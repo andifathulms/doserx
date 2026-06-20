@@ -880,6 +880,14 @@ body::before {
   line-height: 1.6;
 }
 
+/* Weight + days side-by-side */
+.puyer-meta-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
 .puyer-weight {
   display: flex;
   flex-direction: column;
@@ -915,6 +923,12 @@ body::before {
   box-shadow: var(--sh-xs);
 }
 
+.puyer-drug-row__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .puyer-drug-row__name {
   font-size: .9375rem;
   font-weight: 700;
@@ -937,6 +951,54 @@ body::before {
   font-weight: 500;
   align-self: center;
   margin-top: 16px;
+}
+
+/* ── Dose override UX ────────────────────────────────────────────────────── */
+.label-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 5px;
+}
+
+.label-row .label { margin-bottom: 0; }
+
+.reset-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: .7rem;
+  font-weight: 600;
+  color: var(--c-warn);
+  background: var(--c-warn-bg);
+  border: 1px solid var(--c-warn-bdr);
+  border-radius: var(--r-full);
+  padding: 1px 7px;
+  cursor: pointer;
+  transition: background .12s;
+  white-space: nowrap;
+}
+.reset-btn:hover { background: var(--amber-200); }
+
+.override-badge {
+  font-size: .65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  padding: 2px 7px;
+  background: var(--c-warn-bg);
+  color: var(--c-warn);
+  border: 1.5px solid var(--c-warn-bdr);
+  border-radius: var(--r-full);
+}
+
+.input--overridden {
+  border-color: var(--c-warn);
+  background: var(--c-warn-bg);
+}
+.input--overridden:focus {
+  border-color: var(--c-warn);
+  box-shadow: 0 0 0 3px var(--c-warn-bdr);
 }
 
 /* ── Puyer recipe card ────────────────────────────────────────────────────── */
@@ -1036,6 +1098,82 @@ body::before {
   display: flex;
   flex-wrap: wrap;
   gap: 5px;
+}
+
+.puyer-recipe__meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.puyer-recipe__days {
+  font-size: .75rem;
+  font-weight: 600;
+  color: var(--c-accent);
+  background: var(--c-accent-bg);
+  border: 1px solid var(--c-accent-bdr);
+  padding: 1px 8px;
+  border-radius: var(--r-full);
+}
+
+/* ── Per-form row with total ─────────────────────────────────────────────── */
+.puyer-recipe__forms-block {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 6px;
+}
+
+.puyer-form-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.puyer-form-total {
+  font-size: .8125rem;
+  color: var(--c-text-2);
+}
+
+.puyer-form-total strong {
+  color: var(--c-text);
+  font-weight: 700;
+}
+
+/* ── Bungkus summary ────────────────────────────────────────────────────── */
+.puyer-recipe__bungkus-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 14px 0;
+  padding: 12px 14px;
+  background: var(--c-accent-bg);
+  border: 1px solid var(--c-accent-bdr);
+  border-radius: var(--r-sm);
+}
+
+.puyer-bungkus-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: .8125rem;
+}
+
+.puyer-bungkus-drug {
+  font-weight: 600;
+  color: var(--c-text-2);
+}
+
+.puyer-bungkus-count {
+  color: var(--c-text-2);
+}
+
+.puyer-bungkus-count strong {
+  color: var(--c-accent);
+  font-weight: 700;
 }
 
 .puyer-recipe__footer {

@@ -21,12 +21,32 @@ function freqLabel(freq: number): string {
   return map[freq] ?? `${freq}×/hari`
 }
 
+function round2(v: number): number {
+  return Math.round(v * 100) / 100
+}
+
+function formatQty(n: number, unit: string): string {
+  const FRAC: Record<number, string> = {
+    0.25: '¼', 0.5: '½', 0.75: '¾',
+    1: '1', 1.5: '1½', 2: '2', 2.5: '2½', 3: '3', 4: '4',
+  }
+  // whole numbers
+  if (Number.isInteger(n)) return `${n} ${unit}`
+  // common fractions
+  const floor = Math.floor(n)
+  const frac = round2(n - floor)
+  const fracStr = FRAC[frac]
+  if (fracStr) return floor > 0 ? `${floor}${fracStr} ${unit}` : `${fracStr} ${unit}`
+  return `${n} ${unit}`
+}
+
 interface PuyerPanelProps {
   onHistoryUpdated: () => void
 }
 
 export function PuyerPanel({ onHistoryUpdated: _onHistoryUpdated }: PuyerPanelProps) {
   const [weight, setWeight] = useState('')
+  const [days, setDays] = useState('3')
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [entries, setEntries] = useState<Record<string, PuyerEntry>>({})
   const [gridOpen, setGridOpen] = useState(true)
@@ -61,6 +81,12 @@ export function PuyerPanel({ onHistoryUpdated: _onHistoryUpdated }: PuyerPanelPr
     setEntries((prev) => ({ ...prev, [id]: { ...prev[id], ...patch, result: null, suggestions: [] } }))
   }
 
+  function resetDose(id: string) {
+    const drug = entries[id]?.drug
+    if (!drug) return
+    updateEntry(id, { dosePerKg: String(drug.dosePerKg) })
+  }
+
   function handleCalculate() {
     const w = parseFloat(weight)
     if (!isFinite(w) || w <= 0) {
@@ -92,6 +118,7 @@ export function PuyerPanel({ onHistoryUpdated: _onHistoryUpdated }: PuyerPanelPr
 
   const orderedEntries = selectedIds.map((id) => entries[id]).filter(Boolean)
   const allCalculated = calculated && orderedEntries.every((e) => e.result !== null)
+  const numDays = Math.max(1, parseInt(days) || 1)
 
   return (
     <div className="panel">
@@ -122,7 +149,6 @@ export function PuyerPanel({ onHistoryUpdated: _onHistoryUpdated }: PuyerPanelPr
           )}
         </div>
       ) : (
-        /* ── Collapsed selection summary ────────────────── */
         <div className="selected-drugs-summary">
           <div className="selected-drugs-summary__chips">
             {orderedEntries.map((e) => (
@@ -137,61 +163,97 @@ export function PuyerPanel({ onHistoryUpdated: _onHistoryUpdated }: PuyerPanelPr
         </div>
       )}
 
-      {/* ── Form section (visible once grid is collapsed) ── */}
+      {/* ── Form section ───────────────────────────────── */}
       {!gridOpen && (
         <div ref={formRef}>
-          <div className="puyer-weight" style={{ marginTop: 20 }}>
-            <label className="label" htmlFor="puyer-weight">Berat badan (kg)</label>
-            <input
-              id="puyer-weight"
-              className="input"
-              type="number"
-              min="0"
-              step="0.1"
-              placeholder="misal 14"
-              autoFocus
-              value={weight}
-              onChange={(e) => { setWeight(e.target.value); setCalculated(false) }}
-            />
-            {weightError && <p className="error" style={{ marginTop: 4 }}>{weightError}</p>}
+
+          {/* Weight + days row */}
+          <div className="puyer-meta-row">
+            <div className="field">
+              <label className="label" htmlFor="puyer-weight">Berat badan (kg)</label>
+              <input
+                id="puyer-weight"
+                className="input"
+                type="number"
+                min="0"
+                step="0.1"
+                placeholder="misal 14"
+                autoFocus
+                value={weight}
+                onChange={(e) => { setWeight(e.target.value); setCalculated(false) }}
+              />
+              {weightError && <p className="error" style={{ marginTop: 4 }}>{weightError}</p>}
+            </div>
+            <div className="field">
+              <label className="label" htmlFor="puyer-days">Jumlah hari</label>
+              <input
+                id="puyer-days"
+                className="input"
+                type="number"
+                min="1"
+                step="1"
+                value={days}
+                onChange={(e) => { setDays(e.target.value); setCalculated(false) }}
+              />
+            </div>
           </div>
 
+          {/* Per-drug dose overrides */}
           <div className="puyer-section-label">Sesuaikan dosis (opsional)</div>
           <div className="puyer-drug-list">
-            {orderedEntries.map((entry) => (
-              <div key={entry.drug.id} className="puyer-drug-row">
-                <span className="puyer-drug-row__name">{entry.drug.name}</span>
-                <div className="puyer-drug-row__inputs">
-                  <div className="field">
-                    <label className="label">mg/kg</label>
-                    <input
-                      className="input input--sm"
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      value={entry.dosePerKg}
-                      onChange={(e) => updateEntry(entry.drug.id, { dosePerKg: e.target.value })}
-                    />
+            {orderedEntries.map((entry) => {
+              const isOverridden = entry.dosePerKg !== String(entry.drug.dosePerKg)
+              return (
+                <div key={entry.drug.id} className="puyer-drug-row">
+                  <div className="puyer-drug-row__header">
+                    <span className="puyer-drug-row__name">{entry.drug.name}</span>
+                    {isOverridden && (
+                      <span className="override-badge">diubah</span>
+                    )}
                   </div>
-                  <div className="field">
-                    <label className="label">×/hari</label>
-                    <input
-                      className="input input--sm"
-                      type="number"
-                      min="1"
-                      step="1"
-                      value={entry.freq}
-                      onChange={(e) => updateEntry(entry.drug.id, { freq: e.target.value })}
-                    />
+                  <div className="puyer-drug-row__inputs">
+                    <div className="field">
+                      <div className="label-row">
+                        <label className="label">mg/kg</label>
+                        {isOverridden && (
+                          <button
+                            className="reset-btn"
+                            onClick={() => resetDose(entry.drug.id)}
+                            title={`Reset ke ${entry.drug.dosePerKg} mg/kg`}
+                          >
+                            ↺ {entry.drug.dosePerKg}
+                          </button>
+                        )}
+                      </div>
+                      <input
+                        className={`input input--sm${isOverridden ? ' input--overridden' : ''}`}
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={entry.dosePerKg}
+                        onChange={(e) => updateEntry(entry.drug.id, { dosePerKg: e.target.value })}
+                      />
+                    </div>
+                    <div className="field">
+                      <label className="label">×/hari</label>
+                      <input
+                        className="input input--sm"
+                        type="number"
+                        min="1"
+                        step="1"
+                        value={entry.freq}
+                        onChange={(e) => updateEntry(entry.drug.id, { freq: e.target.value })}
+                      />
+                    </div>
+                    {entry.drug.dosePerKgMin != null && entry.drug.dosePerKgMax != null && (
+                      <span className="puyer-dose-range">
+                        [{entry.drug.dosePerKgMin}–{entry.drug.dosePerKgMax}]
+                      </span>
+                    )}
                   </div>
-                  {entry.drug.dosePerKgMin != null && entry.drug.dosePerKgMax != null && (
-                    <span className="puyer-dose-range">
-                      [{entry.drug.dosePerKgMin}–{entry.drug.dosePerKgMax}]
-                    </span>
-                  )}
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
 
           <button className="btn btn--primary" onClick={handleCalculate}>
@@ -203,47 +265,92 @@ export function PuyerPanel({ onHistoryUpdated: _onHistoryUpdated }: PuyerPanelPr
             <div className="puyer-recipe">
               <div className="puyer-recipe__header">
                 <span className="puyer-recipe__title">Resep Puyer</span>
-                <span className="puyer-recipe__weight">{weight} kg</span>
+                <div className="puyer-recipe__meta">
+                  <span className="puyer-recipe__weight">{weight} kg</span>
+                  <span className="puyer-recipe__days">{numDays} hari</span>
+                </div>
               </div>
+
               <ul className="puyer-recipe__list">
                 {orderedEntries.map((entry) => {
                   if (!entry.result) return null
+                  const freq = parseFloat(entry.freq)
+                  const totalBungkus = freq * numDays
                   const solidS = entry.suggestions.filter(
                     (s) => s.form === 'tablet' || s.form === 'capsule',
                   )
                   const liquidS = entry.suggestions.filter(
                     (s) => s.form === 'syrup' || s.form === 'drop',
                   )
+
                   return (
                     <li key={entry.drug.id} className="puyer-recipe__item">
                       <div className="puyer-recipe__drug-name">{entry.drug.name}</div>
                       <div className="puyer-recipe__dose-line">
                         <span className="puyer-recipe__perdose">{entry.result.perDose} mg/dosis</span>
-                        <span className="puyer-recipe__freq">{freqLabel(parseFloat(entry.freq))}</span>
+                        <span className="puyer-recipe__freq">{freqLabel(freq)}</span>
                         {(entry.result.cappedByMaxDay || entry.result.cappedByMaxSingle) && (
                           <span className="badge badge--warn">cap</span>
                         )}
                       </div>
+
                       {solidS.length > 0 && (
-                        <div className="puyer-recipe__forms">
-                          {solidS.map((s, i) => (
-                            <span key={i} className="suggestion-chip suggestion-chip--solid">{s.display}</span>
-                          ))}
+                        <div className="puyer-recipe__forms-block">
+                          {solidS.map((s, i) => {
+                            const totalUnits = round2(s.count * totalBungkus)
+                            const unit = s.form === 'capsule' ? 'kap' : 'tab'
+                            return (
+                              <div key={i} className="puyer-form-row">
+                                <span className="suggestion-chip suggestion-chip--solid">{s.display}</span>
+                                <span className="puyer-form-total">
+                                  × {totalBungkus} bungkus = <strong>{formatQty(totalUnits, unit)}</strong>
+                                </span>
+                              </div>
+                            )
+                          })}
                         </div>
                       )}
+
                       {liquidS.length > 0 && (
-                        <div className="puyer-recipe__forms">
-                          {liquidS.map((s, i) => (
-                            <span key={i} className="suggestion-chip suggestion-chip--liquid">{s.display}</span>
-                          ))}
+                        <div className="puyer-recipe__forms-block">
+                          {liquidS.map((s, i) => {
+                            const totalMl = round2(s.count * totalBungkus)
+                            return (
+                              <div key={i} className="puyer-form-row">
+                                <span className="suggestion-chip suggestion-chip--liquid">{s.display}</span>
+                                <span className="puyer-form-total">
+                                  × {totalBungkus} bungkus = <strong>{totalMl} mL</strong>
+                                </span>
+                              </div>
+                            )
+                          })}
                         </div>
                       )}
                     </li>
                   )
                 })}
               </ul>
+
+              {/* ── Bungkus summary ──── */}
+              <div className="puyer-recipe__bungkus-summary">
+                {orderedEntries
+                  .filter((e) => e.result)
+                  .map((entry) => {
+                    const freq = parseFloat(entry.freq)
+                    const totalBungkus = freq * numDays
+                    return (
+                      <div key={entry.drug.id} className="puyer-bungkus-row">
+                        <span className="puyer-bungkus-drug">{entry.drug.name}</span>
+                        <span className="puyer-bungkus-count">
+                          {freqLabel(freq)} × {numDays} hari = <strong>{totalBungkus} bungkus</strong>
+                        </span>
+                      </div>
+                    )
+                  })}
+              </div>
+
               <div className="puyer-recipe__footer">
-                Campur semua bahan untuk tiap dosis, berikan sesuai frekuensi masing-masing obat.
+                Campur semua bahan untuk tiap bungkus, berikan sesuai frekuensi masing-masing obat.
               </div>
             </div>
           )}
