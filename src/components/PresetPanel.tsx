@@ -129,15 +129,26 @@ export function PresetPanel({ onHistoryUpdated }: PresetPanelProps) {
               />
             </div>
             <div className="field">
-              <label className="label" htmlFor="preset-dose">
-                Dosis (mg/kg)
-                {selected.dosePerKgMin != null && selected.dosePerKgMax != null && (
-                  <span className="label--range"> [{selected.dosePerKgMin}–{selected.dosePerKgMax}]</span>
+              <div className="label-row">
+                <label className="label" htmlFor="preset-dose">
+                  Dosis (mg/kg)
+                  {selected.dosePerKgMin != null && selected.dosePerKgMax != null && (
+                    <span className="label--range"> [{selected.dosePerKgMin}–{selected.dosePerKgMax}]</span>
+                  )}
+                </label>
+                {dosePerKg !== String(selected.dosePerKg) && (
+                  <button
+                    className="reset-btn"
+                    onClick={() => { setDosePerKg(String(selected.dosePerKg)); setResult(null) }}
+                    title={`Reset ke ${selected.dosePerKg} mg/kg`}
+                  >
+                    ↺ {selected.dosePerKg}
+                  </button>
                 )}
-              </label>
+              </div>
               <input
                 id="preset-dose"
-                className="input"
+                className={`input${dosePerKg !== String(selected.dosePerKg) ? ' input--overridden' : ''}`}
                 type="number"
                 min="0"
                 step="0.01"
