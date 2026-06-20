@@ -3,12 +3,14 @@ import { Tabs } from './components/Tabs'
 import { PresetPanel } from './components/PresetPanel'
 import { CustomPanel } from './components/CustomPanel'
 import { HistoryPanel } from './components/HistoryPanel'
+import { PuyerPanel } from './components/PuyerPanel'
 import { loadHistory, HistoryEntry } from './lib/storage'
 
 const TABS = [
-  { id: 'preset', label: 'Presets' },
-  { id: 'custom', label: 'Custom' },
-  { id: 'history', label: 'History' },
+  { id: 'preset', label: 'Preset' },
+  { id: 'custom', label: 'Kustom' },
+  { id: 'puyer', label: 'Puyer' },
+  { id: 'history', label: 'Riwayat' },
 ]
 
 function App() {
@@ -28,7 +30,7 @@ function App() {
     <div className="app">
       <header className="app-header">
         <h1 className="app-title">DoseRx</h1>
-        <p className="app-subtitle">Weight-based dose calculator</p>
+        <p className="app-subtitle">Kalkulator dosis berbasis berat badan</p>
       </header>
 
       <main className="app-main">
@@ -40,6 +42,9 @@ function App() {
         {activeTab === 'custom' && (
           <CustomPanel onHistoryUpdated={refreshHistory} />
         )}
+        {activeTab === 'puyer' && (
+          <PuyerPanel onHistoryUpdated={refreshHistory} />
+        )}
         {activeTab === 'history' && (
           <HistoryPanel entries={history} onUpdated={refreshHistory} />
         )}
@@ -47,8 +52,8 @@ function App() {
 
       <footer className="app-footer">
         <p>
-          <strong>Calculation aid only.</strong> Not a clinical decision support or prescribing system.
-          Preset dosing values are general references — verify against current institutional guidelines before use.
+          <strong>Alat bantu hitung saja.</strong> Bukan sistem pendukung keputusan klinis atau resep.
+          Nilai dosis preset adalah referensi umum — verifikasi dengan panduan institusi/klinis terkini sebelum digunakan.
         </p>
       </footer>
     </div>
