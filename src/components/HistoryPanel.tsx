@@ -1,4 +1,5 @@
-import { HistoryEntry, deleteEntry, clearHistory } from '../lib/storage'
+import { useState } from 'react'
+import { HistoryEntry, deleteEntry, clearHistory, updateEntryNote } from '../lib/storage'
 
 interface HistoryPanelProps {
   entries: HistoryEntry[]
@@ -11,11 +12,56 @@ function formatTime(ts: number): string {
   const mins = Math.floor(diff / 60000)
   const hours = Math.floor(diff / 3600000)
   const days = Math.floor(diff / 86400000)
-  if (mins < 1) return 'just now'
-  if (mins < 60) return `${mins} min ago`
-  if (hours < 24) return `${hours} h ago`
-  if (days < 7) return `${days} d ago`
-  return new Date(ts).toLocaleDateString()
+  if (mins < 1) return 'baru saja'
+  if (mins < 60) return `${mins} mnt lalu`
+  if (hours < 24) return `${hours} jam lalu`
+  if (days < 7) return `${days} hari lalu`
+  return new Date(ts).toLocaleDateString('id-ID')
+}
+
+function NoteEditor({ entry, onSaved }: { entry: HistoryEntry; onSaved: () => void }) {
+  const [editing, setEditing] = useState(false)
+  const [draft, setDraft] = useState(entry.note ?? '')
+
+  function handleSave() {
+    updateEntryNote(entry.id, draft)
+    onSaved()
+    setEditing(false)
+  }
+
+  if (!editing) {
+    return (
+      <div className="history-note-row">
+        {entry.note ? (
+          <span className="history-note">{entry.note}</span>
+        ) : null}
+        <button
+          className="note-edit-btn"
+          onClick={() => { setDraft(entry.note ?? ''); setEditing(true) }}
+        >
+          {entry.note ? 'Edit catatan' : '+ Catatan'}
+        </button>
+      </div>
+    )
+  }
+
+  return (
+    <div className="history-note-editor">
+      <textarea
+        className="input input--sm"
+        rows={2}
+        maxLength={200}
+        value={draft}
+        autoFocus
+        onChange={(e) => setDraft(e.target.value)}
+        placeholder="Tambah catatan…"
+      />
+      <div className="history-note-editor__btns">
+        <button className="btn btn--secondary btn--sm" onClick={handleSave}>Simpan</button>
+        <button className="btn btn--ghost btn--sm" onClick={() => setEditing(false)}>Batal</button>
+      </div>
+    </div>
+  )
 }
 
 export function HistoryPanel({ entries, onUpdated }: HistoryPanelProps) {
@@ -25,7 +71,7 @@ export function HistoryPanel({ entries, onUpdated }: HistoryPanelProps) {
   }
 
   function handleClearAll() {
-    if (window.confirm('Clear all history entries?')) {
+    if (window.confirm('Hapus semua riwayat kalkulasi?')) {
       clearHistory()
       onUpdated()
     }
@@ -35,8 +81,8 @@ export function HistoryPanel({ entries, onUpdated }: HistoryPanelProps) {
     return (
       <div className="panel">
         <div className="empty-state">
-          <p className="empty-state__msg">No saved calculations yet.</p>
-          <p className="empty-state__hint">Run a calculation and tap "Save to history".</p>
+          <p className="empty-state__msg">Belum ada kalkulasi tersimpan.</p>
+          <p className="empty-state__hint">Hitung dosis lalu tekan "Simpan".</p>
         </div>
       </div>
     )
@@ -45,9 +91,9 @@ export function HistoryPanel({ entries, onUpdated }: HistoryPanelProps) {
   return (
     <div className="panel">
       <div className="history-header">
-        <span className="history-count">{entries.length} saved</span>
+        <span className="history-count">{entries.length} tersimpan</span>
         <button className="btn btn--ghost btn--sm" onClick={handleClearAll}>
-          Clear all
+          Hapus semua
         </button>
       </div>
 
@@ -62,23 +108,24 @@ export function HistoryPanel({ entries, onUpdated }: HistoryPanelProps) {
               <span className="history-entry__time">{formatTime(entry.timestamp)}</span>
             </div>
             <div className="history-entry__inputs">
-              {entry.weight} kg · {entry.dosePerKg} mg/kg · {entry.freq}×/day
+              {entry.weight} kg · {entry.dosePerKg} mg/kg · {entry.freq}×/hari
             </div>
             <div className="history-entry__outputs">
-              <span>Daily: <strong>{entry.dailyDose} mg</strong></span>
-              <span>Per dose: <strong>{entry.perDose} mg</strong></span>
+              <span>Harian: <strong>{entry.dailyDose} mg</strong></span>
+              <span>Per dosis: <strong>{entry.perDose} mg</strong></span>
               {entry.volume != null && (
                 <span>Volume: <strong>{entry.volume} mL</strong></span>
               )}
-              {entry.cappedByMaxDay && <span className="badge badge--warn">Daily cap</span>}
-              {entry.cappedByMaxSingle && <span className="badge badge--warn">Dose cap</span>}
+              {entry.cappedByMaxDay && <span className="badge badge--warn">Cap harian</span>}
+              {entry.cappedByMaxSingle && <span className="badge badge--warn">Cap dosis</span>}
             </div>
+            <NoteEditor entry={entry} onSaved={onUpdated} />
             <button
               className="btn btn--ghost btn--sm history-entry__delete"
               onClick={() => handleDelete(entry.id)}
-              aria-label={`Delete entry for ${entry.drugName}`}
+              aria-label={`Hapus entri ${entry.drugName}`}
             >
-              Delete
+              Hapus
             </button>
           </li>
         ))}

@@ -5,6 +5,7 @@ export interface HistoryEntry {
   timestamp: number
   drugName: string
   patientLabel: string
+  note?: string
   weight: number
   dosePerKg: number
   freq: number
@@ -39,6 +40,13 @@ export function deleteEntry(id: string): void {
 
 export function clearHistory(): void {
   localStorage.removeItem(HISTORY_KEY)
+}
+
+export function updateEntryNote(id: string, note: string): void {
+  const history = loadHistory().map((e) =>
+    e.id === id ? { ...e, note: note.trim() || undefined } : e,
+  )
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(history))
 }
 
 export function generateId(): string {

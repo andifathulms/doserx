@@ -50,6 +50,7 @@ export function ResultCard({
   onSaved,
 }: ResultCardProps) {
   const [label, setLabel] = useState('')
+  const [note, setNote] = useState('')
   const [saved, setSaved] = useState(false)
   const [copied, setCopied] = useState(false)
 
@@ -69,6 +70,7 @@ export function ResultCard({
       timestamp: Date.now(),
       drugName,
       patientLabel: label.trim(),
+      note: note.trim() || undefined,
       weight,
       dosePerKg,
       freq,
@@ -187,6 +189,15 @@ export function ResultCard({
         <button className="btn btn--secondary" onClick={handleSave} disabled={saved}>
           {saved ? 'Tersimpan' : 'Simpan'}
         </button>
+        <textarea
+          className="input input--sm result-card__note-input"
+          placeholder="Catatan (opsional) — misal: hari ke-3, dosis dinaikkan"
+          value={note}
+          maxLength={200}
+          rows={2}
+          onChange={(e) => setNote(e.target.value)}
+          aria-label="Catatan"
+        />
       </div>
     </div>
   )
