@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { ALL_DRUGS, DrugPreset } from '../data/drugs'
+import { DrugGrid } from './DrugGrid'
 import { calculate, CalcResult } from '../lib/calculate'
 import { suggestForms, FormSuggestion } from '../lib/suggest'
 
@@ -12,13 +13,7 @@ interface PuyerEntry {
 }
 
 function makeEntry(drug: DrugPreset): PuyerEntry {
-  return {
-    drug,
-    dosePerKg: String(drug.dosePerKg),
-    freq: String(drug.freq),
-    result: null,
-    suggestions: [],
-  }
+  return { drug, dosePerKg: String(drug.dosePerKg), freq: String(drug.freq), result: null, suggestions: [] }
 }
 
 function freqLabel(freq: number): string {
@@ -37,13 +32,11 @@ export function PuyerPanel({ onHistoryUpdated: _onHistoryUpdated }: PuyerPanelPr
   const [calculated, setCalculated] = useState(false)
   const [weightError, setWeightError] = useState<string | null>(null)
 
-  function toggleDrug(drug: DrugPreset) {
+  function handleToggle(drug: DrugPreset) {
     setCalculated(false)
     setSelectedIds((prev) => {
-      if (prev.includes(drug.id)) {
-        return prev.filter((id) => id !== drug.id)
-      }
-      setEntries((e) => ({ ...e, [drug.id]: makeEntry(drug) }))
+      if (prev.includes(drug.id)) return prev.filter((id) => id !== drug.id)
+      setEntries((e) => ({ ...e, [drug.id]: e[drug.id] ?? makeEntry(drug) }))
       return [...prev, drug.id]
     })
   }
@@ -73,10 +66,9 @@ export function PuyerPanel({ onHistoryUpdated: _onHistoryUpdated }: PuyerPanelPr
         maxSingle: entry.drug.maxSingle,
       })
       const result = out.valid ? out : null
-      const suggestions =
-        result && entry.drug.availableForms
-          ? suggestForms(result.perDose, entry.drug.availableForms)
-          : []
+      const suggestions = result && entry.drug.availableForms
+        ? suggestForms(result.perDose, entry.drug.availableForms)
+        : []
       updated[id] = { ...entry, result, suggestions }
     }
     setEntries((prev) => ({ ...prev, ...updated }))
@@ -92,7 +84,6 @@ export function PuyerPanel({ onHistoryUpdated: _onHistoryUpdated }: PuyerPanelPr
         Pilih 2+ obat, masukkan berat badan, lalu hitung resep puyer sekaligus.
       </p>
 
-      {/* Weight input */}
       <div className="puyer-weight">
         <label className="label" htmlFor="puyer-weight">Berat badan (kg)</label>
         <input
@@ -108,30 +99,19 @@ export function PuyerPanel({ onHistoryUpdated: _onHistoryUpdated }: PuyerPanelPr
         {weightError && <p className="error" style={{ marginTop: 4 }}>{weightError}</p>}
       </div>
 
-      {/* Drug multi-select grid */}
       <div className="puyer-section-label">Pilih obat</div>
-      <div className="drug-grid drug-grid--puyer">
-        {ALL_DRUGS.map((drug) => {
-          const isSelected = selectedIds.includes(drug.id)
-          return (
-            <button
-              key={drug.id}
-              className={`drug-card${isSelected ? ' drug-card--selected' : ''}`}
-              onClick={() => toggleDrug(drug)}
-              aria-pressed={isSelected}
-            >
-              <span className="drug-card__name">{drug.name}</span>
-              <span className="drug-card__route">{drug.route}</span>
-              {isSelected && <span className="drug-card__check">✓</span>}
-            </button>
-          )
-        })}
-      </div>
+      <DrugGrid
+        mode="multi"
+        drugs={ALL_DRUGS}
+        selectedIds={selectedIds}
+        onToggle={handleToggle}
+      />
 
-      {/* Per-drug dose override inputs */}
       {selectedIds.length > 0 && (
         <>
-          <div className="puyer-section-label">Sesuaikan dosis (opsional)</div>
+          <div className="puyer-section-label" style={{ marginTop: 20 }}>
+            Sesuaikan dosis (opsional)
+          </div>
           <div className="puyer-drug-list">
             {orderedEntries.map((entry) => (
               <div key={entry.drug.id} className="puyer-drug-row">
@@ -169,21 +149,18 @@ export function PuyerPanel({ onHistoryUpdated: _onHistoryUpdated }: PuyerPanelPr
             ))}
           </div>
 
-          <button
-            className="btn btn--primary"
-            onClick={handleCalculate}
-            disabled={selectedIds.length < 1}
-          >
+          <button className="btn btn--primary" onClick={handleCalculate}>
             Hitung Puyer
           </button>
         </>
       )}
 
       {selectedIds.length === 0 && (
-        <p className="empty-hint">Pilih minimal 2 obat untuk membuat resep puyer.</p>
+        <p className="empty-hint" style={{ marginTop: 8 }}>
+          Pilih minimal 2 obat untuk membuat resep puyer.
+        </p>
       )}
 
-      {/* Recipe card */}
       {allCalculated && orderedEntries.length > 0 && (
         <div className="puyer-recipe">
           <div className="puyer-recipe__header">
@@ -195,10 +172,10 @@ export function PuyerPanel({ onHistoryUpdated: _onHistoryUpdated }: PuyerPanelPr
             {orderedEntries.map((entry) => {
               if (!entry.result) return null
               const solidSuggestions = entry.suggestions.filter(
-                (s) => s.form === 'tablet' || s.form === 'capsule'
+                (s) => s.form === 'tablet' || s.form === 'capsule',
               )
               const liquidSuggestions = entry.suggestions.filter(
-                (s) => s.form === 'syrup' || s.form === 'drop'
+                (s) => s.form === 'syrup' || s.form === 'drop',
               )
               return (
                 <li key={entry.drug.id} className="puyer-recipe__item">
