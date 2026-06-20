@@ -37,77 +37,77 @@ export function CustomPanel({ onHistoryUpdated }: CustomPanelProps) {
     <div className="panel">
       <div className="form">
         <div className="field field--full">
-          <label className="label" htmlFor="custom-drug">Drug name</label>
+          <label className="label" htmlFor="custom-drug">Nama obat</label>
           <input
             id="custom-drug"
             className="input"
             type="text"
-            placeholder="e.g. Metronidazole"
+            placeholder="misal Metronidazole"
             value={drugName}
             onChange={(e) => { setDrugName(e.target.value); setResult(null) }}
           />
         </div>
         <div className="field">
-          <label className="label" htmlFor="custom-weight">Weight (kg)</label>
+          <label className="label" htmlFor="custom-weight">Berat badan (kg)</label>
           <input
             id="custom-weight"
             className="input"
             type="number"
             min="0"
             step="0.1"
-            placeholder="e.g. 25"
+            placeholder="misal 25"
             value={weight}
             onChange={(e) => { setWeight(e.target.value); setResult(null) }}
           />
         </div>
         <div className="field">
-          <label className="label" htmlFor="custom-dose">Dose (mg/kg)</label>
+          <label className="label" htmlFor="custom-dose">Dosis (mg/kg)</label>
           <input
             id="custom-dose"
             className="input"
             type="number"
             min="0"
             step="0.01"
-            placeholder="e.g. 7.5"
+            placeholder="misal 7.5"
             value={dosePerKg}
             onChange={(e) => { setDosePerKg(e.target.value); setResult(null) }}
           />
         </div>
         <div className="field">
-          <label className="label" htmlFor="custom-freq">Doses/day</label>
+          <label className="label" htmlFor="custom-freq">Frekuensi/hari</label>
           <input
             id="custom-freq"
             className="input"
             type="number"
             min="1"
             step="1"
-            placeholder="e.g. 3"
+            placeholder="misal 3"
             value={freq}
             onChange={(e) => { setFreq(e.target.value); setResult(null) }}
           />
         </div>
         <div className="field">
-          <label className="label" htmlFor="custom-maxday">Max daily dose (mg) <span className="label--optional">optional</span></label>
+          <label className="label" htmlFor="custom-maxday">Dosis maks/hari (mg) <span className="label--optional">opsional</span></label>
           <input
             id="custom-maxday"
             className="input"
             type="number"
             min="0"
             step="1"
-            placeholder="e.g. 2000"
+            placeholder="misal 2000"
             value={maxDay}
             onChange={(e) => { setMaxDay(e.target.value); setResult(null) }}
           />
         </div>
         <div className="field">
-          <label className="label" htmlFor="custom-conc">Stock concentration (mg/mL) <span className="label--optional">optional</span></label>
+          <label className="label" htmlFor="custom-conc">Konsentrasi stok (mg/mL) <span className="label--optional">opsional</span></label>
           <input
             id="custom-conc"
             className="input"
             type="number"
             min="0"
             step="0.1"
-            placeholder="e.g. 50"
+            placeholder="misal 50"
             value={concentration}
             onChange={(e) => { setConcentration(e.target.value); setResult(null) }}
           />
@@ -117,13 +117,13 @@ export function CustomPanel({ onHistoryUpdated }: CustomPanelProps) {
       {error && <p className="error">{error}</p>}
 
       <button className="btn btn--primary" onClick={handleCalculate}>
-        Calculate
+        Hitung
       </button>
 
       {result && (
         <ResultCard
           result={result}
-          drugName={drugName || 'Custom drug'}
+          drugName={drugName || 'Obat kustom'}
           weight={parseFloat(weight)}
           dosePerKg={parseFloat(dosePerKg)}
           freq={parseFloat(freq)}

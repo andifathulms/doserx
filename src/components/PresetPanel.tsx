@@ -15,6 +15,8 @@ export function PresetPanel({ onHistoryUpdated }: PresetPanelProps) {
   const [freq, setFreq] = useState('')
   const [concentration, setConcentration] = useState('')
   const [result, setResult] = useState<CalcResult | null>(null)
+  const [resultMin, setResultMin] = useState<CalcResult | null>(null)
+  const [resultMax, setResultMax] = useState<CalcResult | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   function handleSelect(drug: DrugPreset) {
@@ -23,25 +25,43 @@ export function PresetPanel({ onHistoryUpdated }: PresetPanelProps) {
     setFreq(String(drug.freq))
     setConcentration(drug.concentration != null ? String(drug.concentration) : '')
     setResult(null)
+    setResultMin(null)
+    setResultMax(null)
     setError(null)
   }
 
   function handleCalculate() {
     if (!selected) return
-    const out = calculate({
+
+    const base = {
       weight: parseFloat(weight),
-      dosePerKg: parseFloat(dosePerKg),
       freq: parseFloat(freq),
       maxDay: selected.maxDay,
       maxSingle: selected.maxSingle,
       concentration: concentration ? parseFloat(concentration) : undefined,
-    })
+    }
+
+    const out = calculate({ ...base, dosePerKg: parseFloat(dosePerKg) })
+
     if (!out.valid) {
       setError(out.error)
       setResult(null)
+      setResultMin(null)
+      setResultMax(null)
+      return
+    }
+
+    setError(null)
+    setResult(out)
+
+    if (selected.dosePerKgMin != null && selected.dosePerKgMax != null) {
+      const outMin = calculate({ ...base, dosePerKg: selected.dosePerKgMin })
+      const outMax = calculate({ ...base, dosePerKg: selected.dosePerKgMax })
+      setResultMin(outMin.valid ? outMin : null)
+      setResultMax(outMax.valid ? outMax : null)
     } else {
-      setError(null)
-      setResult(out)
+      setResultMin(null)
+      setResultMax(null)
     }
   }
 
@@ -51,24 +71,36 @@ export function PresetPanel({ onHistoryUpdated }: PresetPanelProps) {
 
       {selected && (
         <>
-          <div className="drug-note">{selected.note}</div>
+          <div className="drug-note">
+            {selected.dosePerKgMin != null && selected.dosePerKgMax != null && (
+              <span className="drug-note__range">
+                Range: {selected.dosePerKgMin}–{selected.dosePerKgMax} mg/kg ·{' '}
+              </span>
+            )}
+            {selected.note}
+          </div>
 
           <div className="form">
             <div className="field">
-              <label className="label" htmlFor="preset-weight">Weight (kg)</label>
+              <label className="label" htmlFor="preset-weight">Berat badan (kg)</label>
               <input
                 id="preset-weight"
                 className="input"
                 type="number"
                 min="0"
                 step="0.1"
-                placeholder="e.g. 25"
+                placeholder="misal 25"
                 value={weight}
                 onChange={(e) => { setWeight(e.target.value); setResult(null) }}
               />
             </div>
             <div className="field">
-              <label className="label" htmlFor="preset-dose">Dose (mg/kg)</label>
+              <label className="label" htmlFor="preset-dose">
+                Dosis (mg/kg)
+                {selected.dosePerKgMin != null && selected.dosePerKgMax != null && (
+                  <span className="label--range"> [{selected.dosePerKgMin}–{selected.dosePerKgMax}]</span>
+                )}
+              </label>
               <input
                 id="preset-dose"
                 className="input"
@@ -80,7 +112,7 @@ export function PresetPanel({ onHistoryUpdated }: PresetPanelProps) {
               />
             </div>
             <div className="field">
-              <label className="label" htmlFor="preset-freq">Doses/day</label>
+              <label className="label" htmlFor="preset-freq">Frekuensi/hari</label>
               <input
                 id="preset-freq"
                 className="input"
@@ -92,14 +124,16 @@ export function PresetPanel({ onHistoryUpdated }: PresetPanelProps) {
               />
             </div>
             <div className="field">
-              <label className="label" htmlFor="preset-conc">Stock concentration (mg/mL)</label>
+              <label className="label" htmlFor="preset-conc">
+                Konsentrasi stok (mg/mL) <span className="label--optional">opsional</span>
+              </label>
               <input
                 id="preset-conc"
                 className="input"
                 type="number"
                 min="0"
                 step="0.1"
-                placeholder="optional"
+                placeholder="opsional"
                 value={concentration}
                 onChange={(e) => { setConcentration(e.target.value); setResult(null) }}
               />
@@ -109,17 +143,22 @@ export function PresetPanel({ onHistoryUpdated }: PresetPanelProps) {
           {error && <p className="error">{error}</p>}
 
           <button className="btn btn--primary" onClick={handleCalculate}>
-            Calculate
+            Hitung
           </button>
 
           {result && (
             <ResultCard
               result={result}
+              resultMin={resultMin ?? undefined}
+              resultMax={resultMax ?? undefined}
+              dosePerKgMin={selected.dosePerKgMin}
+              dosePerKgMax={selected.dosePerKgMax}
               drugName={selected.name}
               weight={parseFloat(weight)}
               dosePerKg={parseFloat(dosePerKg)}
               freq={parseFloat(freq)}
               concentration={concentration ? parseFloat(concentration) : undefined}
+              availableForms={selected.availableForms}
               onSaved={onHistoryUpdated}
             />
           )}
@@ -127,7 +166,7 @@ export function PresetPanel({ onHistoryUpdated }: PresetPanelProps) {
       )}
 
       {!selected && (
-        <p className="empty-hint">Select a drug above to begin.</p>
+        <p className="empty-hint">Pilih obat di atas untuk mulai.</p>
       )}
     </div>
   )
