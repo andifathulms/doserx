@@ -4,6 +4,22 @@ import { HistoryEntry, generateId, saveEntry } from '../lib/storage'
 import { DrugForm } from '../data/drugs'
 import { suggestForms } from '../lib/suggest'
 
+function buildResultText(
+  drugName: string,
+  weight: number,
+  freq: number,
+  result: CalcResult,
+): string {
+  const lines: string[] = [`${drugName} — ${weight} kg`]
+  if (result.cappedByMaxDay) lines.push('⚠ Dosis harian dikurangi ke maksimum')
+  if (result.cappedByMaxSingle) lines.push('⚠ Dosis per takaran dikurangi ke maksimum')
+  lines.push(`Dosis harian : ${result.dailyDose} mg/hari`)
+  lines.push(`Per dosis    : ${result.perDose} mg × ${freq}×/hari`)
+  if (result.volume != null) lines.push(`Volume       : ${result.volume} mL/dosis`)
+  lines.push('— DoseRx')
+  return lines.join('\n')
+}
+
 interface ResultCardProps {
   result: CalcResult         // result at typical/selected dose
   resultMin?: CalcResult     // result at min dose (range low end)
@@ -35,6 +51,12 @@ export function ResultCard({
 }: ResultCardProps) {
   const [label, setLabel] = useState('')
   const [saved, setSaved] = useState(false)
+  const [copied, setCopied] = useState(false)
+
+  function handleCopy() {
+    navigator.clipboard.writeText(buildResultText(drugName, weight, freq, result))
+      .then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000) })
+  }
 
   const hasRange = resultMin != null && resultMax != null
   const suggestions = availableForms?.length
@@ -145,6 +167,12 @@ export function ResultCard({
           </div>
         </div>
       )}
+
+      <div className="result-card__actions">
+        <button className="btn btn--ghost btn--sm" onClick={handleCopy}>
+          {copied ? '✓ Disalin' : 'Salin'}
+        </button>
+      </div>
 
       <div className="result-card__save">
         <input

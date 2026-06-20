@@ -40,6 +40,86 @@ function formatQty(n: number, unit: string): string {
   return `${n} ${unit}`
 }
 
+function buildRecipeText(
+  orderedEntries: PuyerEntry[],
+  weight: string,
+  numDays: number,
+): string {
+  const lines: string[] = [`RESEP PUYER — ${weight} kg, ${numDays} hari`, '─'.repeat(36)]
+  for (const entry of orderedEntries) {
+    if (!entry.result) continue
+    const freq = parseFloat(entry.freq)
+    const totalBungkus = freq * numDays
+    lines.push(entry.drug.name)
+    lines.push(`  ${entry.result.perDose} mg/dosis · ${freqLabel(freq)} · ${totalBungkus} bungkus`)
+    const solidS = entry.suggestions.filter((s) => s.form === 'tablet' || s.form === 'capsule')
+    for (const s of solidS) {
+      const totalUnits = round2((entry.result.perDose * totalBungkus) / s.strength)
+      const unit = s.form === 'capsule' ? 'kap' : 'tab'
+      lines.push(`  → ${s.display} × ${totalBungkus} bungkus = ${formatQty(totalUnits, unit)}`)
+    }
+    const liquidS = entry.suggestions.filter((s) => s.form === 'syrup' || s.form === 'drop')
+    for (const s of liquidS) {
+      const totalMl = round2((entry.result.perDose * totalBungkus) / s.strength)
+      lines.push(`  → ${s.display} × ${totalBungkus} bungkus = ${totalMl} mL`)
+    }
+  }
+  lines.push('─'.repeat(36))
+  lines.push('Dibuat dengan DoseRx — hanya untuk referensi.')
+  return lines.join('\n')
+}
+
+function buildRecipePrintHtml(
+  orderedEntries: PuyerEntry[],
+  weight: string,
+  numDays: number,
+): string {
+  const date = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+  const drugsHtml = orderedEntries.map((entry) => {
+    if (!entry.result) return ''
+    const freq = parseFloat(entry.freq)
+    const totalBungkus = freq * numDays
+    const solidS = entry.suggestions.filter((s) => s.form === 'tablet' || s.form === 'capsule')
+    const liquidS = entry.suggestions.filter((s) => s.form === 'syrup' || s.form === 'drop')
+    const formsHtml = [
+      ...solidS.map((s) => {
+        const total = round2((entry.result!.perDose * totalBungkus) / s.strength)
+        const unit = s.form === 'capsule' ? 'kap' : 'tab'
+        return `<div class="form-line">→ ${s.display} × ${totalBungkus} bungkus = <strong>${formatQty(total, unit)}</strong></div>`
+      }),
+      ...liquidS.map((s) => {
+        const total = round2((entry.result!.perDose * totalBungkus) / s.strength)
+        return `<div class="form-line">→ ${s.display} × ${totalBungkus} bungkus = <strong>${total} mL</strong></div>`
+      }),
+    ].join('')
+    return `
+      <div class="drug">
+        <div class="drug-name">${entry.drug.name}</div>
+        <div class="dose-line">${entry.result.perDose} mg/dosis · ${freqLabel(freq)} · ${totalBungkus} bungkus</div>
+        ${formsHtml}
+      </div>`
+  }).join('')
+
+  return `<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8">
+<title>Resep Puyer — DoseRx</title>
+<style>
+  body{font-family:system-ui,sans-serif;padding:24px;color:#1e293b;max-width:520px}
+  h1{font-size:1.1rem;font-weight:700;margin-bottom:2px}
+  .meta{color:#64748b;font-size:.85rem;margin-bottom:16px}
+  .drug{margin-bottom:10px;border-top:1px solid #e2e8f0;padding-top:10px}
+  .drug-name{font-weight:600}
+  .dose-line{color:#475569;font-size:.875rem;margin:2px 0}
+  .form-line{font-size:.85rem;color:#334155;margin:2px 0 2px 10px}
+  .footer{margin-top:16px;padding-top:10px;border-top:1px solid #e2e8f0;font-size:.75rem;color:#94a3b8}
+</style>
+</head><body>
+<h1>Resep Puyer</h1>
+<div class="meta">${weight} kg &middot; ${numDays} hari &middot; ${date}</div>
+${drugsHtml}
+<div class="footer">Dibuat dengan DoseRx &mdash; Hanya untuk referensi kalkulasi. Verifikasi terhadap panduan klinis sebelum digunakan.</div>
+</body></html>`
+}
+
 interface PuyerPanelProps {
   onHistoryUpdated: () => void
 }
@@ -52,6 +132,7 @@ export function PuyerPanel({ onHistoryUpdated: _onHistoryUpdated }: PuyerPanelPr
   const [gridOpen, setGridOpen] = useState(true)
   const [calculated, setCalculated] = useState(false)
   const [weightError, setWeightError] = useState<string | null>(null)
+  const [copied, setCopied] = useState(false)
 
   const formRef = useRef<HTMLDivElement>(null)
 
@@ -119,6 +200,20 @@ export function PuyerPanel({ onHistoryUpdated: _onHistoryUpdated }: PuyerPanelPr
   const orderedEntries = selectedIds.map((id) => entries[id]).filter(Boolean)
   const allCalculated = calculated && orderedEntries.every((e) => e.result !== null)
   const numDays = Math.max(1, parseInt(days) || 1)
+
+  function handleCopyRecipe() {
+    navigator.clipboard.writeText(buildRecipeText(orderedEntries, weight, numDays))
+      .then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000) })
+  }
+
+  function handlePrintRecipe() {
+    const popup = window.open('', '_blank', 'width=600,height=700')
+    if (!popup) return
+    popup.document.write(buildRecipePrintHtml(orderedEntries, weight, numDays))
+    popup.document.close()
+    popup.focus()
+    popup.print()
+  }
 
   return (
     <div className="panel">
@@ -349,6 +444,15 @@ export function PuyerPanel({ onHistoryUpdated: _onHistoryUpdated }: PuyerPanelPr
                       </div>
                     )
                   })}
+              </div>
+
+              <div className="puyer-recipe__actions">
+                <button className="btn btn--ghost btn--sm" onClick={handleCopyRecipe}>
+                  {copied ? '✓ Disalin' : 'Salin Resep'}
+                </button>
+                <button className="btn btn--ghost btn--sm" onClick={handlePrintRecipe}>
+                  Cetak
+                </button>
               </div>
 
               <div className="puyer-recipe__footer">

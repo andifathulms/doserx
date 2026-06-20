@@ -1176,12 +1176,24 @@ body::before {
   font-weight: 700;
 }
 
+.puyer-recipe__actions {
+  display: flex;
+  gap: 8px;
+  padding: 10px 0 4px;
+}
+
 .puyer-recipe__footer {
   font-size: .8rem;
   color: var(--c-text-3);
   line-height: 1.6;
   padding-top: 12px;
   border-top: 1px solid var(--c-border);
+}
+
+.result-card__actions {
+  display: flex;
+  gap: 8px;
+  padding: 4px 0 2px;
 }
 
 /* ── Responsive ───────────────────────────────────────────────────────────── */
