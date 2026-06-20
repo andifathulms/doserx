@@ -756,6 +756,119 @@ body::before {
   padding: 28px 0;
 }
 
+/* ── Selected drug bar (Preset — collapsed state) ────────────────────────── */
+.selected-drug-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  padding: 11px 14px;
+  margin-bottom: 14px;
+  background: var(--c-primary-bg);
+  border: 1.5px solid var(--c-primary-bdr);
+  border-radius: var(--r);
+  cursor: pointer;
+  transition: background .15s, border-color .15s;
+  text-align: left;
+}
+
+.selected-drug-bar:hover {
+  background: var(--blue-100);
+  border-color: var(--c-primary);
+}
+
+.selected-drug-bar__info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.selected-drug-bar__dot {
+  flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--c-border-mid);
+}
+
+/* ── Dot gets category color when data-cat is set ─────────────────────────── */
+.selected-drug-bar__dot[data-cat="Gawat Darurat"]    { background: #ef4444; }
+.selected-drug-bar__dot[data-cat="Analgesik/NSAID"]  { background: #f97316; }
+.selected-drug-bar__dot[data-cat="Antiinfeksi"]      { background: #2563eb; }
+.selected-drug-bar__dot[data-cat="Antiparasit"]      { background: #16a34a; }
+.selected-drug-bar__dot[data-cat="Antikonvulsan"]    { background: #9333ea; }
+.selected-drug-bar__dot[data-cat="Kardiovaskular"]   { background: #e11d48; }
+.selected-drug-bar__dot[data-cat="Pulmologi"]        { background: #0284c7; }
+.selected-drug-bar__dot[data-cat="Gastrointestinal"] { background: #d97706; }
+.selected-drug-bar__dot[data-cat="Kortikosteroid"]   { background: #7c3aed; }
+.selected-drug-bar__dot[data-cat="Vitamin/Mineral"]  { background: #65a30d; }
+.selected-drug-bar__dot[data-cat="Antimalarial"]     { background: #0d9488; }
+.selected-drug-bar__dot[data-cat="Lain-lain"]        { background: #64748b; }
+
+.selected-drug-bar__name {
+  font-size: .9375rem;
+  font-weight: 700;
+  color: var(--c-text);
+  letter-spacing: -.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.selected-drug-bar__route {
+  font-size: .75rem;
+  color: var(--c-text-3);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.selected-drug-bar__change {
+  flex-shrink: 0;
+  font-size: .8125rem;
+  font-weight: 600;
+  color: var(--c-primary);
+  white-space: nowrap;
+}
+
+/* ── Selected drugs summary (Puyer — collapsed state) ────────────────────── */
+.selected-drugs-summary {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+  padding: 12px 14px;
+  background: var(--c-primary-bg);
+  border: 1.5px solid var(--c-primary-bdr);
+  border-radius: var(--r);
+}
+
+.selected-drugs-summary__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  flex: 1;
+}
+
+.drug-chip {
+  display: inline-flex;
+  align-items: center;
+  font-size: .75rem;
+  font-weight: 600;
+  padding: 2px 9px;
+  border-radius: var(--r-full);
+  background: var(--c-surface);
+  border: 1.5px solid var(--c-border-mid);
+  color: var(--c-text-2);
+}
+
+/* ── Puyer "proceed" button ───────────────────────────────────────────────── */
+.puyer-proceed-btn {
+  margin-top: 14px;
+}
+
 /* ── Panel wrapper ────────────────────────────────────────────────────────── */
 .panel { padding-bottom: 8px; }
 

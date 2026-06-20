@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { DrugGrid } from './DrugGrid'
 import { ResultCard } from './ResultCard'
 import { DrugPreset } from '../data/drugs'
@@ -10,6 +10,7 @@ interface PresetPanelProps {
 
 export function PresetPanel({ onHistoryUpdated }: PresetPanelProps) {
   const [selected, setSelected] = useState<DrugPreset | null>(null)
+  const [gridOpen, setGridOpen] = useState(true)
   const [weight, setWeight] = useState('')
   const [dosePerKg, setDosePerKg] = useState('')
   const [freq, setFreq] = useState('')
@@ -19,11 +20,26 @@ export function PresetPanel({ onHistoryUpdated }: PresetPanelProps) {
   const [resultMax, setResultMax] = useState<CalcResult | null>(null)
   const [error, setError] = useState<string | null>(null)
 
+  const formRef = useRef<HTMLDivElement>(null)
+
   function handleSelect(drug: DrugPreset) {
     setSelected(drug)
+    setGridOpen(false)
     setDosePerKg(String(drug.dosePerKg))
     setFreq(String(drug.freq))
     setConcentration(drug.concentration != null ? String(drug.concentration) : '')
+    setResult(null)
+    setResultMin(null)
+    setResultMax(null)
+    setError(null)
+    requestAnimationFrame(() =>
+      formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    )
+  }
+
+  function handleChangeDrug() {
+    setGridOpen(true)
+    setSelected(null)
     setResult(null)
     setResultMin(null)
     setResultMax(null)
@@ -67,10 +83,27 @@ export function PresetPanel({ onHistoryUpdated }: PresetPanelProps) {
 
   return (
     <div className="panel">
-      <DrugGrid selected={selected?.id ?? null} onSelect={handleSelect} />
 
-      {selected && (
+      {/* ── Drug selection ─────────────────────────────── */}
+      {gridOpen ? (
         <>
+          <DrugGrid selected={selected?.id ?? null} onSelect={handleSelect} />
+          {!selected && <p className="empty-hint">Pilih obat di atas untuk mulai.</p>}
+        </>
+      ) : selected && (
+        <button className="selected-drug-bar" onClick={handleChangeDrug}>
+          <div className="selected-drug-bar__info">
+            <span className="selected-drug-bar__dot" data-cat={selected.category} />
+            <span className="selected-drug-bar__name">{selected.name}</span>
+            <span className="selected-drug-bar__route">{selected.route}</span>
+          </div>
+          <span className="selected-drug-bar__change">Ganti obat ↓</span>
+        </button>
+      )}
+
+      {/* ── Calculator form ─────────────────────────────── */}
+      {selected && !gridOpen && (
+        <div ref={formRef}>
           <div className="drug-note">
             {selected.dosePerKgMin != null && selected.dosePerKgMax != null && (
               <span className="drug-note__range">
@@ -91,6 +124,7 @@ export function PresetPanel({ onHistoryUpdated }: PresetPanelProps) {
                 step="0.1"
                 placeholder="misal 25"
                 value={weight}
+                autoFocus
                 onChange={(e) => { setWeight(e.target.value); setResult(null) }}
               />
             </div>
@@ -162,11 +196,7 @@ export function PresetPanel({ onHistoryUpdated }: PresetPanelProps) {
               onSaved={onHistoryUpdated}
             />
           )}
-        </>
-      )}
-
-      {!selected && (
-        <p className="empty-hint">Pilih obat di atas untuk mulai.</p>
+        </div>
       )}
     </div>
   )
