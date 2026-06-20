@@ -3,13 +3,16 @@ import { DrugGrid } from './DrugGrid'
 import { ResultCard } from './ResultCard'
 import { WeightInput } from './WeightInput'
 import { DrugPreset } from '../data/drugs'
+import { CustomDrugPreset, deleteCustomDrug } from '../lib/storage'
 import { calculate, CalcResult } from '../lib/calculate'
 
 interface PresetPanelProps {
   onHistoryUpdated: () => void
+  customDrugs: CustomDrugPreset[]
+  onCustomDrugDeleted: () => void
 }
 
-export function PresetPanel({ onHistoryUpdated }: PresetPanelProps) {
+export function PresetPanel({ onHistoryUpdated, customDrugs, onCustomDrugDeleted }: PresetPanelProps) {
   const [selected, setSelected] = useState<DrugPreset | null>(null)
   const [gridOpen, setGridOpen] = useState(true)
   const [weight, setWeight] = useState('')
@@ -36,6 +39,22 @@ export function PresetPanel({ onHistoryUpdated }: PresetPanelProps) {
     requestAnimationFrame(() =>
       formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
     )
+  }
+
+  function handleSelectCustom(drug: CustomDrugPreset) {
+    const asDrugPreset: DrugPreset = {
+      id: drug.id,
+      name: drug.name,
+      route: 'Oral',
+      category: 'Lain-lain',
+      dosePerKg: drug.dosePerKg,
+      freq: drug.freq,
+      maxDay: drug.maxDay,
+      concentration: drug.concentration,
+      note: drug.note || 'Preset kustom',
+      forPuyer: false,
+    }
+    handleSelect(asDrugPreset)
   }
 
   function handleChangeDrug() {
@@ -91,6 +110,34 @@ export function PresetPanel({ onHistoryUpdated }: PresetPanelProps) {
       {/* ── Drug selection ─────────────────────────────── */}
       {gridOpen ? (
         <>
+          {customDrugs.length > 0 && (
+            <div className="custom-drugs-section">
+              <div className="drug-category-label custom-drugs-section__label">
+                Preset Saya
+              </div>
+              <div className="drug-grid custom-drugs-grid">
+                {customDrugs.map((drug) => (
+                  <div key={drug.id} className={`drug-card custom-drug-card${selected?.id === drug.id ? ' drug-card--selected' : ''}`}>
+                    <button
+                      className="custom-drug-card__select"
+                      onClick={() => handleSelectCustom(drug)}
+                    >
+                      <span className="drug-card__name">{drug.name}</span>
+                      <span className="drug-card__route">{drug.dosePerKg} mg/kg · {drug.freq}×</span>
+                    </button>
+                    <button
+                      className="custom-drug-card__delete"
+                      onClick={() => { deleteCustomDrug(drug.id); onCustomDrugDeleted() }}
+                      aria-label={`Hapus preset ${drug.name}`}
+                      title="Hapus preset"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
           <DrugGrid selected={selected?.id ?? null} onSelect={handleSelect} />
           {!selected && <p className="empty-hint">Pilih obat di atas untuk mulai.</p>}
         </>

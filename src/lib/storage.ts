@@ -1,4 +1,40 @@
 const HISTORY_KEY = 'doserx_history'
+const CUSTOM_DRUGS_KEY = 'doserx_custom_drugs'
+
+// ── Custom drug presets ───────────────────────────────────────────────────────
+
+export interface CustomDrugPreset {
+  id: string
+  name: string
+  dosePerKg: number
+  freq: number
+  maxDay?: number
+  maxSingle?: number
+  concentration?: number
+  note: string
+  createdAt: number
+}
+
+export function loadCustomDrugs(): CustomDrugPreset[] {
+  try {
+    const raw = localStorage.getItem(CUSTOM_DRUGS_KEY)
+    if (!raw) return []
+    return JSON.parse(raw) as CustomDrugPreset[]
+  } catch {
+    return []
+  }
+}
+
+export function saveCustomDrug(drug: CustomDrugPreset): void {
+  const drugs = loadCustomDrugs()
+  drugs.unshift(drug)
+  localStorage.setItem(CUSTOM_DRUGS_KEY, JSON.stringify(drugs))
+}
+
+export function deleteCustomDrug(id: string): void {
+  const drugs = loadCustomDrugs().filter((d) => d.id !== id)
+  localStorage.setItem(CUSTOM_DRUGS_KEY, JSON.stringify(drugs))
+}
 
 export interface HistoryEntry {
   id: string

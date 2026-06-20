@@ -2,12 +2,14 @@ import { useState } from 'react'
 import { ResultCard } from './ResultCard'
 import { WeightInput } from './WeightInput'
 import { calculate, CalcResult } from '../lib/calculate'
+import { saveCustomDrug, generateId } from '../lib/storage'
 
 interface CustomPanelProps {
   onHistoryUpdated: () => void
+  onPresetSaved: () => void
 }
 
-export function CustomPanel({ onHistoryUpdated }: CustomPanelProps) {
+export function CustomPanel({ onHistoryUpdated, onPresetSaved }: CustomPanelProps) {
   const [drugName, setDrugName] = useState('')
   const [weight, setWeight] = useState('')
   const [dosePerKg, setDosePerKg] = useState('')
@@ -16,6 +18,10 @@ export function CustomPanel({ onHistoryUpdated }: CustomPanelProps) {
   const [concentration, setConcentration] = useState('')
   const [result, setResult] = useState<CalcResult | null>(null)
   const [error, setError] = useState<string | null>(null)
+
+  const [savingPreset, setSavingPreset] = useState(false)
+  const [presetNote, setPresetNote] = useState('')
+  const [presetSaved, setPresetSaved] = useState(false)
 
   function handleCalculate() {
     const out = calculate({
@@ -32,6 +38,33 @@ export function CustomPanel({ onHistoryUpdated }: CustomPanelProps) {
       setError(null)
       setResult(out)
     }
+  }
+
+  function canSavePreset(): boolean {
+    return (
+      drugName.trim().length > 0 &&
+      isFinite(parseFloat(dosePerKg)) && parseFloat(dosePerKg) > 0 &&
+      isFinite(parseFloat(freq)) && parseFloat(freq) > 0
+    )
+  }
+
+  function handleSavePreset() {
+    if (!canSavePreset()) return
+    saveCustomDrug({
+      id: generateId(),
+      name: drugName.trim(),
+      dosePerKg: parseFloat(dosePerKg),
+      freq: parseFloat(freq),
+      maxDay: maxDay ? parseFloat(maxDay) : undefined,
+      concentration: concentration ? parseFloat(concentration) : undefined,
+      note: presetNote.trim(),
+      createdAt: Date.now(),
+    })
+    setSavingPreset(false)
+    setPresetNote('')
+    setPresetSaved(true)
+    onPresetSaved()
+    setTimeout(() => setPresetSaved(false), 2500)
   }
 
   return (
@@ -112,6 +145,42 @@ export function CustomPanel({ onHistoryUpdated }: CustomPanelProps) {
       <button className="btn btn--primary" onClick={handleCalculate}>
         Hitung
       </button>
+
+      {/* Save as preset */}
+      {canSavePreset() && !savingPreset && (
+        <div className="save-preset-row">
+          {presetSaved ? (
+            <span className="save-preset-confirm">✓ Preset tersimpan di tab Preset</span>
+          ) : (
+            <button className="btn btn--ghost btn--sm" onClick={() => setSavingPreset(true)}>
+              + Simpan sebagai preset
+            </button>
+          )}
+        </div>
+      )}
+
+      {savingPreset && (
+        <div className="save-preset-panel">
+          <div className="save-preset-panel__title">Simpan "{drugName}" sebagai preset</div>
+          <div className="field">
+            <label className="label" htmlFor="preset-note-field">Catatan klinis <span className="label--optional">opsional</span></label>
+            <input
+              id="preset-note-field"
+              className="input input--sm"
+              type="text"
+              maxLength={120}
+              placeholder="misal: untuk ISK anak, 5–7 hari"
+              value={presetNote}
+              autoFocus
+              onChange={(e) => setPresetNote(e.target.value)}
+            />
+          </div>
+          <div className="save-preset-panel__btns">
+            <button className="btn btn--secondary btn--sm" onClick={handleSavePreset}>Simpan Preset</button>
+            <button className="btn btn--ghost btn--sm" onClick={() => setSavingPreset(false)}>Batal</button>
+          </div>
+        </div>
+      )}
 
       {result && (
         <ResultCard

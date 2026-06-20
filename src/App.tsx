@@ -4,7 +4,7 @@ import { PresetPanel } from './components/PresetPanel'
 import { CustomPanel } from './components/CustomPanel'
 import { HistoryPanel } from './components/HistoryPanel'
 import { PuyerPanel } from './components/PuyerPanel'
-import { loadHistory, HistoryEntry } from './lib/storage'
+import { loadHistory, loadCustomDrugs, HistoryEntry, CustomDrugPreset } from './lib/storage'
 
 const TABS = [
   { id: 'preset', label: 'Preset' },
@@ -16,9 +16,14 @@ const TABS = [
 function App() {
   const [activeTab, setActiveTab] = useState('preset')
   const [history, setHistory] = useState<HistoryEntry[]>(() => loadHistory())
+  const [customDrugs, setCustomDrugs] = useState<CustomDrugPreset[]>(() => loadCustomDrugs())
 
   const refreshHistory = useCallback(() => {
     setHistory(loadHistory())
+  }, [])
+
+  const refreshCustomDrugs = useCallback(() => {
+    setCustomDrugs(loadCustomDrugs())
   }, [])
 
   function handleTabChange(id: string) {
@@ -40,10 +45,17 @@ function App() {
         <Tabs tabs={TABS} active={activeTab} onChange={handleTabChange} />
 
         {activeTab === 'preset' && (
-          <PresetPanel onHistoryUpdated={refreshHistory} />
+          <PresetPanel
+            onHistoryUpdated={refreshHistory}
+            customDrugs={customDrugs}
+            onCustomDrugDeleted={refreshCustomDrugs}
+          />
         )}
         {activeTab === 'custom' && (
-          <CustomPanel onHistoryUpdated={refreshHistory} />
+          <CustomPanel
+            onHistoryUpdated={refreshHistory}
+            onPresetSaved={refreshCustomDrugs}
+          />
         )}
         {activeTab === 'puyer' && (
           <PuyerPanel onHistoryUpdated={refreshHistory} />
