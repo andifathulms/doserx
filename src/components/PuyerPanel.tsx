@@ -297,7 +297,9 @@ export function PuyerPanel({ onHistoryUpdated: _onHistoryUpdated }: PuyerPanelPr
                       {solidS.length > 0 && (
                         <div className="puyer-recipe__forms-block">
                           {solidS.map((s, i) => {
-                            const totalUnits = round2(s.count * totalBungkus)
+                            // Total tabs = exact mg needed ÷ tablet strength
+                            // NOT rounded-fraction × bungkus (that inflates the total)
+                            const totalUnits = round2((entry.result!.perDose * totalBungkus) / s.strength)
                             const unit = s.form === 'capsule' ? 'kap' : 'tab'
                             return (
                               <div key={i} className="puyer-form-row">
@@ -314,7 +316,7 @@ export function PuyerPanel({ onHistoryUpdated: _onHistoryUpdated }: PuyerPanelPr
                       {liquidS.length > 0 && (
                         <div className="puyer-recipe__forms-block">
                           {liquidS.map((s, i) => {
-                            const totalMl = round2(s.count * totalBungkus)
+                            const totalMl = round2((entry.result!.perDose * totalBungkus) / s.strength)
                             return (
                               <div key={i} className="puyer-form-row">
                                 <span className="suggestion-chip suggestion-chip--liquid">{s.display}</span>
