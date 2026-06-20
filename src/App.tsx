@@ -4,12 +4,14 @@ import { PresetPanel } from './components/PresetPanel'
 import { CustomPanel } from './components/CustomPanel'
 import { HistoryPanel } from './components/HistoryPanel'
 import { PuyerPanel } from './components/PuyerPanel'
+import { InfusionPanel } from './components/InfusionPanel'
 import { loadHistory, loadCustomDrugs, HistoryEntry, CustomDrugPreset } from './lib/storage'
 
 const TABS = [
   { id: 'preset', label: 'Preset' },
   { id: 'custom', label: 'Kustom' },
   { id: 'puyer', label: 'Puyer' },
+  { id: 'infus', label: 'Infus' },
   { id: 'history', label: 'Riwayat' },
 ]
 
@@ -59,6 +61,9 @@ function App() {
         )}
         {activeTab === 'puyer' && (
           <PuyerPanel onHistoryUpdated={refreshHistory} />
+        )}
+        {activeTab === 'infus' && (
+          <InfusionPanel />
         )}
         {activeTab === 'history' && (
           <HistoryPanel entries={history} onUpdated={refreshHistory} />
