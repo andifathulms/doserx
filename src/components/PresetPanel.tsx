@@ -70,7 +70,10 @@ export function PresetPanel({ onHistoryUpdated }: PresetPanelProps) {
     setError(null)
     setResult(out)
 
-    if (selected.dosePerKgMin != null && selected.dosePerKgMax != null) {
+    // Only show min/max range when dose is at its preset default.
+    // If the doctor has overridden the dose, show just that single result.
+    const usingDefault = parseFloat(dosePerKg) === selected.dosePerKg
+    if (usingDefault && selected.dosePerKgMin != null && selected.dosePerKgMax != null) {
       const outMin = calculate({ ...base, dosePerKg: selected.dosePerKgMin })
       const outMax = calculate({ ...base, dosePerKg: selected.dosePerKgMax })
       setResultMin(outMin.valid ? outMin : null)
