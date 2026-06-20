@@ -29,8 +29,11 @@ function App() {
   return (
     <div className="app">
       <header className="app-header">
-        <h1 className="app-title">DoseRx</h1>
-        <p className="app-subtitle">Kalkulator dosis berbasis berat badan</p>
+        <div className="header-brand">
+          <h1 className="app-title">Dose<span>Rx</span></h1>
+          <p className="app-subtitle">Kalkulator dosis berbasis berat badan</p>
+        </div>
+        <div className="header-badge">Clinical Tool</div>
       </header>
 
       <main className="app-main">

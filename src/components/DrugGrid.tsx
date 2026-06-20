@@ -99,6 +99,7 @@ export function DrugGrid(props: DrugGridProps) {
             {list.map((drug) => (
               <button
                 key={drug.id}
+                data-cat={drug.category}
                 className={`drug-card${isSelected(drug.id) ? ' drug-card--selected' : ''}`}
                 onClick={() => handleClick(drug)}
                 aria-pressed={isSelected(drug.id)}
