@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react'
 import { DrugGrid } from './DrugGrid'
 import { ResultCard } from './ResultCard'
+import { WeightInput } from './WeightInput'
 import { DrugPreset } from '../data/drugs'
 import { calculate, CalcResult } from '../lib/calculate'
 
@@ -117,20 +118,12 @@ export function PresetPanel({ onHistoryUpdated }: PresetPanelProps) {
           </div>
 
           <div className="form">
-            <div className="field">
-              <label className="label" htmlFor="preset-weight">Berat badan (kg)</label>
-              <input
-                id="preset-weight"
-                className="input"
-                type="number"
-                min="0"
-                step="0.1"
-                placeholder="misal 25"
-                value={weight}
-                autoFocus
-                onChange={(e) => { setWeight(e.target.value); setResult(null) }}
-              />
-            </div>
+            <WeightInput
+              id="preset-weight"
+              value={weight}
+              onChange={(v) => { setWeight(v); setResult(null) }}
+              autoFocus
+            />
             <div className="field">
               <div className="label-row">
                 <label className="label" htmlFor="preset-dose">

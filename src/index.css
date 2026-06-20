@@ -454,6 +454,73 @@ body::before {
 .btn:disabled { opacity: .5; cursor: not-allowed; }
 .btn:focus-visible { outline: none; box-shadow: var(--sh-ring); }
 
+/* ── Weight-from-age estimator ────────────────────────────────────────────── */
+.weight-input-block { grid-column: 1 / -1; }
+
+.weight-input-row { display: flex; gap: 8px; align-items: flex-end; }
+
+.estimate-toggle {
+  background: none;
+  border: none;
+  color: var(--c-primary);
+  font-size: .75rem;
+  font-weight: 500;
+  padding: 0;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.estimate-toggle:hover { text-decoration: underline; }
+
+.estimate-badge {
+  display: inline-block;
+  margin-left: 6px;
+  font-size: .65rem;
+  font-weight: 600;
+  background: var(--c-primary-bg);
+  color: var(--c-primary);
+  border: 1px solid var(--c-primary-bdr);
+  border-radius: 4px;
+  padding: 1px 5px;
+  vertical-align: middle;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.estimate-panel {
+  margin-top: 10px;
+  padding: 12px 14px;
+  background: var(--c-surface-2);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-sm);
+}
+
+.estimate-panel__title {
+  font-size: .8rem;
+  font-weight: 600;
+  color: var(--c-text-2);
+  margin-bottom: 8px;
+}
+
+.estimate-panel__inputs {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.estimate-panel__result {
+  margin-top: 8px;
+  font-size: .8125rem;
+  color: var(--c-text-2);
+}
+
+.estimate-panel__result--warn { color: var(--amber-600); }
+
+.estimate-panel__formula {
+  font-size: .75rem;
+  color: var(--c-text-3);
+}
+
 /* ── Inline error ─────────────────────────────────────────────────────────── */
 .error {
   font-size: .8125rem;

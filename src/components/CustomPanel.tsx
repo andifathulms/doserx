@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { ResultCard } from './ResultCard'
+import { WeightInput } from './WeightInput'
 import { calculate, CalcResult } from '../lib/calculate'
 
 interface CustomPanelProps {
@@ -47,19 +48,11 @@ export function CustomPanel({ onHistoryUpdated }: CustomPanelProps) {
             onChange={(e) => { setDrugName(e.target.value); setResult(null) }}
           />
         </div>
-        <div className="field">
-          <label className="label" htmlFor="custom-weight">Berat badan (kg)</label>
-          <input
-            id="custom-weight"
-            className="input"
-            type="number"
-            min="0"
-            step="0.1"
-            placeholder="misal 25"
-            value={weight}
-            onChange={(e) => { setWeight(e.target.value); setResult(null) }}
-          />
-        </div>
+        <WeightInput
+          id="custom-weight"
+          value={weight}
+          onChange={(v) => { setWeight(v); setResult(null) }}
+        />
         <div className="field">
           <label className="label" htmlFor="custom-dose">Dosis (mg/kg)</label>
           <input
