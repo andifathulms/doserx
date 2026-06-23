@@ -106,8 +106,8 @@ export function DrugGrid(props: DrugGridProps) {
               >
                 <span className="drug-card__name">{drug.name}</span>
                 <span className="drug-card__route">{drug.route}</span>
-                {props.mode === 'multi' && isSelected(drug.id) && (
-                  <span className="drug-card__check">✓</span>
+                {isSelected(drug.id) && (
+                  <span className="drug-card__check">✓ Dipilih</span>
                 )}
               </button>
             ))}

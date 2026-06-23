@@ -52,7 +52,10 @@ input  { font: inherit; }
 
   --c-text:         var(--slate-900);
   --c-text-2:       var(--slate-600);
-  --c-text-3:       var(--slate-400);
+  /* slate-500 (~4.6:1 on white) — slate-400 failed WCAG AA for body text */
+  --c-text-3:       var(--slate-500);
+  /* lowest-contrast token, decorative/placeholder use only — never load-bearing copy */
+  --c-text-faint:   var(--slate-400);
 
   --c-primary:      var(--blue-600);
   --c-primary-dark: var(--blue-700);
@@ -101,6 +104,57 @@ input  { font: inherit; }
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* ── Dark mode ────────────────────────────────────────────────────────────── */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --c-bg:           var(--slate-900);
+    --c-surface:      var(--slate-800);
+    --c-surface-2:    #233045;            /* between slate-700/800 */
+    --c-border:       #2c3a52;
+    --c-border-mid:   var(--slate-600);
+
+    --c-text:         var(--slate-50);
+    --c-text-2:       var(--slate-300);
+    --c-text-3:       var(--slate-400);   /* ~4.7:1 on dark surface */
+    --c-text-faint:   var(--slate-500);
+
+    --c-primary:      var(--blue-400);
+    --c-primary-dark: var(--blue-500);
+    --c-primary-dim:  var(--blue-200);
+    --c-primary-bg:   rgba(96,165,250,.12);
+    --c-primary-bdr:  rgba(96,165,250,.32);
+
+    --c-accent:       var(--emerald-200);
+    --c-accent-bg:    rgba(16,185,129,.12);
+    --c-accent-bdr:   rgba(16,185,129,.32);
+
+    --c-warn:         #fbbf24;
+    --c-warn-bg:      rgba(217,119,6,.13);
+    --c-warn-bdr:     rgba(217,119,6,.38);
+
+    --c-error:        #f87171;
+    --c-error-bg:     rgba(220,38,38,.14);
+
+    color-scheme: dark;
+
+    --sh-xs: 0 1px 2px rgba(0,0,0,.4);
+    --sh-sm: 0 1px 3px rgba(0,0,0,.45), 0 1px 2px rgba(0,0,0,.4);
+    --sh:    0 4px 8px rgba(0,0,0,.45), 0 2px 4px rgba(0,0,0,.4);
+    --sh-md: 0 10px 20px rgba(0,0,0,.5), 0 4px 8px rgba(0,0,0,.4);
+  }
+}
+
+/* ── Reduced motion ───────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .drug-card:hover { transform: none; }
+}
+
 /* ── Brand accent bar (top of page) ──────────────────────────────────────── */
 body {
   min-height: 100dvh;
@@ -142,9 +196,9 @@ body::before {
 .header-brand { display: flex; flex-direction: column; gap: 4px; }
 
 .app-title {
-  font-size: 1.875rem;
-  font-weight: 800;
-  letter-spacing: -0.05em;
+  font-size: 1.625rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
   line-height: 1;
   color: var(--c-text);
 }
@@ -179,6 +233,69 @@ body::before {
   flex: 1;
   padding-bottom: 32px;
 }
+
+/* ── Header history toggle ────────────────────────────────────────────────── */
+.history-toggle {
+  flex-shrink: 0;
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: .8125rem;
+  font-weight: 600;
+  color: var(--c-text-2);
+  background: var(--c-surface);
+  border: 1.5px solid var(--c-border);
+  padding: 6px 12px;
+  border-radius: var(--r-full);
+  transition: background .15s, border-color .15s, color .15s;
+}
+.history-toggle:hover { border-color: var(--c-border-mid); color: var(--c-text); }
+.history-toggle--active {
+  color: var(--c-primary);
+  background: var(--c-primary-bg);
+  border-color: var(--c-primary-bdr);
+}
+.history-toggle:focus-visible { outline: none; box-shadow: var(--sh-ring); }
+
+.history-toggle__count {
+  font-size: .6875rem;
+  font-weight: 700;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  background: var(--c-primary);
+  border-radius: var(--r-full);
+}
+
+/* ── Safety disclaimer — kept visible near where the dose decision happens ──── */
+.safety-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 14px 0 4px;
+  padding: 11px 14px;
+  background: var(--c-warn-bg);
+  border: 1px solid var(--c-warn-bdr);
+  border-left: 3px solid var(--c-warn);
+  border-radius: var(--r-sm);
+  font-size: .8125rem;
+  line-height: 1.5;
+  color: var(--c-text-2);
+}
+
+.safety-banner__icon {
+  flex-shrink: 0;
+  color: var(--c-warn);
+  font-weight: 800;
+  line-height: 1.4;
+}
+
+.safety-banner strong { color: var(--c-text); font-weight: 700; }
 
 /* ── Footer / disclaimer ──────────────────────────────────────────────────── */
 .app-footer {
@@ -223,6 +340,22 @@ body::before {
   font-weight: 700;
   box-shadow: var(--sh-xs);
 }
+
+/* ── Category accent map — single source of truth for any element with data-cat
+   (drug cards, summary dots, …). Loudest red reserved for emergencies; the rest
+   are spaced apart in hue so they stay distinguishable under stress. ────────── */
+[data-cat="Gawat Darurat"]    { --_cat: #ef4444; }  /* red — emergency only */
+[data-cat="Analgesik/NSAID"]  { --_cat: #f97316; }  /* orange */
+[data-cat="Antiinfeksi"]      { --_cat: #2563eb; }  /* blue */
+[data-cat="Antiparasit"]      { --_cat: #16a34a; }  /* green */
+[data-cat="Antikonvulsan"]    { --_cat: #9333ea; }  /* violet */
+[data-cat="Kardiovaskular"]   { --_cat: #db2777; }  /* pink — moved off red */
+[data-cat="Pulmologi"]        { --_cat: #0284c7; }  /* sky */
+[data-cat="Gastrointestinal"] { --_cat: #d97706; }  /* amber */
+[data-cat="Kortikosteroid"]   { --_cat: #7c3aed; }  /* purple */
+[data-cat="Vitamin/Mineral"]  { --_cat: #65a30d; }  /* lime */
+[data-cat="Antimalarial"]     { --_cat: #0d9488; }  /* teal */
+[data-cat="Lain-lain"]        { --_cat: #64748b; }  /* slate */
 
 /* ── Drug grid ────────────────────────────────────────────────────────────── */
 .drug-grid-wrapper { margin-bottom: 16px; }
@@ -295,32 +428,26 @@ body::before {
   box-shadow: var(--sh-xs);
 }
 
-.drug-card:hover {
-  transform: translateY(-1px);
-  border-color: var(--_cat, var(--c-primary));
-  background: var(--_cat-bg, var(--c-primary-bg));
-  box-shadow: var(--sh-sm);
+/* Tint derived from the accent — one source, works in light & dark */
+.drug-card { --_cat-bg: color-mix(in srgb, var(--_cat, var(--c-primary)) 9%, var(--c-surface)); }
+
+@media (hover: hover) {
+  .drug-card:hover {
+    transform: translateY(-1px);
+    border-color: var(--_cat, var(--c-primary));
+    background: var(--_cat-bg);
+    box-shadow: var(--sh-sm);
+  }
 }
 
+/* Selected ≠ hover: 2px border + accent ring make it unmistakable at a glance */
 .drug-card--selected {
-  background: var(--_cat-bg, var(--c-primary-bg)) !important;
-  border-color: var(--_cat, var(--c-primary)) !important;
-  box-shadow: var(--sh-sm) !important;
+  background: var(--_cat-bg);
+  border-color: var(--_cat, var(--c-primary));
+  border-width: 2px;
+  padding: 9px 10px 9px 9px;            /* compensate for the +0.5px border */
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--_cat, var(--c-primary)) 35%, transparent);
 }
-
-/* Per-category accent vars */
-.drug-card[data-cat="Gawat Darurat"]    { --_cat: #ef4444; --_cat-bg: #fef2f2; }
-.drug-card[data-cat="Analgesik/NSAID"]  { --_cat: #f97316; --_cat-bg: #fff7ed; }
-.drug-card[data-cat="Antiinfeksi"]      { --_cat: #2563eb; --_cat-bg: #eff6ff; }
-.drug-card[data-cat="Antiparasit"]      { --_cat: #16a34a; --_cat-bg: #f0fdf4; }
-.drug-card[data-cat="Antikonvulsan"]    { --_cat: #9333ea; --_cat-bg: #faf5ff; }
-.drug-card[data-cat="Kardiovaskular"]   { --_cat: #e11d48; --_cat-bg: #fff1f2; }
-.drug-card[data-cat="Pulmologi"]        { --_cat: #0284c7; --_cat-bg: #f0f9ff; }
-.drug-card[data-cat="Gastrointestinal"] { --_cat: #d97706; --_cat-bg: #fffbeb; }
-.drug-card[data-cat="Kortikosteroid"]   { --_cat: #7c3aed; --_cat-bg: #f5f3ff; }
-.drug-card[data-cat="Vitamin/Mineral"]  { --_cat: #65a30d; --_cat-bg: #f7fee7; }
-.drug-card[data-cat="Antimalarial"]     { --_cat: #0d9488; --_cat-bg: #f0fdfa; }
-.drug-card[data-cat="Lain-lain"]        { --_cat: #64748b; --_cat-bg: #f8fafc; }
 
 .drug-card__name {
   font-size: .875rem;
@@ -604,19 +731,29 @@ body::before {
 }
 
 .result-value__num {
-  font-size: 1.875rem;
-  font-weight: 800;
+  font-size: 1.75rem;
+  font-weight: 700;
   color: var(--c-text);
-  letter-spacing: -0.04em;
+  letter-spacing: -0.03em;
   line-height: 1.1;
+  font-variant-numeric: tabular-nums;
 }
 
+/* The dose answer is the visual peak of the screen — bigger and bolder than the brand */
 .result-value--highlight .result-value__num {
   color: var(--c-primary);
+  font-size: 2.375rem;
+  font-weight: 800;
+  letter-spacing: -0.045em;
 }
 
 .result-value__num--range {
   font-size: 1.25rem;
+  letter-spacing: -0.03em;
+}
+
+.result-value--highlight .result-value__num--range {
+  font-size: 1.6rem;
   letter-spacing: -0.03em;
 }
 
@@ -906,22 +1043,8 @@ body::before {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: var(--c-border-mid);
+  background: var(--_cat, var(--c-border-mid));
 }
-
-/* ── Dot gets category color when data-cat is set ─────────────────────────── */
-.selected-drug-bar__dot[data-cat="Gawat Darurat"]    { background: #ef4444; }
-.selected-drug-bar__dot[data-cat="Analgesik/NSAID"]  { background: #f97316; }
-.selected-drug-bar__dot[data-cat="Antiinfeksi"]      { background: #2563eb; }
-.selected-drug-bar__dot[data-cat="Antiparasit"]      { background: #16a34a; }
-.selected-drug-bar__dot[data-cat="Antikonvulsan"]    { background: #9333ea; }
-.selected-drug-bar__dot[data-cat="Kardiovaskular"]   { background: #e11d48; }
-.selected-drug-bar__dot[data-cat="Pulmologi"]        { background: #0284c7; }
-.selected-drug-bar__dot[data-cat="Gastrointestinal"] { background: #d97706; }
-.selected-drug-bar__dot[data-cat="Kortikosteroid"]   { background: #7c3aed; }
-.selected-drug-bar__dot[data-cat="Vitamin/Mineral"]  { background: #65a30d; }
-.selected-drug-bar__dot[data-cat="Antimalarial"]     { background: #0d9488; }
-.selected-drug-bar__dot[data-cat="Lain-lain"]        { background: #64748b; }
 
 .selected-drug-bar__name {
   font-size: .9375rem;
