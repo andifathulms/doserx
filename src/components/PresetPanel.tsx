@@ -158,10 +158,25 @@ export function PresetPanel({ onHistoryUpdated, customDrugs, onCustomDrugDeleted
           <div className="drug-note">
             {selected.dosePerKgMin != null && selected.dosePerKgMax != null && (
               <span className="drug-note__range">
-                Range: {selected.dosePerKgMin}–{selected.dosePerKgMax} mg/kg ·{' '}
+                Range: {selected.dosePerKgMin}–{selected.dosePerKgMax} mg/kg/hari ·{' '}
               </span>
             )}
             {selected.note}
+            {selected.warning && (
+              <p className="drug-note__warning">⚠ {selected.warning}</p>
+            )}
+            {selected.contraindication && (
+              <p className="drug-note__contra">⛔ Kontraindikasi: {selected.contraindication}</p>
+            )}
+            {(selected.minAgeMonths || selected.minWeightKg || selected.source) && (
+              <p className="drug-note__meta">
+                {selected.minAgeMonths != null && (
+                  <span>Min usia: {selected.minAgeMonths < 12 ? `${selected.minAgeMonths} bln` : `${selected.minAgeMonths / 12} th`} · </span>
+                )}
+                {selected.minWeightKg != null && <span>Min BB: {selected.minWeightKg} kg · </span>}
+                {selected.source && <span>Sumber: {selected.source}</span>}
+              </p>
+            )}
           </div>
 
           <div className="form">

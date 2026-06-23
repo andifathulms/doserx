@@ -344,18 +344,23 @@ body::before {
 /* ── Category accent map — single source of truth for any element with data-cat
    (drug cards, summary dots, …). Loudest red reserved for emergencies; the rest
    are spaced apart in hue so they stay distinguishable under stress. ────────── */
-[data-cat="Gawat Darurat"]    { --_cat: #ef4444; }  /* red — emergency only */
-[data-cat="Analgesik/NSAID"]  { --_cat: #f97316; }  /* orange */
-[data-cat="Antiinfeksi"]      { --_cat: #2563eb; }  /* blue */
-[data-cat="Antiparasit"]      { --_cat: #16a34a; }  /* green */
-[data-cat="Antikonvulsan"]    { --_cat: #9333ea; }  /* violet */
-[data-cat="Kardiovaskular"]   { --_cat: #db2777; }  /* pink — moved off red */
-[data-cat="Pulmologi"]        { --_cat: #0284c7; }  /* sky */
-[data-cat="Gastrointestinal"] { --_cat: #d97706; }  /* amber */
-[data-cat="Kortikosteroid"]   { --_cat: #7c3aed; }  /* purple */
-[data-cat="Vitamin/Mineral"]  { --_cat: #65a30d; }  /* lime */
-[data-cat="Antimalarial"]     { --_cat: #0d9488; }  /* teal */
-[data-cat="Lain-lain"]        { --_cat: #64748b; }  /* slate */
+[data-cat="Gawat Darurat"]       { --_cat: #ef4444; }  /* red — emergency only */
+[data-cat="Analgesik/NSAID"]     { --_cat: #f97316; }  /* orange */
+[data-cat="Antibiotik"]          { --_cat: #2563eb; }  /* blue */
+[data-cat="Antivirus"]           { --_cat: #0891b2; }  /* cyan */
+[data-cat="Antijamur"]           { --_cat: #ca8a04; }  /* gold */
+[data-cat="Anti-TB (OAT)"]       { --_cat: #be123c; }  /* dark rose */
+[data-cat="Antiparasit"]         { --_cat: #16a34a; }  /* green */
+[data-cat="Antikonvulsan"]       { --_cat: #9333ea; }  /* violet */
+[data-cat="Kardiovaskular"]      { --_cat: #db2777; }  /* pink */
+[data-cat="Pulmologi"]           { --_cat: #0284c7; }  /* sky */
+[data-cat="Gastrointestinal"]    { --_cat: #d97706; }  /* amber */
+[data-cat="Kortikosteroid"]      { --_cat: #7c3aed; }  /* purple */
+[data-cat="Antihistamin/Alergi"] { --_cat: #c026d3; }  /* fuchsia */
+[data-cat="Vitamin/Mineral"]     { --_cat: #65a30d; }  /* lime */
+[data-cat="Cairan & Elektrolit"] { --_cat: #0369a1; }  /* deep blue */
+[data-cat="Antimalarial"]        { --_cat: #0d9488; }  /* teal */
+[data-cat="Lain-lain"]           { --_cat: #64748b; }  /* slate */
 
 /* ── Drug grid ────────────────────────────────────────────────────────────── */
 .drug-grid-wrapper { margin-bottom: 16px; }
@@ -469,6 +474,82 @@ body::before {
   margin-top: 2px;
 }
 
+/* ── Card wrapper + favorite star ─────────────────────────────────────────── */
+.drug-card-wrap { position: relative; display: flex; }
+.drug-card-wrap > .drug-card { width: 100%; padding-right: 26px; }
+
+.drug-card__star {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .95rem;
+  line-height: 1;
+  background: transparent;
+  border: none;
+  border-radius: var(--r-full);
+  color: var(--c-text-faint);
+  transition: color .12s, background .12s, transform .12s;
+}
+.drug-card__star:hover { color: var(--amber-600); background: var(--c-surface-2); }
+.drug-card__star--on { color: #f59e0b; }
+.drug-card__star:focus-visible { outline: none; box-shadow: var(--sh-ring); }
+
+/* ── Card safety affordances ──────────────────────────────────────────────── */
+.drug-card__flag {
+  margin-left: 5px;
+  font-size: .72rem;
+  color: var(--c-warn);
+  vertical-align: baseline;
+}
+
+.drug-card__gate {
+  font-size: .65rem;
+  font-weight: 600;
+  color: var(--c-text-faint);
+  letter-spacing: .01em;
+}
+
+/* ── Category filter chips ────────────────────────────────────────────────── */
+.cat-chip-row {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  margin-bottom: 14px;
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+}
+.cat-chip-row::-webkit-scrollbar { height: 4px; }
+.cat-chip-row::-webkit-scrollbar-thumb { background: var(--c-border-mid); border-radius: var(--r-full); }
+
+.cat-chip {
+  flex-shrink: 0;
+  font-size: .75rem;
+  font-weight: 600;
+  white-space: nowrap;
+  padding: 5px 12px;
+  border-radius: var(--r-full);
+  border: 1.5px solid var(--c-border);
+  background: var(--c-surface);
+  color: var(--c-text-2);
+  transition: background .12s, border-color .12s, color .12s;
+}
+.cat-chip:hover { border-color: var(--c-border-mid); color: var(--c-text); }
+.cat-chip--active {
+  color: #fff;
+  background: var(--_cat, var(--c-primary));
+  border-color: var(--_cat, var(--c-primary));
+}
+.cat-chip:focus-visible { outline: none; box-shadow: var(--sh-ring); }
+
+/* ── Pinned "Sering dipakai" ──────────────────────────────────────────────── */
+.drug-pinned-section .drug-category-label { color: var(--amber-600); }
+
 /* ── Clinical note ────────────────────────────────────────────────────────── */
 .drug-note {
   background: var(--c-primary-bg);
@@ -484,6 +565,32 @@ body::before {
 .drug-note__range {
   font-weight: 700;
   color: var(--c-primary);
+}
+
+.drug-note__warning {
+  margin-top: 8px;
+  padding: 6px 10px;
+  background: var(--c-warn-bg);
+  border-left: 3px solid var(--c-warn);
+  border-radius: 0 var(--r-xs) var(--r-xs) 0;
+  color: var(--c-warn);
+  font-weight: 600;
+}
+
+.drug-note__contra {
+  margin-top: 6px;
+  padding: 6px 10px;
+  background: var(--c-error-bg);
+  border-left: 3px solid var(--c-error);
+  border-radius: 0 var(--r-xs) var(--r-xs) 0;
+  color: var(--c-error);
+  font-weight: 600;
+}
+
+.drug-note__meta {
+  margin-top: 8px;
+  font-size: .75rem;
+  color: var(--c-text-3);
 }
 
 /* ── Form ─────────────────────────────────────────────────────────────────── */
