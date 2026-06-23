@@ -1,5 +1,44 @@
 const HISTORY_KEY = 'doserx_history'
 const CUSTOM_DRUGS_KEY = 'doserx_custom_drugs'
+const RECENTS_KEY = 'doserx_recents'
+const FAVORITES_KEY = 'doserx_favorites'
+const RECENTS_MAX = 8
+
+// ── Recently-used & favorite drugs (keyed by stable drug id) ──────────────────
+
+function loadIds(key: string): string[] {
+  try {
+    const raw = localStorage.getItem(key)
+    if (!raw) return []
+    const parsed = JSON.parse(raw)
+    return Array.isArray(parsed) ? (parsed as string[]) : []
+  } catch {
+    return []
+  }
+}
+
+export function loadRecents(): string[] {
+  return loadIds(RECENTS_KEY)
+}
+
+export function recordRecent(id: string): void {
+  const next = [id, ...loadRecents().filter((x) => x !== id)].slice(0, RECENTS_MAX)
+  localStorage.setItem(RECENTS_KEY, JSON.stringify(next))
+}
+
+export function loadFavorites(): string[] {
+  return loadIds(FAVORITES_KEY)
+}
+
+/** Toggles favorite state and returns the new list. */
+export function toggleFavorite(id: string): string[] {
+  const current = loadFavorites()
+  const next = current.includes(id)
+    ? current.filter((x) => x !== id)
+    : [id, ...current]
+  localStorage.setItem(FAVORITES_KEY, JSON.stringify(next))
+  return next
+}
 
 // ── Custom drug presets ───────────────────────────────────────────────────────
 
