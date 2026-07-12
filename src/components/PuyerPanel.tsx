@@ -3,17 +3,35 @@ import { ALL_DRUGS, DrugPreset } from '../data/drugs'
 import { DrugGrid } from './DrugGrid'
 import { calculate, CalcResult } from '../lib/calculate'
 import { suggestForms, FormSuggestion } from '../lib/suggest'
+import { DoseMode, loadDoseMode, saveDoseMode } from '../lib/storage'
 
 interface PuyerEntry {
   drug: DrugPreset
-  dosePerKg: string
+  dosePerKg: string // value in the active doseMode (per kali / per hari)
   freq: string
   result: CalcResult | null
   suggestions: FormSuggestion[]
 }
 
-function makeEntry(drug: DrugPreset): PuyerEntry {
-  return { drug, dosePerKg: String(drug.dosePerKg), freq: String(drug.freq), result: null, suggestions: [] }
+const r2 = (n: number) => Math.round(n * 100) / 100
+
+// The catalog stores mg/kg/DAY; translate to/from the doctor's entry mode.
+function dayToMode(perDay: number | undefined, freq: number, mode: DoseMode): number | undefined {
+  if (perDay == null) return undefined
+  return mode === 'perDose' ? r2(perDay / freq) : perDay
+}
+function modeToDay(value: number, freq: number, mode: DoseMode): number {
+  return mode === 'perDose' ? value * freq : value
+}
+
+function makeEntry(drug: DrugPreset, mode: DoseMode): PuyerEntry {
+  return {
+    drug,
+    dosePerKg: String(dayToMode(drug.dosePerKg, drug.freq, mode)),
+    freq: String(drug.freq),
+    result: null,
+    suggestions: [],
+  }
 }
 
 function freqLabel(freq: number): string {
@@ -127,6 +145,7 @@ interface PuyerPanelProps {
 export function PuyerPanel({ onHistoryUpdated: _onHistoryUpdated }: PuyerPanelProps) {
   const [weight, setWeight] = useState('')
   const [days, setDays] = useState('3')
+  const [doseMode, setDoseMode] = useState<DoseMode>(() => loadDoseMode())
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [entries, setEntries] = useState<Record<string, PuyerEntry>>({})
   const [gridOpen, setGridOpen] = useState(true)
@@ -136,13 +155,35 @@ export function PuyerPanel({ onHistoryUpdated: _onHistoryUpdated }: PuyerPanelPr
 
   const formRef = useRef<HTMLDivElement>(null)
 
+  const doseUnit = doseMode === 'perDose' ? 'mg/kg/kali' : 'mg/kg/hari'
+
   function handleToggle(drug: DrugPreset) {
     setCalculated(false)
     setSelectedIds((prev) => {
       if (prev.includes(drug.id)) return prev.filter((id) => id !== drug.id)
-      setEntries((e) => ({ ...e, [drug.id]: e[drug.id] ?? makeEntry(drug) }))
+      setEntries((e) => ({ ...e, [drug.id]: e[drug.id] ?? makeEntry(drug, doseMode) }))
       return [...prev, drug.id]
     })
+  }
+
+  function handleToggleMode(mode: DoseMode) {
+    if (mode === doseMode) return
+    setEntries((prev) => {
+      const next: Record<string, PuyerEntry> = {}
+      for (const [id, e] of Object.entries(prev)) {
+        const f = parseFloat(e.freq)
+        const val = parseFloat(e.dosePerKg)
+        const dosePerKg =
+          isFinite(val) && isFinite(f) && f > 0
+            ? String(dayToMode(modeToDay(val, f, doseMode), f, mode))
+            : String(dayToMode(e.drug.dosePerKg, e.drug.freq, mode))
+        next[id] = { ...e, dosePerKg, result: null, suggestions: [] }
+      }
+      return next
+    })
+    setDoseMode(mode)
+    saveDoseMode(mode)
+    setCalculated(false)
   }
 
   function handleProceed() {
@@ -165,7 +206,7 @@ export function PuyerPanel({ onHistoryUpdated: _onHistoryUpdated }: PuyerPanelPr
   function resetDose(id: string) {
     const drug = entries[id]?.drug
     if (!drug) return
-    updateEntry(id, { dosePerKg: String(drug.dosePerKg) })
+    updateEntry(id, { dosePerKg: String(dayToMode(drug.dosePerKg, drug.freq, doseMode)) })
   }
 
   function handleCalculate() {
@@ -180,10 +221,11 @@ export function PuyerPanel({ onHistoryUpdated: _onHistoryUpdated }: PuyerPanelPr
     for (const id of selectedIds) {
       const entry = entries[id]
       if (!entry) continue
+      const fq = parseFloat(entry.freq)
       const out = calculate({
         weight: w,
-        dosePerKg: parseFloat(entry.dosePerKg),
-        freq: parseFloat(entry.freq),
+        dosePerKg: modeToDay(parseFloat(entry.dosePerKg), fq, doseMode),
+        freq: fq,
         maxDay: entry.drug.maxDay,
         maxSingle: entry.drug.maxSingle,
       })
@@ -293,11 +335,37 @@ export function PuyerPanel({ onHistoryUpdated: _onHistoryUpdated }: PuyerPanelPr
             </div>
           </div>
 
+          {/* Dose entry mode — puyer content per bungkus = per kali */}
+          <div className="dose-mode">
+            <span className="dose-mode__label">Cara hitung dosis</span>
+            <div className="dose-mode__toggle" role="radiogroup" aria-label="Cara hitung dosis">
+              <button
+                role="radio"
+                aria-checked={doseMode === 'perDose'}
+                className={`dose-mode__btn${doseMode === 'perDose' ? ' dose-mode__btn--active' : ''}`}
+                onClick={() => handleToggleMode('perDose')}
+              >
+                Per kali
+              </button>
+              <button
+                role="radio"
+                aria-checked={doseMode === 'perDay'}
+                className={`dose-mode__btn${doseMode === 'perDay' ? ' dose-mode__btn--active' : ''}`}
+                onClick={() => handleToggleMode('perDay')}
+              >
+                Per hari
+              </button>
+            </div>
+          </div>
+
           {/* Per-drug dose overrides */}
           <div className="puyer-section-label">Sesuaikan dosis (opsional)</div>
           <div className="puyer-drug-list">
             {orderedEntries.map((entry) => {
-              const isOverridden = entry.dosePerKg !== String(entry.drug.dosePerKg)
+              const defaultDose = dayToMode(entry.drug.dosePerKg, entry.drug.freq, doseMode)!
+              const isOverridden = entry.dosePerKg !== String(defaultDose)
+              const rMin = dayToMode(entry.drug.dosePerKgMin, entry.drug.freq, doseMode)
+              const rMax = dayToMode(entry.drug.dosePerKgMax, entry.drug.freq, doseMode)
               return (
                 <div key={entry.drug.id} className="puyer-drug-row">
                   <div className="puyer-drug-row__header">
@@ -309,14 +377,14 @@ export function PuyerPanel({ onHistoryUpdated: _onHistoryUpdated }: PuyerPanelPr
                   <div className="puyer-drug-row__inputs">
                     <div className="field">
                       <div className="label-row">
-                        <label className="label">mg/kg</label>
+                        <label className="label">{doseUnit}</label>
                         {isOverridden && (
                           <button
                             className="reset-btn"
                             onClick={() => resetDose(entry.drug.id)}
-                            title={`Reset ke ${entry.drug.dosePerKg} mg/kg`}
+                            title={`Reset ke ${defaultDose} ${doseUnit}`}
                           >
-                            ↺ {entry.drug.dosePerKg}
+                            ↺ {defaultDose}
                           </button>
                         )}
                       </div>
@@ -340,9 +408,9 @@ export function PuyerPanel({ onHistoryUpdated: _onHistoryUpdated }: PuyerPanelPr
                         onChange={(e) => updateEntry(entry.drug.id, { freq: e.target.value })}
                       />
                     </div>
-                    {entry.drug.dosePerKgMin != null && entry.drug.dosePerKgMax != null && (
+                    {rMin != null && rMax != null && (
                       <span className="puyer-dose-range">
-                        [{entry.drug.dosePerKgMin}–{entry.drug.dosePerKgMax}]
+                        [{rMin}–{rMax}]
                       </span>
                     )}
                   </div>
