@@ -44,7 +44,8 @@ input  { font: inherit; }
   --red-600: #dc2626;
 
   /* Semantic */
-  --c-bg:           var(--slate-100);
+  --royal:          #1d4ed8;   /* header brand colour */
+  --c-bg:           #ffffff;
   --c-surface:      #ffffff;
   --c-surface-2:    var(--slate-50);
   --c-border:       var(--slate-200);
@@ -155,21 +156,10 @@ input  { font: inherit; }
   .drug-card:hover { transform: none; }
 }
 
-/* ── Brand accent bar (top of page) ──────────────────────────────────────── */
+/* ── Page ─────────────────────────────────────────────────────────────────── */
 body {
   min-height: 100dvh;
-  padding-top: 3px;
   background: var(--c-bg);
-}
-
-body::before {
-  content: '';
-  display: block;
-  position: fixed;
-  inset: 0 0 auto 0;
-  height: 3px;
-  background: linear-gradient(90deg, var(--blue-700) 0%, var(--blue-400) 60%, var(--emerald-600) 100%);
-  z-index: 999;
 }
 
 /* ── App shell ────────────────────────────────────────────────────────────── */
@@ -188,9 +178,12 @@ body::before {
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
-  padding: 24px 0 18px;
-  border-bottom: 1px solid var(--c-border);
-  margin-bottom: 6px;
+  /* Full-bleed royal-blue band within the centered column */
+  margin: 0 calc(-1 * var(--pad)) 18px;
+  padding: 22px var(--pad) 20px;
+  background: var(--royal);
+  border-radius: 0 0 var(--r-lg) var(--r-lg);
+  box-shadow: var(--sh-sm);
 }
 
 .header-brand { display: flex; flex-direction: column; gap: 4px; }
@@ -200,16 +193,16 @@ body::before {
   font-weight: 700;
   letter-spacing: -0.02em;
   line-height: 1;
-  color: var(--c-text);
+  color: #fff;
 }
 
 .app-title span {
-  color: var(--c-primary);
+  color: #93c5fd;
 }
 
 .app-subtitle {
   font-size: .8125rem;
-  color: var(--c-text-3);
+  color: rgba(255, 255, 255, .78);
   font-weight: 400;
   letter-spacing: 0;
 }
@@ -243,20 +236,20 @@ body::before {
   gap: 6px;
   font-size: .8125rem;
   font-weight: 600;
-  color: var(--c-text-2);
-  background: var(--c-surface);
-  border: 1.5px solid var(--c-border);
+  color: #fff;
+  background: rgba(255, 255, 255, .14);
+  border: 1.5px solid rgba(255, 255, 255, .35);
   padding: 6px 12px;
   border-radius: var(--r-full);
   transition: background .15s, border-color .15s, color .15s;
 }
-.history-toggle:hover { border-color: var(--c-border-mid); color: var(--c-text); }
+.history-toggle:hover { background: rgba(255, 255, 255, .24); border-color: rgba(255, 255, 255, .6); color: #fff; }
 .history-toggle--active {
-  color: var(--c-primary);
-  background: var(--c-primary-bg);
-  border-color: var(--c-primary-bdr);
+  color: var(--royal);
+  background: #fff;
+  border-color: #fff;
 }
-.history-toggle:focus-visible { outline: none; box-shadow: var(--sh-ring); }
+.history-toggle:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(255, 255, 255, .5); }
 
 .history-toggle__count {
   font-size: .6875rem;
@@ -267,10 +260,11 @@ body::before {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
-  background: var(--c-primary);
+  color: var(--royal);
+  background: #fff;
   border-radius: var(--r-full);
 }
+.history-toggle--active .history-toggle__count { color: #fff; background: var(--royal); }
 
 /* ── Safety disclaimer — kept visible near where the dose decision happens ──── */
 .safety-banner {
