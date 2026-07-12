@@ -34,6 +34,16 @@ input  { font: inherit; }
   --emerald-600: #059669;
   --emerald-700: #047857;
 
+  /* Palette — teal (brand primary) */
+  --teal-50:  #f0fdfa;
+  --teal-100: #ccfbf1;
+  --teal-200: #99f6e4;
+  --teal-400: #2dd4bf;
+  --teal-500: #14b8a6;
+  --teal-600: #0d9488;
+  --teal-700: #0f766e;
+  --teal-800: #115e59;
+
   /* Palette — amber */
   --amber-50:  #fffbeb;
   --amber-200: #fde68a;
@@ -43,29 +53,31 @@ input  { font: inherit; }
   --red-50:  #fef2f2;
   --red-600: #dc2626;
 
-  /* Semantic */
-  --c-bg:           var(--slate-100);
+  /* Semantic — Fresh Medical Teal (light) */
+  color-scheme: light;
+  --c-bg:           #f2f8f6;   /* pale mint */
   --c-surface:      #ffffff;
-  --c-surface-2:    var(--slate-50);
-  --c-border:       var(--slate-200);
-  --c-border-mid:   var(--slate-300);
+  --c-surface-2:    #f2f8f6;
+  --c-border:       #e0ebe8;
+  --c-border-mid:   #c4d6d1;
 
-  --c-text:         var(--slate-900);
-  --c-text-2:       var(--slate-600);
-  /* slate-500 (~4.6:1 on white) — slate-400 failed WCAG AA for body text */
-  --c-text-3:       var(--slate-500);
+  --c-text:         #0f2b28;   /* deep teal-black */
+  --c-text-2:       #4b5f5b;
+  /* ~4.6:1 on white — safe for body text */
+  --c-text-3:       #667a76;
   /* lowest-contrast token, decorative/placeholder use only — never load-bearing copy */
-  --c-text-faint:   var(--slate-400);
+  --c-text-faint:   #9aa8a4;
 
-  --c-primary:      var(--blue-600);
-  --c-primary-dark: var(--blue-700);
-  --c-primary-dim:  var(--blue-800);
-  --c-primary-bg:   var(--blue-50);
-  --c-primary-bdr:  var(--blue-200);
+  --c-primary:      var(--teal-600);
+  --c-primary-dark: var(--teal-700);
+  --c-primary-dim:  var(--teal-800);
+  --c-primary-bg:   var(--teal-50);
+  --c-primary-bdr:  var(--teal-200);
 
-  --c-accent:       var(--emerald-600);
-  --c-accent-bg:    var(--emerald-50);
-  --c-accent-bdr:   var(--emerald-200);
+  /* Blue secondary — links, "liquid" form chips (distinct from teal primary) */
+  --c-accent:       var(--blue-600);
+  --c-accent-bg:    var(--blue-50);
+  --c-accent-bdr:   var(--blue-200);
 
   --c-warn:         var(--amber-600);
   --c-warn-bg:      var(--amber-50);
@@ -104,44 +116,45 @@ input  { font: inherit; }
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ── Dark mode ────────────────────────────────────────────────────────────── */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --c-bg:           var(--slate-900);
-    --c-surface:      var(--slate-800);
-    --c-surface-2:    #233045;            /* between slate-700/800 */
-    --c-border:       #2c3a52;
-    --c-border-mid:   var(--slate-600);
+/* ── Dark mode (opt-in only) ──────────────────────────────────────────────────
+   The GP-facing app is light by default and no longer follows the OS setting.
+   This palette stays dormant until something sets data-theme="dark" on <html>
+   (kept for a future in-app toggle). ──────────────────────────────────────── */
+:root[data-theme="dark"] {
+  --c-bg:           var(--slate-900);
+  --c-surface:      var(--slate-800);
+  --c-surface-2:    #233045;            /* between slate-700/800 */
+  --c-border:       #2c3a52;
+  --c-border-mid:   var(--slate-600);
 
-    --c-text:         var(--slate-50);
-    --c-text-2:       var(--slate-300);
-    --c-text-3:       var(--slate-400);   /* ~4.7:1 on dark surface */
-    --c-text-faint:   var(--slate-500);
+  --c-text:         var(--slate-50);
+  --c-text-2:       var(--slate-300);
+  --c-text-3:       var(--slate-400);   /* ~4.7:1 on dark surface */
+  --c-text-faint:   var(--slate-500);
 
-    --c-primary:      var(--blue-400);
-    --c-primary-dark: var(--blue-500);
-    --c-primary-dim:  var(--blue-200);
-    --c-primary-bg:   rgba(96,165,250,.12);
-    --c-primary-bdr:  rgba(96,165,250,.32);
+  --c-primary:      var(--teal-400);
+  --c-primary-dark: var(--teal-500);
+  --c-primary-dim:  var(--teal-200);
+  --c-primary-bg:   rgba(45,212,191,.12);
+  --c-primary-bdr:  rgba(45,212,191,.32);
 
-    --c-accent:       var(--emerald-200);
-    --c-accent-bg:    rgba(16,185,129,.12);
-    --c-accent-bdr:   rgba(16,185,129,.32);
+  --c-accent:       var(--blue-400);
+  --c-accent-bg:    rgba(96,165,250,.12);
+  --c-accent-bdr:   rgba(96,165,250,.32);
 
-    --c-warn:         #fbbf24;
-    --c-warn-bg:      rgba(217,119,6,.13);
-    --c-warn-bdr:     rgba(217,119,6,.38);
+  --c-warn:         #fbbf24;
+  --c-warn-bg:      rgba(217,119,6,.13);
+  --c-warn-bdr:     rgba(217,119,6,.38);
 
-    --c-error:        #f87171;
-    --c-error-bg:     rgba(220,38,38,.14);
+  --c-error:        #f87171;
+  --c-error-bg:     rgba(220,38,38,.14);
 
-    color-scheme: dark;
+  color-scheme: dark;
 
-    --sh-xs: 0 1px 2px rgba(0,0,0,.4);
-    --sh-sm: 0 1px 3px rgba(0,0,0,.45), 0 1px 2px rgba(0,0,0,.4);
-    --sh:    0 4px 8px rgba(0,0,0,.45), 0 2px 4px rgba(0,0,0,.4);
-    --sh-md: 0 10px 20px rgba(0,0,0,.5), 0 4px 8px rgba(0,0,0,.4);
-  }
+  --sh-xs: 0 1px 2px rgba(0,0,0,.4);
+  --sh-sm: 0 1px 3px rgba(0,0,0,.45), 0 1px 2px rgba(0,0,0,.4);
+  --sh:    0 4px 8px rgba(0,0,0,.45), 0 2px 4px rgba(0,0,0,.4);
+  --sh-md: 0 10px 20px rgba(0,0,0,.5), 0 4px 8px rgba(0,0,0,.4);
 }
 
 /* ── Reduced motion ───────────────────────────────────────────────────────── */
@@ -168,7 +181,7 @@ body::before {
   position: fixed;
   inset: 0 0 auto 0;
   height: 3px;
-  background: linear-gradient(90deg, var(--blue-700) 0%, var(--blue-400) 60%, var(--emerald-600) 100%);
+  background: linear-gradient(90deg, var(--teal-700) 0%, var(--teal-400) 55%, var(--blue-500) 100%);
   z-index: 999;
 }
 
