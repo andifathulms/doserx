@@ -3,6 +3,27 @@ const CUSTOM_DRUGS_KEY = 'doserx_custom_drugs'
 const RECENTS_KEY = 'doserx_recents'
 const FAVORITES_KEY = 'doserx_favorites'
 const RECENTS_MAX = 8
+const DOSE_MODE_KEY = 'doserx_dose_mode'
+
+// ── Dose-entry preference: per single dose (per kali) vs per day (per hari) ────
+
+export type DoseMode = 'perDose' | 'perDay'
+
+export function loadDoseMode(): DoseMode {
+  try {
+    return localStorage.getItem(DOSE_MODE_KEY) === 'perDay' ? 'perDay' : 'perDose'
+  } catch {
+    return 'perDose'
+  }
+}
+
+export function saveDoseMode(mode: DoseMode): void {
+  try {
+    localStorage.setItem(DOSE_MODE_KEY, mode)
+  } catch {
+    /* ignore */
+  }
+}
 
 // ── Recently-used & favorite drugs (keyed by stable drug id) ──────────────────
 
