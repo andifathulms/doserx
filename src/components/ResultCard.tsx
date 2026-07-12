@@ -39,8 +39,6 @@ export function ResultCard({
   result,
   resultMin,
   resultMax,
-  dosePerKgMin,
-  dosePerKgMax,
   drugName,
   weight,
   dosePerKg,
@@ -97,37 +95,19 @@ export function ResultCard({
       {(result.cappedByMaxDay || result.cappedByMaxSingle) && (
         <div className="result-card__warning">
           {result.cappedByMaxDay && (
-            <p>Daily dose capped at maximum ({result.dailyDose} mg/day).</p>
+            <p>Dosis harian dibatasi ke maksimum ({result.dailyDose} mg/hari).</p>
           )}
           {result.cappedByMaxSingle && (
-            <p>Per-dose capped at maximum single dose ({result.perDose} mg/dose).</p>
+            <p>Dosis per kali dibatasi ke maksimum ({result.perDose} mg/kali).</p>
           )}
         </div>
       )}
 
-      {/* Range header when min/max provided */}
-      {hasRange && dosePerKgMin != null && dosePerKgMax != null && (
-        <div className="dose-range-label">
-          Dose range: {dosePerKgMin}–{dosePerKgMax} mg/kg
-        </div>
-      )}
-
-      {/* Main result values (at typical/selected dose) */}
+      {/* Main result values. Per-kali (per dose) is the primary number —
+          it's how clinicians prescribe. Daily total is shown as context. */}
       <div className="result-card__values">
-        <div className="result-value">
-          <span className="result-value__label">Daily dose</span>
-          {hasRange ? (
-            <span className="result-value__num result-value__num--range">
-              {resultMin!.dailyDose}–{resultMax!.dailyDose}
-            </span>
-          ) : (
-            <span className="result-value__num">{result.dailyDose}</span>
-          )}
-          <span className="result-value__unit">mg/day</span>
-        </div>
-
         <div className="result-value result-value--highlight">
-          <span className="result-value__label">Per dose</span>
+          <span className="result-value__label">Dosis / kali</span>
           {hasRange ? (
             <span className="result-value__num result-value__num--range">
               {resultMin!.perDose}–{resultMax!.perDose}
@@ -135,12 +115,24 @@ export function ResultCard({
           ) : (
             <span className="result-value__num">{result.perDose}</span>
           )}
-          <span className="result-value__unit">mg × {freq}×/day</span>
+          <span className="result-value__unit">mg · {freq}×/hari</span>
+        </div>
+
+        <div className="result-value">
+          <span className="result-value__label">Dosis / hari</span>
+          {hasRange ? (
+            <span className="result-value__num result-value__num--range">
+              {resultMin!.dailyDose}–{resultMax!.dailyDose}
+            </span>
+          ) : (
+            <span className="result-value__num">{result.dailyDose}</span>
+          )}
+          <span className="result-value__unit">mg/hari</span>
         </div>
 
         {(result.volume != null || (hasRange && resultMin!.volume != null)) && (
           <div className="result-value result-value--highlight">
-            <span className="result-value__label">Volume</span>
+            <span className="result-value__label">Volume / kali</span>
             {hasRange && resultMin!.volume != null && resultMax!.volume != null ? (
               <span className="result-value__num result-value__num--range">
                 {resultMin!.volume}–{resultMax!.volume}

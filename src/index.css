@@ -593,6 +593,48 @@ body::before {
   color: var(--c-text-3);
 }
 
+/* ── Dose-entry mode (per kali / per hari) ────────────────────────────────── */
+.dose-mode {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.dose-mode__label {
+  font-size: .8rem;
+  font-weight: 600;
+  color: var(--c-text-2);
+}
+
+.dose-mode__toggle {
+  display: inline-flex;
+  background: var(--c-border);
+  padding: 3px;
+  border-radius: var(--r-sm);
+  gap: 2px;
+}
+
+.dose-mode__btn {
+  padding: 6px 16px;
+  font-size: .8125rem;
+  font-weight: 600;
+  color: var(--c-text-2);
+  background: transparent;
+  border: none;
+  border-radius: calc(var(--r-sm) - 2px);
+  transition: background .15s, color .15s, box-shadow .15s;
+  white-space: nowrap;
+}
+.dose-mode__btn--active {
+  background: var(--c-surface);
+  color: var(--c-primary);
+  box-shadow: var(--sh-xs);
+}
+.dose-mode__btn:focus-visible { outline: none; box-shadow: var(--sh-ring); }
+
 /* ── Form ─────────────────────────────────────────────────────────────────── */
 .form {
   display: grid;

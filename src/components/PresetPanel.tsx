@@ -3,7 +3,7 @@ import { DrugGrid } from './DrugGrid'
 import { ResultCard } from './ResultCard'
 import { WeightInput } from './WeightInput'
 import { DrugPreset } from '../data/drugs'
-import { CustomDrugPreset, deleteCustomDrug } from '../lib/storage'
+import { CustomDrugPreset, deleteCustomDrug, DoseMode, loadDoseMode, saveDoseMode } from '../lib/storage'
 import { calculate, CalcResult } from '../lib/calculate'
 
 interface PresetPanelProps {
@@ -12,11 +12,24 @@ interface PresetPanelProps {
   onCustomDrugDeleted: () => void
 }
 
+const r2 = (n: number) => Math.round(n * 100) / 100
+
+// The catalog stores mg/kg/DAY. These helpers translate to/from the doctor's
+// chosen entry mode so the field always shows the value in that mode.
+function dayToMode(perDay: number | undefined, freq: number, mode: DoseMode): number | undefined {
+  if (perDay == null) return undefined
+  return mode === 'perDose' ? r2(perDay / freq) : perDay
+}
+function modeToDay(value: number, freq: number, mode: DoseMode): number {
+  return mode === 'perDose' ? value * freq : value
+}
+
 export function PresetPanel({ onHistoryUpdated, customDrugs, onCustomDrugDeleted }: PresetPanelProps) {
   const [selected, setSelected] = useState<DrugPreset | null>(null)
   const [gridOpen, setGridOpen] = useState(true)
   const [weight, setWeight] = useState('')
-  const [dosePerKg, setDosePerKg] = useState('')
+  const [doseMode, setDoseMode] = useState<DoseMode>(() => loadDoseMode())
+  const [dose, setDose] = useState('') // value in the current doseMode
   const [freq, setFreq] = useState('')
   const [concentration, setConcentration] = useState('')
   const [result, setResult] = useState<CalcResult | null>(null)
@@ -26,15 +39,26 @@ export function PresetPanel({ onHistoryUpdated, customDrugs, onCustomDrugDeleted
 
   const formRef = useRef<HTMLDivElement>(null)
 
-  function handleSelect(drug: DrugPreset) {
-    setSelected(drug)
-    setGridOpen(false)
-    setDosePerKg(String(drug.dosePerKg))
-    setFreq(String(drug.freq))
-    setConcentration(drug.concentration != null ? String(drug.concentration) : '')
+  const doseUnit = doseMode === 'perDose' ? 'mg/kg/kali' : 'mg/kg/hari'
+
+  // Default + range for the CURRENTLY selected drug, expressed in the active mode.
+  const defaultDose = selected ? dayToMode(selected.dosePerKg, selected.freq, doseMode)! : null
+  const rangeMin = selected ? dayToMode(selected.dosePerKgMin, selected.freq, doseMode) : undefined
+  const rangeMax = selected ? dayToMode(selected.dosePerKgMax, selected.freq, doseMode) : undefined
+
+  function clearResults() {
     setResult(null)
     setResultMin(null)
     setResultMax(null)
+  }
+
+  function handleSelect(drug: DrugPreset) {
+    setSelected(drug)
+    setGridOpen(false)
+    setDose(String(dayToMode(drug.dosePerKg, drug.freq, doseMode)))
+    setFreq(String(drug.freq))
+    setConcentration(drug.concentration != null ? String(drug.concentration) : '')
+    clearResults()
     setError(null)
     requestAnimationFrame(() =>
       formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
@@ -60,42 +84,55 @@ export function PresetPanel({ onHistoryUpdated, customDrugs, onCustomDrugDeleted
   function handleChangeDrug() {
     setGridOpen(true)
     setSelected(null)
-    setResult(null)
-    setResultMin(null)
-    setResultMax(null)
+    clearResults()
     setError(null)
+  }
+
+  function handleToggleMode(mode: DoseMode) {
+    if (mode === doseMode) return
+    const freqNum = parseFloat(freq)
+    const doseNum = parseFloat(dose)
+    // Convert the current value so the actual regimen stays identical.
+    if (isFinite(doseNum) && isFinite(freqNum) && freqNum > 0) {
+      const perDay = modeToDay(doseNum, freqNum, doseMode)
+      setDose(String(dayToMode(perDay, freqNum, mode)))
+    } else if (selected) {
+      setDose(String(dayToMode(selected.dosePerKg, selected.freq, mode)))
+    }
+    setDoseMode(mode)
+    saveDoseMode(mode)
+    clearResults()
   }
 
   function handleCalculate() {
     if (!selected) return
 
+    const freqNum = parseFloat(freq)
+    const doseNum = parseFloat(dose)
     const base = {
       weight: parseFloat(weight),
-      freq: parseFloat(freq),
+      freq: freqNum,
       maxDay: selected.maxDay,
       maxSingle: selected.maxSingle,
       concentration: concentration ? parseFloat(concentration) : undefined,
     }
 
-    const out = calculate({ ...base, dosePerKg: parseFloat(dosePerKg) })
+    const out = calculate({ ...base, dosePerKg: modeToDay(doseNum, freqNum, doseMode) })
 
     if (!out.valid) {
       setError(out.error)
-      setResult(null)
-      setResultMin(null)
-      setResultMax(null)
+      clearResults()
       return
     }
 
     setError(null)
     setResult(out)
 
-    // Only show min/max range when dose is at its preset default.
-    // If the doctor has overridden the dose, show just that single result.
-    const usingDefault = parseFloat(dosePerKg) === selected.dosePerKg
-    if (usingDefault && selected.dosePerKgMin != null && selected.dosePerKgMax != null) {
-      const outMin = calculate({ ...base, dosePerKg: selected.dosePerKgMin })
-      const outMax = calculate({ ...base, dosePerKg: selected.dosePerKgMax })
+    // Show the min/max range only when the dose is still at its preset default.
+    const usingDefault = defaultDose != null && doseNum === defaultDose
+    if (usingDefault && rangeMin != null && rangeMax != null) {
+      const outMin = calculate({ ...base, dosePerKg: modeToDay(rangeMin, freqNum, doseMode) })
+      const outMax = calculate({ ...base, dosePerKg: modeToDay(rangeMax, freqNum, doseMode) })
       setResultMin(outMin.valid ? outMin : null)
       setResultMax(outMax.valid ? outMax : null)
     } else {
@@ -103,6 +140,8 @@ export function PresetPanel({ onHistoryUpdated, customDrugs, onCustomDrugDeleted
       setResultMax(null)
     }
   }
+
+  const doseOverridden = defaultDose != null && dose !== String(defaultDose)
 
   return (
     <div className="panel">
@@ -123,7 +162,7 @@ export function PresetPanel({ onHistoryUpdated, customDrugs, onCustomDrugDeleted
                       onClick={() => handleSelectCustom(drug)}
                     >
                       <span className="drug-card__name">{drug.name}</span>
-                      <span className="drug-card__route">{drug.dosePerKg} mg/kg · {drug.freq}×</span>
+                      <span className="drug-card__route">{drug.dosePerKg} mg/kg/hari · {drug.freq}×</span>
                     </button>
                     <button
                       className="custom-drug-card__delete"
@@ -156,9 +195,9 @@ export function PresetPanel({ onHistoryUpdated, customDrugs, onCustomDrugDeleted
       {selected && !gridOpen && (
         <div ref={formRef}>
           <div className="drug-note">
-            {selected.dosePerKgMin != null && selected.dosePerKgMax != null && (
+            {rangeMin != null && rangeMax != null && (
               <span className="drug-note__range">
-                Range: {selected.dosePerKgMin}–{selected.dosePerKgMax} mg/kg/hari ·{' '}
+                Range: {rangeMin}–{rangeMax} {doseUnit} ·{' '}
               </span>
             )}
             {selected.note}
@@ -179,39 +218,62 @@ export function PresetPanel({ onHistoryUpdated, customDrugs, onCustomDrugDeleted
             )}
           </div>
 
+          {/* Dose entry mode — how the doctor thinks about the dose */}
+          <div className="dose-mode">
+            <span className="dose-mode__label">Cara hitung dosis</span>
+            <div className="dose-mode__toggle" role="radiogroup" aria-label="Cara hitung dosis">
+              <button
+                role="radio"
+                aria-checked={doseMode === 'perDose'}
+                className={`dose-mode__btn${doseMode === 'perDose' ? ' dose-mode__btn--active' : ''}`}
+                onClick={() => handleToggleMode('perDose')}
+              >
+                Per kali
+              </button>
+              <button
+                role="radio"
+                aria-checked={doseMode === 'perDay'}
+                className={`dose-mode__btn${doseMode === 'perDay' ? ' dose-mode__btn--active' : ''}`}
+                onClick={() => handleToggleMode('perDay')}
+              >
+                Per hari
+              </button>
+            </div>
+          </div>
+
           <div className="form">
             <WeightInput
               id="preset-weight"
               value={weight}
-              onChange={(v) => { setWeight(v); setResult(null) }}
+              onChange={(v) => { setWeight(v); clearResults() }}
               autoFocus
             />
             <div className="field">
               <div className="label-row">
                 <label className="label" htmlFor="preset-dose">
-                  Dosis (mg/kg)
-                  {selected.dosePerKgMin != null && selected.dosePerKgMax != null && (
-                    <span className="label--range"> [{selected.dosePerKgMin}–{selected.dosePerKgMax}]</span>
+                  Dosis ({doseUnit})
+                  {rangeMin != null && rangeMax != null && (
+                    <span className="label--range"> [{rangeMin}–{rangeMax}]</span>
                   )}
                 </label>
-                {dosePerKg !== String(selected.dosePerKg) && (
+                {doseOverridden && defaultDose != null && (
                   <button
                     className="reset-btn"
-                    onClick={() => { setDosePerKg(String(selected.dosePerKg)); setResult(null) }}
-                    title={`Reset ke ${selected.dosePerKg} mg/kg`}
+                    onClick={() => { setDose(String(defaultDose)); clearResults() }}
+                    title={`Reset ke ${defaultDose} ${doseUnit}`}
                   >
-                    ↺ {selected.dosePerKg}
+                    ↺ {defaultDose}
                   </button>
                 )}
               </div>
               <input
                 id="preset-dose"
-                className={`input${dosePerKg !== String(selected.dosePerKg) ? ' input--overridden' : ''}`}
+                className={`input${doseOverridden ? ' input--overridden' : ''}`}
                 type="number"
                 min="0"
                 step="0.01"
-                value={dosePerKg}
-                onChange={(e) => { setDosePerKg(e.target.value); setResult(null) }}
+                value={dose}
+                onChange={(e) => { setDose(e.target.value); clearResults() }}
               />
             </div>
             <div className="field">
@@ -223,7 +285,7 @@ export function PresetPanel({ onHistoryUpdated, customDrugs, onCustomDrugDeleted
                 min="1"
                 step="1"
                 value={freq}
-                onChange={(e) => { setFreq(e.target.value); setResult(null) }}
+                onChange={(e) => { setFreq(e.target.value); clearResults() }}
               />
             </div>
             <div className="field">
@@ -238,7 +300,7 @@ export function PresetPanel({ onHistoryUpdated, customDrugs, onCustomDrugDeleted
                 step="0.1"
                 placeholder="opsional"
                 value={concentration}
-                onChange={(e) => { setConcentration(e.target.value); setResult(null) }}
+                onChange={(e) => { setConcentration(e.target.value); clearResults() }}
               />
             </div>
           </div>
@@ -258,7 +320,7 @@ export function PresetPanel({ onHistoryUpdated, customDrugs, onCustomDrugDeleted
               dosePerKgMax={selected.dosePerKgMax}
               drugName={selected.name}
               weight={parseFloat(weight)}
-              dosePerKg={parseFloat(dosePerKg)}
+              dosePerKg={modeToDay(parseFloat(dose), parseFloat(freq), doseMode)}
               freq={parseFloat(freq)}
               concentration={concentration ? parseFloat(concentration) : undefined}
               availableForms={selected.availableForms}
