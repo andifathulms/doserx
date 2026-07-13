@@ -322,13 +322,67 @@ export function PresetPanel({ onHistoryUpdated, customDrugs, onCustomDrugDeleted
               weight={parseFloat(weight)}
               dosePerKg={modeToDay(parseFloat(dose), parseFloat(freq), doseMode)}
               freq={parseFloat(freq)}
+              freqMax={selected.freqMax}
               concentration={concentration ? parseFloat(concentration) : undefined}
               availableForms={selected.availableForms}
               onSaved={onHistoryUpdated}
             />
           )}
+
+          <DrugMonograph drug={selected} />
         </div>
       )}
     </div>
+  )
+}
+
+// ── Detail Obat — collapsible monograph (calm alternative to a flat dump) ──────
+function DrugMonograph({ drug }: { drug: DrugPreset }) {
+  const doseRange =
+    drug.dosePerKgMin != null && drug.dosePerKgMax != null
+      ? `${drug.dosePerKgMin}–${drug.dosePerKgMax} mg/kg/hari`
+      : `${drug.dosePerKg} mg/kg/hari`
+  const maxParts: string[] = []
+  if (drug.maxSingle != null) maxParts.push(`${drug.maxSingle} mg/kali`)
+  if (drug.maxDay != null) maxParts.push(`${drug.maxDay} mg/hari`)
+
+  const rows: Array<[string, string | undefined]> = [
+    ['Golongan', drug.category],
+    ['Indikasi', drug.indications?.length ? drug.indications.join(', ') : undefined],
+    ['Dosis', doseRange],
+    ['Dosis maksimum', maxParts.length ? maxParts.join(' · ') : undefined],
+    ['Efek samping', drug.sideEffects],
+    ['Kontraindikasi', drug.contraindication],
+    ['Keterangan', drug.note],
+    ['Sumber', drug.source],
+  ]
+
+  return (
+    <details className="monograph">
+      <summary className="monograph__summary">Detail Obat</summary>
+      <div className="monograph__body">
+        {drug.availableForms?.length ? (
+          <div className="monograph__row">
+            <span className="monograph__key">Sediaan</span>
+            <span className="monograph__val">
+              {drug.availableForms
+                .map((f) => {
+                  const name = f.label ?? `${f.strength} mg`
+                  return f.packSize ? `${name} (${f.packSize})` : name
+                })
+                .join(' · ')}
+            </span>
+          </div>
+        ) : null}
+        {rows.map(([k, v]) =>
+          v ? (
+            <div key={k} className="monograph__row">
+              <span className="monograph__key">{k}</span>
+              <span className="monograph__val">{v}</span>
+            </div>
+          ) : null,
+        )}
+      </div>
+    </details>
   )
 }

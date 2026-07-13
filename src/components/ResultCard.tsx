@@ -2,20 +2,28 @@ import { useState } from 'react'
 import { CalcResult } from '../lib/calculate'
 import { HistoryEntry, generateId, saveEntry } from '../lib/storage'
 import { DrugForm } from '../data/drugs'
-import { suggestForms } from '../lib/suggest'
+import { describeForms, FormDoseLine } from '../lib/suggest'
+
+function freqText(freq: number, freqMax?: number): string {
+  return freqMax && freqMax !== freq ? `${freq}–${freqMax}×/hari` : `${freq}×/hari`
+}
 
 function buildResultText(
   drugName: string,
   weight: number,
   freq: number,
+  freqMax: number | undefined,
   result: CalcResult,
+  formLines: FormDoseLine[],
 ): string {
   const lines: string[] = [`${drugName} — ${weight} kg`]
   if (result.cappedByMaxDay) lines.push('⚠ Dosis harian dikurangi ke maksimum')
-  if (result.cappedByMaxSingle) lines.push('⚠ Dosis per takaran dikurangi ke maksimum')
-  lines.push(`Dosis harian : ${result.dailyDose} mg/hari`)
-  lines.push(`Per dosis    : ${result.perDose} mg × ${freq}×/hari`)
-  if (result.volume != null) lines.push(`Volume       : ${result.volume} mL/dosis`)
+  if (result.cappedByMaxSingle) lines.push('⚠ Dosis per kali dikurangi ke maksimum')
+  lines.push(`Dosis/kali : ${result.perDose} mg · ${freqText(freq, freqMax)}`)
+  lines.push(`Dosis/hari : ${result.dailyDose} mg`)
+  for (const l of formLines) {
+    lines.push(`  ${l.name}: ${l.range ?? l.value} ${l.unit}/kali`)
+  }
   lines.push('— DoseRx')
   return lines.join('\n')
 }
@@ -30,6 +38,7 @@ interface ResultCardProps {
   weight: number
   dosePerKg: number
   freq: number
+  freqMax?: number
   concentration?: number
   availableForms?: DrugForm[]
   onSaved: () => void
@@ -43,6 +52,7 @@ export function ResultCard({
   weight,
   dosePerKg,
   freq,
+  freqMax,
   concentration,
   availableForms,
   onSaved,
@@ -52,15 +62,15 @@ export function ResultCard({
   const [saved, setSaved] = useState(false)
   const [copied, setCopied] = useState(false)
 
+  const hasRange = resultMin != null && resultMax != null
+  const formLines = availableForms?.length
+    ? describeForms(availableForms, result.perDose, resultMin?.perDose, resultMax?.perDose)
+    : []
+
   function handleCopy() {
-    navigator.clipboard.writeText(buildResultText(drugName, weight, freq, result))
+    navigator.clipboard.writeText(buildResultText(drugName, weight, freq, freqMax, result, formLines))
       .then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000) })
   }
-
-  const hasRange = resultMin != null && resultMax != null
-  const suggestions = availableForms?.length
-    ? suggestForms(result.perDose, availableForms)
-    : []
 
   function handleSave() {
     const entry: HistoryEntry = {
@@ -115,7 +125,7 @@ export function ResultCard({
           ) : (
             <span className="result-value__num">{result.perDose}</span>
           )}
-          <span className="result-value__unit">mg · {freq}×/hari</span>
+          <span className="result-value__unit">mg · {freqText(freq, freqMax)}</span>
         </div>
 
         <div className="result-value">
@@ -145,20 +155,20 @@ export function ResultCard({
         )}
       </div>
 
-      {/* Tablet/form suggestions */}
-      {suggestions.length > 0 && (
-        <div className="suggestions">
-          <span className="suggestions__label">Ketersediaan obat</span>
-          <div className="suggestions__list">
-            {suggestions.map((s, i) => (
-              <span key={i} className={`suggestion-chip${s.form === 'tablet' || s.form === 'capsule' ? ' suggestion-chip--solid' : ' suggestion-chip--liquid'}`}>
-                {s.display}
-                {s.actualDose !== result.perDose && (
-                  <span className="suggestion-chip__actual"> = {s.actualDose} mg</span>
-                )}
-              </span>
+      {/* Per-preparation takaran — how much of each available form, per kali */}
+      {formLines.length > 0 && (
+        <div className="form-doses">
+          <span className="form-doses__label">Takaran per sediaan · per kali</span>
+          <ul className="form-doses__list">
+            {formLines.map((l) => (
+              <li key={l.key} className={`form-dose form-dose--${l.kind}`}>
+                <span className="form-dose__name">{l.name}</span>
+                <span className="form-dose__amt">
+                  <strong>{l.range ?? l.value}</strong> {l.unit}
+                </span>
+              </li>
             ))}
-          </div>
+          </ul>
         </div>
       )}
 

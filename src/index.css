@@ -1006,6 +1006,94 @@ body::before {
   opacity: .7;
 }
 
+/* ── Per-preparation dose lines ───────────────────────────────────────────── */
+.form-doses { margin-bottom: 16px; }
+
+.form-doses__label {
+  display: block;
+  font-size: .6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--c-text-3);
+  margin-bottom: 8px;
+}
+
+.form-doses__list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+
+.form-dose {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 12px;
+  background: var(--c-surface-2);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-sm);
+}
+.form-dose--liquid { border-left: 3px solid var(--c-primary); }
+.form-dose--solid  { border-left: 3px solid var(--c-accent); }
+
+.form-dose__name { font-size: .8125rem; font-weight: 600; color: var(--c-text-2); }
+
+.form-dose__amt { font-size: .875rem; color: var(--c-text-3); white-space: nowrap; }
+.form-dose__amt strong {
+  font-size: 1.0625rem;
+  font-weight: 800;
+  color: var(--c-text);
+  letter-spacing: -.01em;
+}
+
+/* ── Detail Obat monograph ────────────────────────────────────────────────── */
+.monograph {
+  margin-top: 16px;
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r);
+  overflow: hidden;
+}
+
+.monograph__summary {
+  cursor: pointer;
+  padding: 12px 16px;
+  font-size: .875rem;
+  font-weight: 700;
+  color: var(--c-primary);
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  user-select: none;
+}
+.monograph__summary::-webkit-details-marker { display: none; }
+.monograph__summary::before {
+  content: '▸';
+  font-size: .7rem;
+  transition: transform .15s;
+}
+.monograph[open] .monograph__summary::before { transform: rotate(90deg); }
+.monograph__summary:hover { background: var(--c-surface-2); }
+.monograph__summary:focus-visible { outline: none; box-shadow: var(--sh-ring); }
+
+.monograph__body { padding: 2px 16px 14px; }
+
+.monograph__row {
+  display: grid;
+  grid-template-columns: 128px 1fr;
+  gap: 10px;
+  padding: 9px 0;
+  border-top: 1px solid var(--c-border);
+  font-size: .8125rem;
+}
+.monograph__row:first-child { border-top: none; }
+
+.monograph__key { color: var(--c-text-3); font-weight: 600; }
+.monograph__val { color: var(--c-text-2); line-height: 1.5; }
+
+@media (max-width: 560px) {
+  .monograph__row { grid-template-columns: 1fr; gap: 2px; }
+}
+
 /* ── History ──────────────────────────────────────────────────────────────── */
 .history-header {
   display: flex;
