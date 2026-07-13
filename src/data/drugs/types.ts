@@ -36,6 +36,7 @@ export interface DrugForm {
   strength: number // mg per unit (solid) or mg/mL (liquid)
   form: FormType
   label?: string
+  packSize?: string // e.g. '60 mL' bottle, 'strip 10' — shown in the Sediaan list
 }
 
 export interface DrugPreset {
@@ -49,6 +50,7 @@ export interface DrugPreset {
   dosePerKgMin?: number
   dosePerKgMax?: number
   freq: number
+  freqMax?: number // upper bound of frequency when it's a range (e.g. 4–6×/day)
   maxDay?: number
   maxSingle?: number
   concentration?: number // mg/mL for volume calculation
@@ -60,6 +62,7 @@ export interface DrugPreset {
   source?: string // dosing reference, e.g. 'IDAI', 'BNFc', 'Fornas', 'WHO'
   aliases?: string[] // alternate names / brands for search, e.g. ['PCT','Sanmol']
   indications?: string[] // searchable indications, e.g. ['demam','nyeri']
+  sideEffects?: string // efek samping — shown in the Detail Obat monograph
   minAgeMonths?: number // youngest age the dose applies to (display gating)
   minWeightKg?: number
   contraindication?: string // hard contraindication, surfaced in red

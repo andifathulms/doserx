@@ -153,6 +153,7 @@ export const RESPIRATORY: DrugPreset[] = [
     source: 'IDAI',
     aliases: ['ventolin', 'salbu', 'albuterol'],
     indications: ['asma', 'sesak', 'mengi', 'bronkospasme'],
+    sideEffects: 'Tremor, jantung berdebar, gelisah, hipokalemia pada dosis tinggi.',
     forPuyer: true,
   },
   {

@@ -52,6 +52,90 @@ function round2(v: number): number {
   return Math.round(v * 100) / 100
 }
 
+// ── Per-preparation dosing lines (with a range when a dose range is known) ────
+
+const FORM_NAME: Record<string, string> = {
+  tablet: 'Tablet',
+  capsule: 'Kapsul',
+  syrup: 'Sirup',
+  drop: 'Drop',
+  rectal: 'Supp',
+  nebule: 'Nebul',
+  vial: 'Vial',
+  ampoule: 'Ampul',
+  sachet: 'Sachet',
+}
+
+export interface FormDoseLine {
+  key: string
+  name: string // e.g. "Sirup 120mg/5mL"
+  unit: string // "mL" | "tab" | ...
+  value: string // recommended amount, formatted
+  range?: string // e.g. "4.2–6.3" or "¼–½" when min/max differ
+  kind: 'solid' | 'liquid'
+}
+
+function formName(f: DrugForm): string {
+  const base = FORM_NAME[f.form] ?? f.form
+  if (f.label) return `${base} ${f.label}`
+  if (f.form === 'tablet' || f.form === 'capsule' || f.form === 'rectal') {
+    return `${base} ${f.strength}mg`
+  }
+  return base
+}
+
+function solidAmt(mg: number, strength: number): string {
+  const c = roundToFraction(mg / strength, SOLID_FRACTIONS)
+  return FRACTION_LABEL[c] ?? String(c)
+}
+function liquidAmt(mg: number, strength: number): string {
+  return String(round2(mg / strength))
+}
+
+/**
+ * Concrete amount to give for each available preparation at the per-dose value,
+ * with a low–high range when perDoseMin/Max are supplied and differ.
+ * Injectable-only forms (vial/ampoule/nebule) are left to the main volume calc.
+ */
+export function describeForms(
+  forms: DrugForm[],
+  perDose: number,
+  perDoseMin?: number,
+  perDoseMax?: number,
+): FormDoseLine[] {
+  if (perDose <= 0) return []
+  const hasRange =
+    perDoseMin != null && perDoseMax != null && perDoseMin > 0 && perDoseMin !== perDoseMax
+
+  const lines: FormDoseLine[] = []
+  for (const f of forms) {
+    const solid = f.form === 'tablet' || f.form === 'capsule' || f.form === 'rectal'
+    const liquid = f.form === 'syrup' || f.form === 'drop'
+    if (!solid && !liquid) continue
+    if (f.strength <= 0) continue
+
+    const unit = FORM_LABEL[f.form] ?? f.form
+    const value = solid ? solidAmt(perDose, f.strength) : liquidAmt(perDose, f.strength)
+
+    let range: string | undefined
+    if (hasRange) {
+      const lo = solid ? solidAmt(perDoseMin!, f.strength) : liquidAmt(perDoseMin!, f.strength)
+      const hi = solid ? solidAmt(perDoseMax!, f.strength) : liquidAmt(perDoseMax!, f.strength)
+      if (lo !== hi) range = `${lo}–${hi}`
+    }
+
+    lines.push({
+      key: `${f.form}-${f.strength}-${f.label ?? ''}`,
+      name: formName(f),
+      unit,
+      value,
+      range,
+      kind: solid ? 'solid' : 'liquid',
+    })
+  }
+  return lines
+}
+
 export function suggestForms(perDose: number, forms: DrugForm[]): FormSuggestion[] {
   if (perDose <= 0) return []
 

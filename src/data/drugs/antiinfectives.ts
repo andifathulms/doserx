@@ -25,6 +25,7 @@ export const ANTIBIOTICS: DrugPreset[] = [
     source: 'IDAI',
     aliases: ['amoxan', 'amoxsan', 'yusimox'],
     indications: ['ispa', 'otitis', 'pneumonia', 'isk'],
+    sideEffects: 'Diare, mual, ruam. Reaksi alergi (urtikaria–anafilaksis) pada yang tersensitisasi.',
     forPuyer: false,
   },
   {
@@ -115,6 +116,7 @@ export const ANTIBIOTICS: DrugPreset[] = [
     source: 'IDAI',
     aliases: ['cefspan', 'fixiphar', 'sporetik'],
     indications: ['tifoid', 'isk', 'ispa'],
+    sideEffects: 'Diare, mual, nyeri perut, ruam. Jarang: reaksi alergi.',
     forPuyer: false,
   },
   {
@@ -200,6 +202,7 @@ export const ANTIBIOTICS: DrugPreset[] = [
     source: 'IDAI',
     aliases: ['cotrim', 'trimoxsul', 'bactrim'],
     indications: ['isk', 'diare disentri', 'pcp'],
+    sideEffects: 'Mual, ruam; jarang Stevens-Johnson & kelainan darah. Cukupkan cairan.',
     minAgeMonths: 2,
     forPuyer: false,
   },

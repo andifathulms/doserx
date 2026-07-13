@@ -123,6 +123,7 @@ export const VITAMINS: DrugPreset[] = [
     source: 'WHO',
     aliases: ['zinc', 'zinckid', 'zinkid'],
     indications: ['diare', 'mencret'],
+    sideEffects: 'Kadang mual atau muntah bila perut kosong. Umumnya aman.',
     forPuyer: true,
   },
   {
