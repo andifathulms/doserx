@@ -2,3 +2,7 @@ node_modules
 dist
 .env
 .env.local
+
+# Local exports & OS cruft
+exports/
+.DS_Store
