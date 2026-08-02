@@ -319,6 +319,88 @@ body::before {
   line-height: 1.6;
 }
 
+/* Shared bottom bar: legal notice + maker's mark share one seam (no extra
+   dividers). Desktop = side by side; mobile = stacked. */
+.app-footer__bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px 24px;
+}
+
+.app-footer__legal {
+  flex: 1 1 320px;
+  margin: 0;
+  min-width: 0;
+}
+
+/* ── Maker's mark ─────────────────────────────────────────────────────────── */
+.maker {
+  flex: 0 1 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.maker__text {
+  margin: 0;
+  color: var(--c-text-3);
+}
+
+.maker__name {
+  color: var(--c-text-2);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-color: var(--c-border-mid);
+  transition: color .15s, text-decoration-color .15s;
+}
+
+.maker__name:hover {
+  color: var(--c-primary);
+  text-decoration-color: var(--c-primary);
+}
+
+.maker__year {
+  font-variant-numeric: tabular-nums;
+}
+
+.maker__links {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: -6px; /* align first icon's tap target to the text edge */
+}
+
+.maker__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--r-sm);
+  color: var(--c-text-faint);
+  transition: color .15s, background .15s;
+}
+
+.maker__icon:hover {
+  color: var(--c-primary);
+  background: var(--c-surface-2);
+}
+
+/* Desktop: right-align the mark opposite the legal notice. */
+@media (min-width: 560px) {
+  .maker {
+    align-items: flex-end;
+    text-align: right;
+  }
+  .maker__links {
+    margin-left: 0;
+    margin-right: -6px;
+  }
+}
+
 /* ── Tabs — segmented control ─────────────────────────────────────────────── */
 .tabs {
   display: flex;

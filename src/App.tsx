@@ -5,6 +5,7 @@ import { CustomPanel } from './components/CustomPanel'
 import { HistoryPanel } from './components/HistoryPanel'
 import { PuyerPanel } from './components/PuyerPanel'
 import { InfusionPanel } from './components/InfusionPanel'
+import { MakerSignature } from './components/MakerSignature'
 import { loadHistory, loadCustomDrugs, HistoryEntry, CustomDrugPreset } from './lib/storage'
 
 // Calculator modes only. History is a record, not a calculator — it lives in the
@@ -102,10 +103,13 @@ function App() {
       </main>
 
       <footer className="app-footer">
-        <p>
-          Nilai dosis preset adalah referensi umum dan tidak menggantikan penilaian klinis.
-          Tidak ada data pasien yang dikirim ke server — semua perhitungan berjalan di perangkat ini.
-        </p>
+        <div className="app-footer__bar">
+          <p className="app-footer__legal">
+            Nilai dosis preset adalah referensi umum dan tidak menggantikan penilaian klinis.
+            Tidak ada data pasien yang dikirim ke server — semua perhitungan berjalan di perangkat ini.
+          </p>
+          <MakerSignature />
+        </div>
       </footer>
     </div>
   )
