@@ -368,6 +368,14 @@ export function PuyerPanel({ onHistoryUpdated: _onHistoryUpdated }: PuyerPanelPr
               />
               <label className="dose-mode__btn" htmlFor="puyer-mode-perday">Per hari</label>
             </div>
+            {/* The convention was only explained after a result, inside a
+                collapsed panel. The ambiguity bites HERE, at the toggle, on
+                the one number the user might override. */}
+            <p className="dose-mode__hint">
+              Katalog menyimpan dosis sebagai <strong>mg/kg/hari</strong> (total sehari).
+              Mode “Per kali” hanya mengubah cara angka ditampilkan — dibagi frekuensi —
+              bukan besar dosisnya.
+            </p>
           </div>
 
           {/* Per-drug dose overrides */}

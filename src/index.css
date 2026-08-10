@@ -988,6 +988,16 @@ body::before {
   color: var(--c-text-2);
 }
 
+.dose-mode__hint {
+  flex: 1 0 100%;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-snug);
+  color: var(--c-text-3);
+  text-wrap: pretty;
+}
+
+.dose-mode__hint strong { font-weight: 600; color: var(--c-text-2); }
+
 .dose-mode__toggle {
   display: inline-flex;
   background: var(--c-border);
