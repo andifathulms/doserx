@@ -299,10 +299,15 @@ export function PresetPanel({ onHistoryUpdated, customDrugs, onCustomDrugDeleted
                 type="number"
                 min="0"
                 step="0.1"
-                placeholder="opsional"
+                placeholder="mis. 24 — sirup 120mg/5mL = 24 mg/mL"
                 value={concentration}
                 onChange={(e) => { setConcentration(e.target.value); clearResults() }}
+                aria-describedby="preset-conc-hint"
               />
+              <p className="field__hint" id="preset-conc-hint">
+                Diisi untuk mendapat volume dalam mL. Ambil dari label sediaan yang Anda pakai —
+                katalog tidak menyimpannya karena berbeda antar merek.
+              </p>
             </div>
           </div>
 

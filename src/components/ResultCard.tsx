@@ -75,6 +75,20 @@ export function ResultCard({
     ? describeForms(availableForms, result.perDose, resultMin?.perDose, resultMax?.perDose)
     : []
 
+  // Only 37 of the catalog's drugs carry a stock concentration, so for the rest
+  // the mL line simply never appeared — the app looked broken at the moment it
+  // was being most correct. Ask only where a volume is actually meaningful: the
+  // drug comes as a liquid AND no per-preparation mL line already covers it.
+  const hasLiquidForm = !!availableForms?.some((f) =>
+    f.form === 'syrup' || f.form === 'drop' || f.form === 'vial' ||
+    f.form === 'ampoule' || f.form === 'nebule',
+  )
+  const volumeCoveredByForms = formLines.some((l) => l.kind === 'liquid')
+  const needsConcentration =
+    result.volume == null &&
+    !volumeCoveredByForms &&
+    (hasLiquidForm || !availableForms?.length)
+
   function handleCopy() {
     navigator.clipboard
       .writeText(buildResultText(drugName, weight, freq, freqMax, result, formLines, source))
@@ -171,7 +185,26 @@ export function ResultCard({
             <span className="result-value__unit">mL</span>
           </div>
         )}
+
+        {needsConcentration && (
+          <div className="result-value result-value--pending">
+            <span className="result-value__label">Volume / kali</span>
+            <span className="result-value__num result-value__num--pending">—</span>
+            <span className="result-value__unit">belum bisa dihitung</span>
+          </div>
+        )}
       </div>
+
+      {/* The app cannot know this number: concentration is a property of the
+          vial in her hand, not of the drug. Saying so is the difference
+          between a tool that looks broken and one that is being honest. */}
+      {needsConcentration && (
+        <p className="result-card__pending-hint">
+          Isi <strong>konsentrasi stok (mg/mL)</strong> pada form di atas untuk mendapat volume.
+          Nilainya tergantung sediaan yang ada di tangan Anda — beda merek atau batch bisa
+          beda, jadi tidak disimpan di katalog.
+        </p>
+      )}
 
       {/* Per-preparation takaran — how much of each available form, per kali */}
       {formLines.length > 0 && (
