@@ -99,10 +99,7 @@ export function InfusionPanel() {
 
   return (
     <div className="panel">
-      <p className="puyer-intro">
-        Pilih obat, masukkan berat dan dosis, dapatkan kecepatan infus (mL/jam) dan tetesan per menit.
-      </p>
-
+      {/* Mode description now lives on the tab control (see App.tsx TABS). */}
       {/* Drug selector */}
       <div className="infusion-drug-grid">
         {INFUSION_PRESETS.map((drug) => (

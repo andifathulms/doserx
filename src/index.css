@@ -506,12 +506,35 @@ body::before {
 }
 
 /* ── Tabs — segmented control ─────────────────────────────────────────────── */
+.tabs-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  margin: var(--sp-4) 0 var(--sp-5);
+}
+
+.tabs-group__label {
+  font-size: var(--fs-2xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .09em;
+  color: var(--c-text-3);
+}
+
+/* Says what the selected mode actually calculates — without it the four
+   labels are bare nouns that could be drug categories or saved sets. */
+.tabs-group__hint {
+  font-size: var(--fs-sm);
+  line-height: var(--lh-snug);
+  color: var(--c-text-2);
+  text-wrap: pretty;
+}
+
 .tabs {
   display: flex;
   background: var(--c-border);
   padding: 3px;
   border-radius: var(--r);
-  margin: 14px 0 20px;
   gap: 2px;
 }
 

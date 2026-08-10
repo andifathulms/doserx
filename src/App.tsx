@@ -10,11 +10,30 @@ import { loadHistory, loadCustomDrugs, HistoryEntry, CustomDrugPreset } from './
 
 // Calculator modes only. History is a record, not a calculator — it lives in the
 // header (see below) rather than crowding the segmented control to 5 items.
+// Each mode carries a one-line hint: the bare labels are jargon to anyone
+// meeting the app for the first time, and nothing else on screen says these
+// four are calculators rather than drug categories.
 const TABS = [
-  { id: 'preset', label: 'Preset' },
-  { id: 'custom', label: 'Kustom' },
-  { id: 'puyer', label: 'Puyer' },
-  { id: 'infus', label: 'Infus' },
+  {
+    id: 'preset',
+    label: 'Preset',
+    hint: 'Hitung dosis satu obat dari katalog siap pakai — dosis/kg sudah terisi.',
+  },
+  {
+    id: 'custom',
+    label: 'Kustom',
+    hint: 'Obat di luar katalog — masukkan sendiri dosis/kg, frekuensi, dan konsentrasi.',
+  },
+  {
+    id: 'puyer',
+    label: 'Puyer',
+    hint: 'Racik 2 obat atau lebih sekaligus menjadi satu resep puyer per bungkus.',
+  },
+  {
+    id: 'infus',
+    label: 'Infus',
+    hint: 'Obat drip — hitung kecepatan infus (mL/jam) dan tetes per menit.',
+  },
 ]
 
 function App() {
@@ -87,7 +106,12 @@ function App() {
         )}
 
         {showCalculator && (
-          <Tabs tabs={TABS} active={activeTab} onChange={handleTabChange} />
+          <Tabs
+            tabs={TABS}
+            active={activeTab}
+            onChange={handleTabChange}
+            label="Mode hitung"
+          />
         )}
 
         <div className="safety-banner" role="note">
