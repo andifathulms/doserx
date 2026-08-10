@@ -156,6 +156,14 @@ export function ResultCard({
               → <strong>{result.perDose} mg/kali</strong>.
             </p>
           )}
+          {/* Whose ceiling, and why a weight-linear rule has one at all. The
+              card cited its source generally; the rule that actually fired
+              was unattributed at the moment it fired. */}
+          <p className="result-card__cap-why">
+            Batas ini bukan hitungan dari berat badan — ini angka maksimum tetap
+            {source ? ` menurut ${source}` : ''}, di atasnya dosis tidak lagi dianggap
+            aman meski berat pasien terus naik.
+          </p>
           {result.capFromWeightKg != null && (
             <p className="result-card__crossover">
               Pada {dosePerKg} mg/kg/hari, batas ini berlaku sejak{' '}
