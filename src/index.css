@@ -2236,6 +2236,26 @@ body::before {
 }
 
 /* ── Per-form row with total ─────────────────────────────────────────────── */
+.puyer-recipe__cite { font-size: var(--fs-sm); font-weight: 400; color: var(--c-text-3); }
+
+.puyer-recipe__working {
+  margin-top: var(--sp-1);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-snug);
+  color: var(--c-text-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.puyer-recipe__working strong { color: var(--c-text-2); font-weight: 600; }
+
+.puyer-recipe__assumption {
+  margin: var(--sp-3) 0;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-snug);
+  color: var(--c-text-3);
+  text-wrap: pretty;
+}
+
 .puyer-recipe__forms-block {
   display: flex;
   flex-direction: column;

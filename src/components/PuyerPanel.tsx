@@ -468,13 +468,26 @@ export function PuyerPanel({ onHistoryUpdated: _onHistoryUpdated }: PuyerPanelPr
 
                   return (
                     <li key={entry.drug.id} className="puyer-recipe__item">
-                      <div className="puyer-recipe__drug-name">{entry.drug.name}</div>
+                      <div className="puyer-recipe__drug-name">
+                        {entry.drug.name}
+                        {/* Citation at the rule, not in a footnote block. */}
+                        {entry.drug.source && (
+                          <span className="puyer-recipe__cite"> · {entry.drug.source}</span>
+                        )}
+                      </div>
                       <div className="puyer-recipe__dose-line">
                         <span className="puyer-recipe__perdose">{entry.result.perDose} mg/dosis</span>
                         <span className="puyer-recipe__freq">{freqLabel(freq)}</span>
                         {(entry.result.cappedByMaxDay || entry.result.cappedByMaxSingle) && (
                           <span className="badge badge--warn">cap</span>
                         )}
+                      </div>
+                      {/* Where the bungkus count comes from — it drives every
+                          total below and appeared as a bare number. */}
+                      <div className="puyer-recipe__working">
+                        {freq}× sehari × {numDays} hari = <strong>{totalBungkus} bungkus</strong>
+                        {' · '}total bahan = {entry.result.perDose} mg × {totalBungkus}
+                        {' = '}<strong>{round2(entry.result.perDose * totalBungkus)} mg</strong>
                       </div>
 
                       {solidS.length > 0 && (
@@ -515,6 +528,14 @@ export function PuyerPanel({ onHistoryUpdated: _onHistoryUpdated }: PuyerPanelPr
                   )
                 })}
               </ul>
+
+              {/* The assumption the whole mode rests on, stated where the
+                  recipe is read rather than nowhere at all. */}
+              <p className="puyer-recipe__assumption">
+                Perhitungan mengasumsikan bahan tercampur rata dan terbagi sama banyak ke
+                setiap bungkus. Ketepatan tiap bungkus bergantung pada peracikan — untuk obat
+                dengan rentang aman sempit, pertimbangkan sediaan jadi.
+              </p>
 
               {/* ── Bungkus summary ──── */}
               <div className="puyer-recipe__bungkus-summary">
