@@ -15,6 +15,7 @@ function buildResultText(
   freqMax: number | undefined,
   result: CalcResult,
   formLines: FormDoseLine[],
+  source: string | undefined,
 ): string {
   const lines: string[] = [`${drugName} — ${weight} kg`]
   if (result.cappedByMaxDay) lines.push('⚠ Dosis harian dikurangi ke maksimum')
@@ -24,6 +25,9 @@ function buildResultText(
   for (const l of formLines) {
     lines.push(`  ${l.name}: ${l.range ?? l.value} ${l.unit}/kali`)
   }
+  // The citation travels with the number — a pasted dose with no provenance is
+  // exactly the untraceable figure this app refuses to produce.
+  if (source) lines.push(`Acuan dosis: ${source}`)
   lines.push('— DoseRx')
   return lines.join('\n')
 }
@@ -41,6 +45,9 @@ interface ResultCardProps {
   freqMax?: number
   concentration?: number
   availableForms?: DrugForm[]
+  /** Dosing reference for this drug (IDAI, BNFc, Fornas, …). Absent for
+   *  user-authored presets, where there is nothing to cite. */
+  source?: string
   onSaved: () => void
 }
 
@@ -55,6 +62,7 @@ export function ResultCard({
   freqMax,
   concentration,
   availableForms,
+  source,
   onSaved,
 }: ResultCardProps) {
   const [label, setLabel] = useState('')
@@ -68,7 +76,8 @@ export function ResultCard({
     : []
 
   function handleCopy() {
-    navigator.clipboard.writeText(buildResultText(drugName, weight, freq, freqMax, result, formLines))
+    navigator.clipboard
+      .writeText(buildResultText(drugName, weight, freq, freqMax, result, formLines, source))
       .then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000) })
   }
 
@@ -101,6 +110,15 @@ export function ResultCard({
         <span className="result-card__drug">{drugName}</span>
         <span className="result-card__weight">{weight} kg</span>
       </div>
+
+      {/* Provenance where the claim is made, not three taps away in the
+          monograph. This is what makes "calculation aid, not decision support"
+          an honest position rather than a defensive one. */}
+      {source && (
+        <p className="result-card__source">
+          Acuan dosis <strong>{source}</strong>
+        </p>
+      )}
 
       {(result.cappedByMaxDay || result.cappedByMaxSingle) && (
         <div className="result-card__warning">

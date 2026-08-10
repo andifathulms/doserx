@@ -326,6 +326,7 @@ export function PresetPanel({ onHistoryUpdated, customDrugs, onCustomDrugDeleted
               freqMax={selected.freqMax}
               concentration={concentration ? parseFloat(concentration) : undefined}
               availableForms={selected.availableForms}
+              source={selected.source}
               onSaved={onHistoryUpdated}
             />
           )}

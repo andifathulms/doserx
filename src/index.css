@@ -1104,6 +1104,19 @@ body::before {
   font-weight: 500;
 }
 
+/* Citation sits with the number it justifies. Quiet by default — it is
+   provenance, not a badge of authority. */
+.result-card__source {
+  margin: calc(-1 * var(--sp-2)) 0 var(--sp-3);
+  font-size: var(--fs-sm);
+  color: var(--c-text-3);
+}
+
+.result-card__source strong {
+  font-weight: 600;
+  color: var(--c-text-2);
+}
+
 .result-card__warning {
   background: var(--c-warn-bg);
   border: 1px solid var(--c-warn-bdr);
