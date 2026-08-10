@@ -244,9 +244,33 @@ export function ResultCard({
                 <span className="form-dose__amt">
                   <strong>{l.range ?? l.value}</strong> {l.unit}
                 </span>
+                {/* Every figure above this line is exact. A tablet can only be
+                    split into practical fractions, so this step approximates —
+                    and it is the only step that reaches the patient. Say what
+                    is actually delivered and by how much it misses. */}
+                {l.deliveredMg != null && l.deltaMg != null && !l.range && (
+                  <span
+                    className={`form-dose__delivered${
+                      Math.abs(l.deltaMg) >= 0.01 ? ' form-dose__delivered--off' : ''
+                    }`}
+                  >
+                    = {l.deliveredMg} mg
+                    {Math.abs(l.deltaMg) >= 0.01 && (
+                      <>
+                        {' '}({l.deltaMg > 0 ? '+' : '−'}
+                        {Math.abs(l.deltaMg)} mg dari {result.perDose})
+                      </>
+                    )}
+                  </span>
+                )}
               </li>
             ))}
           </ul>
+          <p className="form-doses__note">
+            Takaran padat dibulatkan ke pecahan yang bisa dibelah (¼, ½, ¾, 1…),
+            jadi dosis yang benar-benar diberikan bisa sedikit di atas atau di bawah
+            hasil hitung. Cairan diukur langsung, tanpa pembulatan.
+          </p>
         </div>
       )}
 

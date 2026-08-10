@@ -1523,6 +1523,25 @@ body::before {
 .form-dose--liquid { border-left: 3px solid var(--c-primary); }
 .form-dose--solid  { border-left: 3px solid var(--c-accent); }
 
+/* The delivered dose wraps to its own line so the takaran stays scannable;
+   the gap only takes colour when there actually is one. */
+.form-dose__delivered {
+  flex: 1 0 100%;
+  font-size: var(--fs-sm);
+  color: var(--c-text-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.form-dose__delivered--off { color: var(--c-warn-strong); font-weight: 600; }
+
+.form-doses__note {
+  margin-top: var(--sp-2);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-snug);
+  color: var(--c-text-3);
+  text-wrap: pretty;
+}
+
 .form-dose__name { font-size: var(--fs-xs); font-weight: 600; color: var(--c-text-2); }
 
 .form-dose__amt { font-size: var(--fs-sm); color: var(--c-text-3); white-space: nowrap; }

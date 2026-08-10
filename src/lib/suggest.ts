@@ -73,6 +73,19 @@ export interface FormDoseLine {
   value: string // recommended amount, formatted
   range?: string // e.g. "4.2–6.3" or "¼–½" when min/max differ
   kind: 'solid' | 'liquid'
+  /**
+   * What this preparation ACTUALLY delivers at the recommended amount, and how
+   * far that is from the calculated dose.
+   *
+   * Solids can only be split into practical fractions, so "½ tab" of a 500mg
+   * tablet delivers 250mg whether the calculation said 250 or 320. Every other
+   * figure in the app is exact to a decimal; this step silently approximates,
+   * and it is the only step that reaches the patient — so the delivered dose
+   * and the gap are computed here rather than discarded. Liquids are measured
+   * continuously, so they carry no meaningful delta and leave these undefined.
+   */
+  deliveredMg?: number
+  deltaMg?: number
 }
 
 function formName(f: DrugForm): string {
@@ -84,8 +97,11 @@ function formName(f: DrugForm): string {
   return base
 }
 
+function solidCount(mg: number, strength: number): number {
+  return roundToFraction(mg / strength, SOLID_FRACTIONS)
+}
 function solidAmt(mg: number, strength: number): string {
-  const c = roundToFraction(mg / strength, SOLID_FRACTIONS)
+  const c = solidCount(mg, strength)
   return FRACTION_LABEL[c] ?? String(c)
 }
 function liquidAmt(mg: number, strength: number): string {
@@ -124,14 +140,22 @@ export function describeForms(
       if (lo !== hi) range = `${lo}–${hi}`
     }
 
-    lines.push({
+    const line: FormDoseLine = {
       key: `${f.form}-${f.strength}-${f.label ?? ''}`,
       name: formName(f),
       unit,
       value,
       range,
       kind: solid ? 'solid' : 'liquid',
-    })
+    }
+
+    if (solid) {
+      const delivered = round2(solidCount(perDose, f.strength) * f.strength)
+      line.deliveredMg = delivered
+      line.deltaMg = round2(delivered - perDose)
+    }
+
+    lines.push(line)
   }
   return lines
 }
