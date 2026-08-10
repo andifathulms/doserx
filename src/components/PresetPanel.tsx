@@ -313,6 +313,32 @@ export function PresetPanel({ onHistoryUpdated, customDrugs, onCustomDrugDeleted
                 value={dose}
                 onChange={(e) => { setDose(e.target.value); clearResults() }}
               />
+              {/* "But what if I dosed at the top of the range?" used to require
+                  retyping the number by hand — the manual arithmetic this app
+                  exists to remove. Now it is one tap, and moving between the
+                  three teaches what the range means better than a sentence. */}
+              {rangeMin != null && rangeMax != null && defaultDose != null && (
+                <div className="dose-picker">
+                  <span className="dose-picker__label">Coba:</span>
+                  {([
+                    ['Minimum', rangeMin],
+                    ['Tipikal', defaultDose],
+                    ['Maksimum', rangeMax],
+                  ] as const).map(([label, value]) => (
+                    <button
+                      key={label}
+                      type="button"
+                      className={`dose-picker__btn${
+                        dose === String(value) ? ' dose-picker__btn--active' : ''
+                      }`}
+                      aria-pressed={dose === String(value)}
+                      onClick={() => { setDose(String(value)); clearResults() }}
+                    >
+                      {label} <span className="dose-picker__num">{value}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
             <div className="field">
               <label className="label" htmlFor="preset-freq">Frekuensi/hari</label>

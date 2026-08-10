@@ -55,6 +55,8 @@ export function ResultCard({
   result,
   resultMin,
   resultMax,
+  dosePerKgMin,
+  dosePerKgMax,
   drugName,
   weight,
   dosePerKg,
@@ -230,6 +232,17 @@ export function ResultCard({
           Isi <strong>konsentrasi stok (mg/mL)</strong> pada form di atas untuk mendapat volume.
           Nilainya tergantung sediaan yang ada di tangan Anda — beda merek atau batch bisa
           beda, jadi tidak disimpan di katalog.
+        </p>
+      )}
+
+      {/* Where the range comes from. These two values were passed in and never
+          rendered, so a range appeared on screen with no stated origin — and
+          vanished without explanation as soon as the dose was overridden. */}
+      {hasRange && dosePerKgMin != null && dosePerKgMax != null && (
+        <p className="dose-range-label">
+          Rentang berasal dari dosis <strong>{dosePerKgMin}–{dosePerKgMax} mg/kg/hari</strong>
+          {source ? ` menurut ${source}` : ''} — bukan batas aman, melainkan rentang
+          yang dipublikasikan. Ubah angka dosis dan hasil kembali jadi satu nilai.
         </p>
       )}
 

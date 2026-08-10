@@ -1354,20 +1354,59 @@ body::before {
   font-weight: 500;
 }
 
-/* ── Dose range label ─────────────────────────────────────────────────────── */
+/* ── Dose range caption ───────────────────────────────────────────────────────
+   Was a pill with no content ever rendered into it. Now it explains where the
+   range on screen comes from, so it needs to read as a sentence. ─────────── */
 .dose-range-label {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sp-1);
-  font-size: var(--fs-2xs);
-  font-weight: 600;
-  color: var(--c-primary);
-  background: var(--c-primary-bg);
-  border: 1px solid var(--c-primary-bdr);
-  padding: 3px var(--sp-3);
-  border-radius: var(--r-full);
-  margin-bottom: var(--sp-3);
+  display: block;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-snug);
+  color: var(--c-text-3);
+  margin-bottom: var(--sp-4);
+  text-wrap: pretty;
 }
+
+.dose-range-label strong { font-weight: 600; color: var(--c-text-2); }
+
+/* ── Dose preset picker — min / typical / max ─────────────────────────────── */
+.dose-picker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-top: var(--sp-2);
+}
+
+.dose-picker__label {
+  font-size: var(--fs-sm);
+  color: var(--c-text-3);
+}
+
+.dose-picker__btn {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--sp-1);
+  min-height: var(--target-min);
+  padding: var(--sp-1) var(--sp-3);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--c-text-2);
+  background: var(--c-surface);
+  border: 1.5px solid var(--c-border);
+  border-radius: var(--r-full);
+  font-variant-numeric: tabular-nums;
+}
+
+.dose-picker__btn:hover { border-color: var(--c-border-mid); color: var(--c-text); }
+.dose-picker__btn:focus-visible { outline: none; box-shadow: var(--sh-ring); }
+
+.dose-picker__btn--active {
+  color: var(--c-primary-dark);
+  background: var(--c-primary-bg);
+  border-color: var(--c-primary-bdr);
+}
+
+.dose-picker__num { font-weight: 700; }
 
 /* ── Pending volume — an honest gap, not a missing tile ───────────────────── */
 .result-value--pending {
