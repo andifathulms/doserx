@@ -50,7 +50,10 @@ function App() {
       <header className="app-header">
         <div className="header-brand">
           <h1 className="app-title">Dose<span>Rx</span></h1>
-          <p className="app-subtitle">Kalkulator dosis berbasis berat badan</p>
+          <p className="app-subtitle">
+            Masukkan berat badan pasien — langsung dapat <strong>dosis mg</strong> dan{' '}
+            <strong>volume mL</strong> yang harus diberikan.
+          </p>
         </div>
         <button
           type="button"
@@ -66,6 +69,23 @@ function App() {
       </header>
 
       <main className="app-main">
+        {/* The flow, stated before the visitor has to guess it. Three steps is
+            the whole app — showing them up front is what makes the drug wall
+            below read as "step 1" instead of "a list". */}
+        {showCalculator && (
+          <ol className="flow-strip" aria-label="Cara pakai">
+            <li className="flow-strip__step">
+              <span className="flow-strip__num">1</span> Pilih obat
+            </li>
+            <li className="flow-strip__step">
+              <span className="flow-strip__num">2</span> Isi berat badan
+            </li>
+            <li className="flow-strip__step flow-strip__step--out">
+              <span className="flow-strip__num">3</span> Dapat mg + mL
+            </li>
+          </ol>
+        )}
+
         {showCalculator && (
           <Tabs tabs={TABS} active={activeTab} onChange={handleTabChange} />
         )}

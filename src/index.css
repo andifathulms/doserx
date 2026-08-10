@@ -240,7 +240,7 @@ body::before {
   margin-bottom: 6px;
 }
 
-.header-brand { display: flex; flex-direction: column; gap: 4px; }
+.header-brand { display: flex; flex-direction: column; gap: var(--sp-2); max-width: 46ch; }
 
 .app-title {
   font-size: var(--fs-2xl);
@@ -254,11 +254,80 @@ body::before {
   color: var(--c-primary);
 }
 
+/* The one line that has to land in five seconds. It states the outcome
+   (weight in -> mg + mL out), not the category, so it is sized and coloured
+   as real copy rather than as a caption. */
 .app-subtitle {
-  font-size: var(--fs-xs);
-  color: var(--c-text-3);
+  font-size: var(--fs-md);
+  line-height: var(--lh-snug);
+  color: var(--c-text-2);
   font-weight: 400;
-  letter-spacing: 0;
+  letter-spacing: -0.005em;
+  text-wrap: pretty;
+}
+
+.app-subtitle strong {
+  font-weight: 600;
+  color: var(--c-text);
+}
+
+/* ── Flow strip — the three steps, above the fold ─────────────────────────── */
+.flow-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2) var(--sp-3);
+  list-style: none;
+  margin: var(--sp-4) 0 0;
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r);
+  box-shadow: var(--sh-xs);
+}
+
+.flow-strip__step {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--c-text-2);
+  white-space: nowrap;
+}
+
+/* Chevron between steps — drawn, not typed, so it stays out of the a11y tree */
+.flow-strip__step + .flow-strip__step::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  margin-right: var(--sp-1);
+  border-top: 1.5px solid var(--c-border-mid);
+  border-right: 1.5px solid var(--c-border-mid);
+  transform: rotate(45deg);
+}
+
+.flow-strip__num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  font-size: var(--fs-2xs);
+  font-weight: 700;
+  color: var(--c-primary-dark);
+  background: var(--c-primary-bg);
+  border: 1px solid var(--c-primary-bdr);
+  border-radius: var(--r-full);
+}
+
+/* The payoff step carries the brand colour — it is what the app is for. */
+.flow-strip__step--out { color: var(--c-primary-dark); }
+.flow-strip__step--out .flow-strip__num {
+  color: #fff;
+  background: var(--c-primary);
+  border-color: var(--c-primary);
 }
 
 .header-badge {
