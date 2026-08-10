@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { estimateWeight } from '../lib/estimateWeight'
+import { estimateWeight, WeightEstimate } from '../lib/estimateWeight'
 
 interface WeightInputProps {
   id: string
@@ -12,15 +12,15 @@ export function WeightInput({ id, value, onChange, autoFocus = false }: WeightIn
   const [estimating, setEstimating] = useState(false)
   const [ageYears, setAgeYears] = useState('')
   const [ageMonths, setAgeMonths] = useState('')
-  const [estimated, setEstimated] = useState<number | null>(null)
+  const [estimated, setEstimated] = useState<WeightEstimate | null>(null)
 
   function handleEstimate() {
     const y = parseInt(ageYears) || 0
     const m = parseInt(ageMonths) || 0
-    const w = estimateWeight(y, m)
-    if (w != null) {
-      setEstimated(w)
-      onChange(String(w))
+    const e = estimateWeight(y, m)
+    if (e != null) {
+      setEstimated(e)
+      onChange(String(e.kg))
     } else {
       setEstimated(null)
     }
@@ -111,11 +111,21 @@ export function WeightInput({ id, value, onChange, autoFocus = false }: WeightIn
           </div>
           {/* The estimate replaces the weight field's value without moving
               focus, so it has to be spoken. */}
+          {/* The formula, its arithmetic and its attribution — three bands use
+              two different sources, and every downstream number inherits
+              whichever one fired. "Perkiraan" alone was not honest about
+              what is being assumed. */}
           {estimated != null && (
             <p className="estimate-panel__result" role="status">
-              Estimasi: <strong>{estimated} kg</strong>
+              Estimasi: <strong>{estimated.kg} kg</strong>
+              <span className="estimate-panel__working">
+                {' '}= {estimated.expression} · {estimated.formula}
+              </span>
               <span className="estimate-panel__formula">
-                {' '}(formula APLS — hanya perkiraan, konfirmasi jika memungkinkan)
+                Rata-rata populasi menurut usia — tidak memperhitungkan status gizi,
+                jadi cenderung terlalu tinggi pada anak kurus dan terlalu rendah pada anak
+                gemuk. Semua hasil hitung di bawah ikut memakai angka ini; timbang bila
+                memungkinkan.
               </span>
             </p>
           )}

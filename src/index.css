@@ -1190,9 +1190,21 @@ body::before {
 
 .estimate-panel__result--warn { color: var(--amber-600); }
 
+.estimate-panel__working {
+  font-size: var(--fs-sm);
+  color: var(--c-text-2);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The caveat is a sentence a tired reader must be able to take in, not fine
+   print — it qualifies every number below it. */
 .estimate-panel__formula {
-  font-size: var(--fs-2xs);
+  display: block;
+  margin-top: var(--sp-1);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-snug);
   color: var(--c-text-3);
+  text-wrap: pretty;
 }
 
 /* ── Inline error ─────────────────────────────────────────────────────────── */
