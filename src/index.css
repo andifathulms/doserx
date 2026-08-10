@@ -393,22 +393,23 @@ body::before {
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  margin: 14px 0 4px;
-  padding: 11px 14px;
-  background: var(--c-warn-bg);
-  border: 1px solid var(--c-warn-bdr);
+  margin: var(--sp-4) 0 var(--sp-1);
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
   border-left: 3px solid var(--c-warn);
   border-radius: var(--r-sm);
   font-size: var(--fs-base);
-  line-height: 1.5;
+  line-height: var(--lh-body);
   color: var(--c-text-2);
+  text-wrap: pretty;
 }
 
 .safety-banner__icon {
   flex-shrink: 0;
   color: var(--c-warn);
-  font-weight: 800;
-  line-height: 1.4;
+  font-weight: 700;
+  line-height: 1.5;
 }
 
 .safety-banner strong { color: var(--c-text); font-weight: 700; }
