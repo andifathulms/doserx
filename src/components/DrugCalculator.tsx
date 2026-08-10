@@ -45,9 +45,11 @@ export function DrugCalculator({
   idPrefix = 'calc',
   autoFocusWeight = false,
 }: DrugCalculatorProps) {
-  const [doseMode, setDoseMode] = useState<DoseMode>(() => loadDoseMode())
+  // Deterministic first render — the stored preference is applied on mount, so
+  // prerendered HTML and the first client render agree. See App for why.
+  const [doseMode, setDoseMode] = useState<DoseMode>('perDose')
   const [weight, setWeight] = useState('')
-  const [dose, setDose] = useState(() => String(dayToMode(drug.dosePerKg, drug.freq, loadDoseMode())))
+  const [dose, setDose] = useState(() => String(dayToMode(drug.dosePerKg, drug.freq, 'perDose')))
   const [freq, setFreq] = useState(() => String(drug.freq))
   const [concentration, setConcentration] = useState(
     drug.concentration != null ? String(drug.concentration) : '',
@@ -61,6 +63,15 @@ export function DrugCalculator({
   const defaultDose = dayToMode(drug.dosePerKg, drug.freq, doseMode)!
   const rangeMin = dayToMode(drug.dosePerKgMin, drug.freq, doseMode)
   const rangeMax = dayToMode(drug.dosePerKgMax, drug.freq, doseMode)
+
+  // Apply the saved dose-entry preference once we are on the client. Reuses the
+  // same conversion path as the toggle, so the regimen never changes — only how
+  // it is displayed.
+  useEffect(() => {
+    const stored = loadDoseMode()
+    if (stored !== 'perDose') handleToggleMode(stored)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // Re-seed when the drug changes underneath us (grid selection, or navigating
   // between two /obat/:id pages without unmounting).

@@ -17,11 +17,13 @@ import { resolveRoute } from './lib/route-match'
 import { SkipLink, SiteHeader, BottomNav, RouteAnnouncer } from './components/SiteNav'
 import { CatalogPage } from './pages/CatalogPage'
 import { LandingPage } from './pages/LandingPage'
-// Methodology is a read, not an interaction — never needed at first paint.
-const AboutPage = lazy(() =>
-  import('./pages/AboutPage').then((m) => ({ default: m.AboutPage })),
-)
-import { ROUTES } from './routes'
+// Content routes are imported eagerly: renderToString cannot resolve a
+// React.lazy boundary, so a lazy page prerenders as an empty Suspense
+// fallback — exactly the blank markup this phase exists to eliminate. Phase 7
+// splits these per route, where the split is correct rather than harmful.
+import { AboutPage } from './pages/AboutPage'
+import { DrugPage } from './pages/DrugPage'
+import { ROUTES, CALCULATOR_MODES, MODE_IDS } from './routes'
 
 /**
  * Puyer, Infus and History sit behind a tab or a nav link — never on screen at
@@ -40,41 +42,10 @@ const PuyerPanel = lazy(() =>
 const InfusionPanel = lazy(() =>
   import('./components/InfusionPanel').then((m) => ({ default: m.InfusionPanel })),
 )
-// A drug page is a destination reached from the catalog or from outside; it is
-// never the first interaction on the calculator route.
-const DrugPage = lazy(() =>
-  import('./pages/DrugPage').then((m) => ({ default: m.DrugPage })),
-)
 
-// Calculator modes only. History is a record, not a calculator — it is its own
-// route rather than crowding the segmented control to 5 items.
-// Each mode carries a one-line hint: the bare labels are jargon to anyone
-// meeting the app for the first time, and nothing else on screen says these
-// four are calculators rather than drug categories.
-const TABS = [
-  {
-    id: 'preset',
-    label: 'Preset',
-    hint: 'Hitung dosis satu obat dari katalog siap pakai — dosis/kg sudah terisi.',
-  },
-  {
-    id: 'custom',
-    label: 'Kustom',
-    hint: 'Obat di luar katalog — masukkan sendiri dosis/kg, frekuensi, dan konsentrasi.',
-  },
-  {
-    id: 'puyer',
-    label: 'Puyer',
-    hint: 'Racik 2 obat atau lebih sekaligus menjadi satu resep puyer per bungkus.',
-  },
-  {
-    id: 'infus',
-    label: 'Infus',
-    hint: 'Obat drip — hitung kecepatan infus (mL/jam) dan tetes per menit.',
-  },
-]
-
-const MODE_IDS = TABS.map((t) => t.id)
+// The mode table lives in routes.ts — the prerender expands /hitung/:mode
+// from the same list, and two hand-written copies would drift.
+const TABS = CALCULATOR_MODES.map((m) => ({ ...m }))
 
 function App() {
   const path = useLocation()
@@ -82,8 +53,17 @@ function App() {
   const routeId = match?.route.id ?? 'notfound'
   const mode = match?.params.mode
 
-  const [history, setHistory] = useState<HistoryEntry[]>(() => loadHistory())
-  const [customDrugs, setCustomDrugs] = useState<CustomDrugPreset[]>(() => loadCustomDrugs())
+  // Start empty and load from storage after mount. Reading localStorage during
+  // render would make the prerendered HTML disagree with the first client
+  // render (the header badge, most visibly) and React would throw the whole
+  // subtree away to recover.
+  const [history, setHistory] = useState<HistoryEntry[]>([])
+  const [customDrugs, setCustomDrugs] = useState<CustomDrugPreset[]>([])
+
+  useEffect(() => {
+    setHistory(loadHistory())
+    setCustomDrugs(loadCustomDrugs())
+  }, [])
 
   // Warm the split chunks once the page is idle, so switching tabs never waits
   // on a network round trip.
@@ -167,15 +147,11 @@ function App() {
         {routeId === 'home' && <LandingPage lang="id" />}
         {routeId === 'home-en' && <LandingPage lang="en" />}
         {(routeId === 'about' || routeId === 'about-en') && (
-          <Suspense fallback={<div className="panel-loading" aria-hidden="true" />}>
-            <AboutPage lang={routeId === 'about-en' ? 'en' : 'id'} />
-          </Suspense>
+          <AboutPage lang={routeId === 'about-en' ? 'en' : 'id'} />
         )}
         {routeId === 'catalog' && <CatalogPage />}
         {routeId === 'drug' && (
-          <Suspense fallback={<div className="panel-loading" aria-hidden="true" />}>
-            <DrugPage id={match!.params.id} onHistoryUpdated={refreshHistory} />
-          </Suspense>
+          <DrugPage id={match!.params.id} onHistoryUpdated={refreshHistory} />
         )}
 
         {(showCalculator || routeId === 'drug') && (

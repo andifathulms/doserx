@@ -6,3 +6,4 @@ dist
 # Local exports & OS cruft
 exports/
 .DS_Store
+dist-ssr

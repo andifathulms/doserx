@@ -119,6 +119,36 @@ export const NAV_ITEMS = ROUTES.filter((r) => r.nav).map((r) => ({
   id: r.id,
 }))
 
+/**
+ * The four calculator modes. Lives here rather than in App because the
+ * prerender needs it too: /hitung/:mode is a pattern, so the build has to
+ * expand it, and a second hand-written list would drift from the tabs.
+ */
+export const CALCULATOR_MODES = [
+  {
+    id: 'preset',
+    label: 'Preset',
+    hint: 'Hitung dosis satu obat dari katalog siap pakai — dosis/kg sudah terisi.',
+  },
+  {
+    id: 'custom',
+    label: 'Kustom',
+    hint: 'Obat di luar katalog — masukkan sendiri dosis/kg, frekuensi, dan konsentrasi.',
+  },
+  {
+    id: 'puyer',
+    label: 'Puyer',
+    hint: 'Racik 2 obat atau lebih sekaligus menjadi satu resep puyer per bungkus.',
+  },
+  {
+    id: 'infus',
+    label: 'Infus',
+    hint: 'Obat drip — hitung kecepatan infus (mL/jam) dan tetes per menit.',
+  },
+] as const
+
+export const MODE_IDS: readonly string[] = CALCULATOR_MODES.map((m) => m.id)
+
 export function routeTitle(id: string): string {
   const r = ROUTES.find((x) => x.id === id)
   if (!r || r.id === 'home') return SITE.title
