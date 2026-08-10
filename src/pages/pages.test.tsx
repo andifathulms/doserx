@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { renderToString } from 'react-dom/server'
 import { CatalogPage } from './CatalogPage'
 import { DrugPage } from './DrugPage'
+import { LandingPage } from './LandingPage'
 import { DRUG_PRESETS } from '../data/drugs'
 
 /**
@@ -40,5 +41,36 @@ describe('DrugPage', () => {
   it('handles an unknown id without throwing', () => {
     const html = renderToString(<DrugPage id="tidak-ada" onHistoryUpdated={() => {}} />)
     expect(html).toContain('tidak ditemukan')
+  })
+})
+
+describe('LandingPage', () => {
+  it('renders both languages with their own copy', () => {
+    const id = renderToString(<LandingPage lang="id" />)
+    const en = renderToString(<LandingPage lang="en" />)
+    expect(id).toContain('Buka kalkulator')
+    expect(en).toContain('Open the calculator')
+    // Each links to the other, so the toggle is a real URL either way.
+    expect(id).toContain('/doserx/en')
+    expect(en).toContain('href="/doserx/"')
+  })
+
+  it('derives catalog figures instead of hardcoding them', () => {
+    const html = renderToString(<LandingPage lang="id" />)
+    expect(html).toContain(String(DRUG_PRESETS.length))
+    // Sources are listed from the data, so a new reference shows up by itself.
+    expect(html).toContain('IDAI')
+  })
+
+  it('carries the safety disclaimer on the landing page itself', () => {
+    for (const lang of ['id', 'en'] as const) {
+      const html = renderToString(<LandingPage lang={lang} />)
+      expect(html.toLowerCase()).toMatch(/bukan sistem pendukung|not a clinical decision support/)
+    }
+  })
+
+  it('always offers a route into the calculator', () => {
+    const html = renderToString(<LandingPage lang="id" />)
+    expect(html).toContain('/doserx/hitung/preset')
   })
 })

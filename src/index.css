@@ -350,6 +350,235 @@ body::before {
   background: var(--c-primary-bg);
 }
 
+/* ── Landing ──────────────────────────────────────────────────────────────────
+   The front door for someone who has never seen this. Restrained on purpose:
+   this is a clinical tool that disclaims being decision support, so it gets a
+   clear pitch and no growth-marketing theatre. ───────────────────────────── */
+.landing { padding-bottom: var(--sp-8); }
+
+.landing-hero { padding: var(--sp-8) 0 var(--sp-6); }
+
+.landing-hero__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-4);
+}
+
+.landing-eyebrow {
+  font-size: var(--fs-2xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: var(--c-primary-dark);
+}
+
+.lang-toggle {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--c-text-2);
+  text-decoration: none;
+  padding: var(--sp-1) var(--sp-3);
+  min-height: var(--target-min);
+  display: inline-flex;
+  align-items: center;
+  border: 1.5px solid var(--c-border);
+  border-radius: var(--r-full);
+  background: var(--c-surface);
+}
+
+.lang-toggle:hover { border-color: var(--c-border-mid); color: var(--c-text); }
+.lang-toggle:focus-visible { outline: none; box-shadow: var(--sh-ring); }
+
+.landing-title {
+  font-size: clamp(2rem, 6vw, 3rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.08;
+  color: var(--c-text);
+  text-wrap: balance;
+}
+
+.landing-title:focus { outline: none; }
+.landing-title__accent { color: var(--c-primary-dark); }
+
+.landing-lede {
+  margin-top: var(--sp-4);
+  max-width: 58ch;
+  font-size: var(--fs-md);
+  line-height: var(--lh-body);
+  color: var(--c-text-2);
+  text-wrap: pretty;
+}
+
+.landing-cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+  margin-top: var(--sp-6);
+}
+
+/* The primary CTA is a link, not a form button — it must not stretch. */
+.landing-cta__primary {
+  width: auto;
+  text-decoration: none;
+  padding: var(--sp-3) var(--sp-6);
+}
+
+.landing-cta .btn--ghost { text-decoration: none; }
+
+.landing-section {
+  padding-top: var(--sp-8);
+  border-top: 1px solid var(--c-border);
+  margin-top: var(--sp-8);
+}
+
+.landing-section__title {
+  font-size: var(--fs-xl);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--c-text);
+}
+
+.landing-section__lede {
+  margin-top: var(--sp-2);
+  margin-bottom: var(--sp-5);
+  max-width: 60ch;
+  font-size: var(--fs-base);
+  line-height: var(--lh-body);
+  color: var(--c-text-2);
+  text-wrap: pretty;
+}
+
+/* ── The derivation chain, as a diagram ───────────────────────────────────── */
+.chain {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--sp-3);
+  list-style: none;
+}
+
+.chain__step {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  padding: var(--sp-4);
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-left: 3px solid var(--c-primary);
+  border-radius: var(--r-sm);
+}
+
+.chain__num {
+  font-size: var(--fs-2xs);
+  font-weight: 700;
+  color: var(--c-primary-dark);
+}
+
+.chain__label {
+  font-size: var(--fs-base);
+  font-weight: 600;
+  color: var(--c-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.chain__detail { font-size: var(--fs-sm); color: var(--c-text-3); }
+
+/* ── Catalog facts ────────────────────────────────────────────────────────── */
+.facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: var(--sp-3);
+  list-style: none;
+}
+
+.facts__item {
+  padding: var(--sp-4);
+  background: var(--c-surface-2);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-sm);
+}
+
+.facts__link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
+.facts__link:focus-visible { outline: none; box-shadow: var(--sh-ring); border-radius: var(--r-xs); }
+
+.facts__value {
+  display: block;
+  font-size: var(--fs-2xl);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--c-primary-dark);
+  font-variant-numeric: tabular-nums;
+}
+
+.facts__label { font-size: var(--fs-sm); color: var(--c-text-2); }
+
+/* ── Trust ────────────────────────────────────────────────────────────────── */
+.trust {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--sp-4);
+}
+
+.trust__title {
+  font-size: var(--fs-base);
+  font-weight: 700;
+  color: var(--c-text);
+  margin-bottom: var(--sp-1);
+}
+
+.trust__body {
+  font-size: var(--fs-sm);
+  line-height: var(--lh-body);
+  color: var(--c-text-2);
+  text-wrap: pretty;
+}
+
+.landing-disclaimer {
+  display: flex;
+  gap: var(--sp-3);
+  margin-top: var(--sp-5);
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-left: 3px solid var(--c-warn);
+  border-radius: var(--r-sm);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-body);
+  color: var(--c-text-2);
+  text-wrap: pretty;
+}
+
+.landing-disclaimer__icon { color: var(--c-warn); flex-shrink: 0; }
+
+/* ── Closing ──────────────────────────────────────────────────────────────── */
+.landing-close {
+  margin-top: var(--sp-10);
+  padding: var(--sp-8) var(--sp-5);
+  text-align: center;
+  background: var(--c-primary-bg);
+  border: 1px solid var(--c-primary-bdr);
+  border-radius: var(--r-lg);
+}
+
+.landing-close__title {
+  font-size: var(--fs-xl);
+  font-weight: 700;
+  color: var(--c-text);
+}
+
+.landing-close__body {
+  margin: var(--sp-2) 0 var(--sp-5);
+  font-size: var(--fs-base);
+  color: var(--c-text-2);
+}
+
 /* ── Page head — every route owns its heading ─────────────────────────────── */
 .page-head {
   padding: var(--sp-6) 0 var(--sp-4);

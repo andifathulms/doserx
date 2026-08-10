@@ -15,13 +15,39 @@ import { calculate } from '../lib/calculate'
  * Everything here comes from the catalog entry and calculate() — the same
  * engine and the same data the real calculator uses. No hardcoded results.
  */
+/** The demo is the only piece of the app that is bilingual, because it is the
+ *  one piece the landing page reuses. */
+const LABELS = {
+  id: {
+    heading: 'Contoh:', for: 'untuk anak', cite: 'dosis per',
+    step1: 'Pilih obat', step2: 'Isi berat badan', step3: 'Dapat dosis',
+    perDose: 'per kali', syrup: 'sirup',
+    less: 'Kurangi berat contoh ke', more: 'Tambah berat contoh ke', kg: 'kilogram',
+    capped: (name: string, kg: number) =>
+      `Di berat ini dosis sudah menyentuh batas maksimum ${name} — di atas ${kg} kg dosis berhenti mengikuti berat badan.`,
+    note: (typical: number, min?: number, max?: number) =>
+      `Angka contoh, memakai dosis tipikal ${typical} mg/kg/hari (rentang ${min}–${max}). Hitung yang sebenarnya ada di bawah.`,
+  },
+  en: {
+    heading: 'Example:', for: 'for a child', cite: 'dosing per',
+    step1: 'Pick a drug', step2: 'Enter body weight', step3: 'Get the dose',
+    perDose: 'per dose', syrup: 'syrup',
+    less: 'Decrease example weight to', more: 'Increase example weight to', kg: 'kilograms',
+    capped: (name: string, kg: number) =>
+      `At this weight the dose has reached the ${name} maximum — above ${kg} kg it stops following body weight.`,
+    note: (typical: number, min?: number, max?: number) =>
+      `Example figures, using the typical ${typical} mg/kg/day dose (range ${min}–${max}). The real calculator is below.`,
+  },
+} as const
+
 const DEMO_DRUG_ID = 'paracetamol'
 const MIN_KG = 4
 const MAX_KG = 60
 const STEP_KG = 2
 
-export function WorkedExample() {
+export function WorkedExample({ lang = 'id' }: { lang?: 'id' | 'en' }) {
   const [weight, setWeight] = useState(14)
+  const t = LABELS[lang]
 
   const drug = DRUG_PRESETS.find((d) => d.id === DEMO_DRUG_ID)
   if (!drug) return null
@@ -39,14 +65,14 @@ export function WorkedExample() {
   return (
     <section className="worked" aria-labelledby="worked-title">
       <h2 className="worked__title" id="worked-title">
-        Contoh: <strong>{drug.name}</strong> untuk anak
-        <span className="worked__cite"> · dosis per {drug.source}</span>
+        {t.heading} <strong>{drug.name}</strong> {t.for}
+        <span className="worked__cite"> · {t.cite} {drug.source}</span>
       </h2>
 
       <ol className="worked__steps">
         <li className="worked__step">
           <span className="worked__num">1</span>
-          <span className="worked__label">Pilih obat</span>
+          <span className="worked__label">{t.step1}</span>
           <span className="worked__val">
             {drug.name} · {drug.dosePerKg} mg/kg/hari · {drug.freq}×/hari
           </span>
@@ -54,14 +80,14 @@ export function WorkedExample() {
 
         <li className="worked__step">
           <span className="worked__num">2</span>
-          <span className="worked__label">Isi berat badan</span>
+          <span className="worked__label">{t.step2}</span>
           <span className="worked__control">
             <button
               type="button"
               className="worked__step-btn"
               onClick={() => setWeight((w) => Math.max(MIN_KG, w - STEP_KG))}
               disabled={weight <= MIN_KG}
-              aria-label={`Kurangi berat contoh ke ${Math.max(MIN_KG, weight - STEP_KG)} kilogram`}
+              aria-label={`${t.less} ${Math.max(MIN_KG, weight - STEP_KG)} ${t.kg}`}
             >
               −
             </button>
@@ -71,7 +97,7 @@ export function WorkedExample() {
               className="worked__step-btn"
               onClick={() => setWeight((w) => Math.min(MAX_KG, w + STEP_KG))}
               disabled={weight >= MAX_KG}
-              aria-label={`Tambah berat contoh ke ${Math.min(MAX_KG, weight + STEP_KG)} kilogram`}
+              aria-label={`${t.more} ${Math.min(MAX_KG, weight + STEP_KG)} ${t.kg}`}
             >
               +
             </button>
@@ -80,12 +106,12 @@ export function WorkedExample() {
 
         <li className="worked__step worked__step--out">
           <span className="worked__num">3</span>
-          <span className="worked__label">Dapat dosis</span>
+          <span className="worked__label">{t.step3}</span>
           <span className="worked__val worked__val--result" role="status">
-            <strong>{out.perDose} mg</strong> per kali
+            <strong>{out.perDose} mg</strong> {t.perDose}
             {out.volume != null && (
               <>
-                {' '}· <strong>{out.volume} mL</strong> sirup
+                {' '}· <strong>{out.volume} mL</strong> {t.syrup}
               </>
             )}
           </span>
@@ -105,14 +131,11 @@ export function WorkedExample() {
 
       {out.cappedByMaxDay || out.cappedByMaxSingle ? (
         <p className="worked__note worked__note--cap">
-          Di berat ini dosis sudah menyentuh batas maksimum {drug.name} — di atas{' '}
-          {out.capFromWeightKg} kg dosis berhenti mengikuti berat badan.
+          {t.capped(drug.name, out.capFromWeightKg!)}
         </p>
       ) : (
         <p className="worked__note">
-          Angka contoh, memakai dosis tipikal {drug.dosePerKg} mg/kg/hari
-          (rentang {drug.dosePerKgMin}–{drug.dosePerKgMax}). Hitung yang sebenarnya
-          ada di bawah.
+          {t.note(drug.dosePerKg, drug.dosePerKgMin, drug.dosePerKgMax)}
         </p>
       )}
     </section>

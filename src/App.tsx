@@ -16,6 +16,7 @@ import { Link, Redirect, useLocation, navigate } from './lib/router'
 import { resolveRoute } from './lib/route-match'
 import { SkipLink, SiteHeader, BottomNav, RouteAnnouncer } from './components/SiteNav'
 import { CatalogPage } from './pages/CatalogPage'
+import { LandingPage } from './pages/LandingPage'
 import { ROUTES } from './routes'
 
 /**
@@ -114,8 +115,9 @@ function App() {
     navigate(`/hitung/${id}`)
   }
 
-  // The landing page arrives in a later phase; until then '/' is the calculator.
-  if (routeId === 'home' || routeId === 'calculator-index') {
+  // Only /hitung redirects now — '/' is a real page. The doctor never pays for
+  // it: the installed PWA opens straight into /hitung/preset.
+  if (routeId === 'calculator-index') {
     return <Redirect to={`/hitung/${loadLastMode(MODE_IDS, 'preset')}`} />
   }
   if (routeId === 'calculator' && (!mode || !MODE_IDS.includes(mode))) {
@@ -158,6 +160,8 @@ function App() {
           <Tabs tabs={TABS} active={mode!} onChange={handleTabChange} label="Mode hitung" />
         )}
 
+        {routeId === 'home' && <LandingPage lang="id" />}
+        {routeId === 'home-en' && <LandingPage lang="en" />}
         {routeId === 'catalog' && <CatalogPage />}
         {routeId === 'drug' && (
           <Suspense fallback={<div className="panel-loading" aria-hidden="true" />}>
