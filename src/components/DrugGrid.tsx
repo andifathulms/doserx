@@ -137,11 +137,15 @@ export function DrugGrid(props: DrugGridProps) {
     const flagged = !!(drug.warning || drug.contraindication)
     return (
       <div key={drug.id} className="drug-card-wrap" data-cat={drug.category}>
+        {/* aria-pressed describes a toggle. In multi-select (Puyer) that is
+            exactly right; in single-select it is a choice among 92, which is
+            what aria-current states. */}
         <button
           data-cat={drug.category}
           className={`drug-card${selected ? ' drug-card--selected' : ''}`}
           onClick={() => handleClick(drug)}
-          aria-pressed={selected}
+          aria-pressed={props.mode === 'multi' ? selected : undefined}
+          aria-current={props.mode === 'multi' ? undefined : selected || undefined}
         >
           <span className="drug-card__name">
             {drug.name}
