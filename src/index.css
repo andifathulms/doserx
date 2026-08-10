@@ -62,9 +62,11 @@ input  { font: inherit; }
   --c-border-mid:   #c4d6d1;
 
   --c-text:         #0f2b28;   /* deep teal-black */
-  --c-text-2:       #4b5f5b;
-  /* ~4.6:1 on white — safe for body text */
-  --c-text-3:       #667a76;
+  --c-text-2:       #4b5f5b;   /* 6.8:1 on white, 6.3:1 on --c-bg */
+  /* 5.5:1 on white, 5.1:1 on the mint page bg — passes AA on BOTH surfaces.
+     The previous #667a76 was 4.6:1 on white but only 4.2:1 on --c-bg, so any
+     secondary text sitting on the page background (subtitle, footer) failed. */
+  --c-text-3:       #5a6d69;
   /* lowest-contrast token, decorative/placeholder use only — never load-bearing copy */
   --c-text-faint:   #9aa8a4;
 
@@ -104,6 +106,38 @@ input  { font: inherit; }
   /* Layout */
   --max-w: 820px;
   --pad:   20px;
+
+  /* ── Spacing scale — 4px base. Use these, not raw px. ─────────────────── */
+  --sp-1:  4px;
+  --sp-2:  8px;
+  --sp-3:  12px;
+  --sp-4:  16px;
+  --sp-5:  20px;
+  --sp-6:  24px;
+  --sp-8:  32px;
+  --sp-10: 40px;
+  --sp-12: 48px;
+
+  /* ── Type scale — one scale, anchored at 16px body ─────────────────────
+     Rule of use: anything a person READS (prose, values, form controls,
+     buttons, drug names) is --fs-base or larger. The sub-16px steps are for
+     non-prose only: uppercase eyebrows, unit suffixes, count badges, chips.
+     Never set a font-size outside this scale. ─────────────────────────── */
+  --fs-3xs:  0.6875rem;  /* 11px — count badges, unit suffixes */
+  --fs-2xs:  0.75rem;    /* 12px — uppercase eyebrow labels */
+  --fs-xs:   0.8125rem;  /* 13px — dense metadata, chips */
+  --fs-sm:   0.875rem;   /* 14px — secondary UI text */
+  --fs-base: 1rem;       /* 16px — body copy, inputs, buttons */
+  --fs-md:   1.125rem;   /* 18px — lead paragraphs, card titles */
+  --fs-lg:   1.25rem;    /* 20px — section headings */
+  --fs-xl:   1.5rem;     /* 24px — panel headings */
+  --fs-2xl:  1.75rem;    /* 28px — app title */
+  --fs-3xl:  2.375rem;   /* 38px — the result number (the app's hero) */
+
+  /* Line heights */
+  --lh-tight: 1.15;
+  --lh-snug:  1.35;
+  --lh-body:  1.55;
 
   /* Typography */
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
