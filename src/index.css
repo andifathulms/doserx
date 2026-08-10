@@ -118,6 +118,11 @@ input  { font: inherit; }
   --max-w: 820px;
   --pad:   20px;
 
+  /* Minimum interactive target. WCAG 2.5.8 (AA) asks for 24x24 CSS px; text
+     buttons that sit inline with other text are exempt, but these are the
+     controls a tired hand aims at, so they get the floor anyway. */
+  --target-min: 24px;
+
   /* ── Spacing scale — 4px base. Use these, not raw px. ─────────────────── */
   --sp-1:  4px;
   --sp-2:  8px;
@@ -1690,6 +1695,12 @@ body::before {
   white-space: nowrap;
 }
 .note-edit-btn:hover { text-decoration: underline; }
+.note-edit-btn,
+.estimate-toggle {
+  min-height: var(--target-min);
+  display: inline-flex;
+  align-items: center;
+}
 
 .history-note-editor {
   margin-bottom: var(--sp-2);
@@ -1956,6 +1967,7 @@ body::before {
   white-space: nowrap;
 }
 .reset-btn:hover { background: var(--amber-200); }
+.reset-btn { min-height: var(--target-min); }
 
 .override-badge {
   font-size: var(--fs-3xs);
