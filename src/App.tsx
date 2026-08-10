@@ -6,6 +6,7 @@ import { HistoryPanel } from './components/HistoryPanel'
 import { PuyerPanel } from './components/PuyerPanel'
 import { InfusionPanel } from './components/InfusionPanel'
 import { MakerSignature } from './components/MakerSignature'
+import { WorkedExample } from './components/WorkedExample'
 import { loadHistory, loadCustomDrugs, HistoryEntry, CustomDrugPreset } from './lib/storage'
 
 // Calculator modes only. History is a record, not a calculator — it lives in the
@@ -88,22 +89,9 @@ function App() {
       </header>
 
       <main className="app-main">
-        {/* The flow, stated before the visitor has to guess it. Three steps is
-            the whole app — showing them up front is what makes the drug wall
-            below read as "step 1" instead of "a list". */}
-        {showCalculator && (
-          <ol className="flow-strip" aria-label="Cara pakai">
-            <li className="flow-strip__step">
-              <span className="flow-strip__num">1</span> Pilih obat
-            </li>
-            <li className="flow-strip__step">
-              <span className="flow-strip__num">2</span> Isi berat badan
-            </li>
-            <li className="flow-strip__step flow-strip__step--out">
-              <span className="flow-strip__num">3</span> Dapat mg + mL
-            </li>
-          </ol>
-        )}
+        {/* The flow, carried through with real numbers and a live weight —
+            an abstract three-step strip demonstrated nothing. */}
+        {showCalculator && <WorkedExample />}
 
         {showCalculator && (
           <Tabs
