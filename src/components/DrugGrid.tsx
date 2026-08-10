@@ -172,11 +172,24 @@ export function DrugGrid(props: DrugGridProps) {
 
   return (
     <div className="drug-grid-wrapper">
+      {/* Orientation before the catalog. Without this the visitor meets ~90
+          cards with no idea where they are in the flow — and the instruction
+          that used to explain it sat *below* the whole wall. */}
+      <div className="grid-lede">
+        <h2 className="grid-lede__title">
+          {props.mode !== 'multi' && <span className="grid-lede__step" aria-hidden="true">1</span>}
+          {props.mode === 'multi' ? 'Pilih obat untuk racikan' : 'Pilih obat'}
+        </h2>
+        <p className="grid-lede__meta">
+          {drugs.length} obat siap pakai — cari nama, merek, atau keluhan, atau telusuri per kategori.
+        </p>
+      </div>
+
       <div className="drug-search-row">
         <input
           className="input drug-search-input"
           type="search"
-          placeholder="Cari nama, merek, atau keluhan (mis. demam, batuk)…"
+          placeholder="Cari obat… (mis. paracetamol, demam)"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           aria-label="Cari obat"

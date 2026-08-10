@@ -177,8 +177,9 @@ export function PresetPanel({ onHistoryUpdated, customDrugs, onCustomDrugDeleted
               </div>
             </div>
           )}
+          {/* The "pilih obat" instruction now leads the grid (see DrugGrid's
+              lede) instead of trailing ~90 cards where nobody scrolled to it. */}
           <DrugGrid selected={selected?.id ?? null} onSelect={handleSelect} />
-          {!selected && <p className="empty-hint">Pilih obat di atas untuk mulai.</p>}
         </>
       ) : selected && (
         <button className="selected-drug-bar" onClick={handleChangeDrug}>

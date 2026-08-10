@@ -259,10 +259,7 @@ export function PuyerPanel({ onHistoryUpdated: _onHistoryUpdated }: PuyerPanelPr
 
   return (
     <div className="panel">
-      <p className="puyer-intro">
-        Pilih 2+ obat, masukkan berat badan, lalu hitung resep puyer sekaligus.
-      </p>
-
+      {/* Mode description now lives on the tab control (see App.tsx TABS). */}
       {/* ── Drug selection grid ────────────────────────── */}
       {gridOpen ? (
         <div className="puyer-grid-section">

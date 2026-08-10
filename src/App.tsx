@@ -10,11 +10,30 @@ import { loadHistory, loadCustomDrugs, HistoryEntry, CustomDrugPreset } from './
 
 // Calculator modes only. History is a record, not a calculator — it lives in the
 // header (see below) rather than crowding the segmented control to 5 items.
+// Each mode carries a one-line hint: the bare labels are jargon to anyone
+// meeting the app for the first time, and nothing else on screen says these
+// four are calculators rather than drug categories.
 const TABS = [
-  { id: 'preset', label: 'Preset' },
-  { id: 'custom', label: 'Kustom' },
-  { id: 'puyer', label: 'Puyer' },
-  { id: 'infus', label: 'Infus' },
+  {
+    id: 'preset',
+    label: 'Preset',
+    hint: 'Hitung dosis satu obat dari katalog siap pakai — dosis/kg sudah terisi.',
+  },
+  {
+    id: 'custom',
+    label: 'Kustom',
+    hint: 'Obat di luar katalog — masukkan sendiri dosis/kg, frekuensi, dan konsentrasi.',
+  },
+  {
+    id: 'puyer',
+    label: 'Puyer',
+    hint: 'Racik 2 obat atau lebih sekaligus menjadi satu resep puyer per bungkus.',
+  },
+  {
+    id: 'infus',
+    label: 'Infus',
+    hint: 'Obat drip — hitung kecepatan infus (mL/jam) dan tetes per menit.',
+  },
 ]
 
 function App() {
@@ -50,7 +69,10 @@ function App() {
       <header className="app-header">
         <div className="header-brand">
           <h1 className="app-title">Dose<span>Rx</span></h1>
-          <p className="app-subtitle">Kalkulator dosis berbasis berat badan</p>
+          <p className="app-subtitle">
+            Masukkan berat badan pasien — langsung dapat <strong>dosis mg</strong> dan{' '}
+            <strong>volume mL</strong> yang harus diberikan.
+          </p>
         </div>
         <button
           type="button"
@@ -66,8 +88,30 @@ function App() {
       </header>
 
       <main className="app-main">
+        {/* The flow, stated before the visitor has to guess it. Three steps is
+            the whole app — showing them up front is what makes the drug wall
+            below read as "step 1" instead of "a list". */}
         {showCalculator && (
-          <Tabs tabs={TABS} active={activeTab} onChange={handleTabChange} />
+          <ol className="flow-strip" aria-label="Cara pakai">
+            <li className="flow-strip__step">
+              <span className="flow-strip__num">1</span> Pilih obat
+            </li>
+            <li className="flow-strip__step">
+              <span className="flow-strip__num">2</span> Isi berat badan
+            </li>
+            <li className="flow-strip__step flow-strip__step--out">
+              <span className="flow-strip__num">3</span> Dapat mg + mL
+            </li>
+          </ol>
+        )}
+
+        {showCalculator && (
+          <Tabs
+            tabs={TABS}
+            active={activeTab}
+            onChange={handleTabChange}
+            label="Mode hitung"
+          />
         )}
 
         <div className="safety-banner" role="note">
