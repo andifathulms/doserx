@@ -564,20 +564,64 @@ body::before {
 /* ── Drug grid ────────────────────────────────────────────────────────────── */
 .drug-grid-wrapper { margin-bottom: 16px; }
 
+/* ── Grid lede — where am I, and how big is this catalog ──────────────────── */
+.grid-lede {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  margin-bottom: var(--sp-3);
+}
+
+.grid-lede__title {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--fs-lg);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: var(--lh-tight);
+  color: var(--c-text);
+}
+
+.grid-lede__step {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  font-size: var(--fs-2xs);
+  font-weight: 700;
+  color: #fff;
+  background: var(--c-primary);
+  border-radius: var(--r-full);
+}
+
+/* The count reframes the wall below: comprehensive, not overwhelming. */
+.grid-lede__meta {
+  font-size: var(--fs-sm);
+  line-height: var(--lh-snug);
+  color: var(--c-text-3);
+  text-wrap: pretty;
+}
+
 .drug-search-row {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 14px;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-4);
 }
 
+/* Search is the fast path, so it outweighs the cards under it rather than
+   sitting lighter than them. */
 .drug-search-input {
   flex: 1;
   font-size: var(--fs-base);
-  padding: 9px 12px;
+  padding: var(--sp-3) var(--sp-4);
   background: var(--c-surface);
-  border: 1.5px solid var(--c-border);
+  border: 1.5px solid var(--c-border-mid);
   border-radius: var(--r-sm);
+  box-shadow: var(--sh-xs);
   color: var(--c-text);
   outline: none;
   transition: border-color .15s, box-shadow .15s;
