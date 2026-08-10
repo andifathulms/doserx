@@ -172,6 +172,43 @@ export function ResultCard({
         </div>
       )}
 
+      {/* ── The working ──────────────────────────────────────────────────────
+          Collapsed by default: she does not need it every time, but when a
+          number looks wrong the alternative is redoing the arithmetic on
+          paper — the exact thing this app exists to remove. Every line comes
+          from calculate(), so it cannot drift from what was computed. */}
+      <details className="derivation">
+        <summary className="derivation__summary">Cara hitung</summary>
+        <div className="derivation__body">
+          <p className="derivation__basis">
+            Dihitung dari <strong>{dosePerKg} mg/kg/hari</strong> — dosis total sehari,
+            lalu dibagi frekuensi.
+          </p>
+          <ol className="derivation__steps">
+            {result.steps.map((step, i) => (
+              <li
+                key={`${step.kind}-${i}`}
+                className={`derivation__step${
+                  step.kind === 'capDay' || step.kind === 'capSingle'
+                    ? ' derivation__step--cap'
+                    : ''
+                }`}
+              >
+                <span className="derivation__expr">{step.expression}</span>
+                <span className="derivation__eq" aria-hidden="true">=</span>
+                <span className="derivation__result">{step.result}</span>
+              </li>
+            ))}
+          </ol>
+          {hasRange && (
+            <p className="derivation__note">
+              Angka di atas memakai dosis tipikal. Rentang yang ditampilkan berasal dari
+              dosis minimum dan maksimum yang tercatat untuk obat ini.
+            </p>
+          )}
+        </div>
+      </details>
+
       <div className="result-card__actions">
         <button className="btn btn--ghost btn--sm" onClick={handleCopy}>
           {copied ? '✓ Disalin' : 'Salin'}

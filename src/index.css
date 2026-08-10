@@ -1193,6 +1193,103 @@ body::before {
   margin-bottom: 12px;
 }
 
+/* ── Derivation — the app's working, shown on demand ──────────────────────── */
+.derivation {
+  margin-bottom: var(--sp-4);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-sm);
+  background: var(--c-surface-2);
+}
+
+.derivation__summary {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-4);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--c-text-2);
+  list-style: none;
+  border-radius: var(--r-sm);
+}
+
+.derivation__summary::-webkit-details-marker { display: none; }
+
+.derivation__summary::before {
+  content: '▸';
+  font-size: var(--fs-2xs);
+  color: var(--c-text-3);
+  transition: transform .15s;
+}
+
+.derivation[open] .derivation__summary::before { transform: rotate(90deg); }
+.derivation__summary:hover { color: var(--c-text); }
+.derivation__summary:focus-visible { outline: none; box-shadow: var(--sh-ring); }
+
+.derivation__body {
+  padding: 0 var(--sp-4) var(--sp-4);
+  border-top: 1px solid var(--c-border);
+  padding-top: var(--sp-3);
+}
+
+/* Names the convention the catalog uses — mg/kg/DAY — which is the largest
+   silent assumption in the whole calculation. */
+.derivation__basis {
+  font-size: var(--fs-sm);
+  line-height: var(--lh-snug);
+  color: var(--c-text-3);
+  margin-bottom: var(--sp-3);
+  text-wrap: pretty;
+}
+
+.derivation__basis strong { color: var(--c-text-2); font-weight: 600; }
+
+.derivation__steps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  list-style: none;
+  counter-reset: step;
+}
+
+.derivation__step {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--sp-1) var(--sp-2);
+  font-size: var(--fs-base);
+  line-height: var(--lh-snug);
+  color: var(--c-text-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.derivation__eq { color: var(--c-text-3); }
+
+.derivation__result {
+  font-weight: 700;
+  color: var(--c-text);
+}
+
+/* A clamp is not a division — it's where the published rule stops being
+   linear, so it reads as an interruption in the chain. */
+.derivation__step--cap {
+  padding: var(--sp-2) var(--sp-3);
+  margin: var(--sp-1) 0;
+  background: var(--c-warn-bg);
+  border-left: 3px solid var(--c-warn);
+  border-radius: var(--r-xs);
+}
+
+.derivation__step--cap .derivation__result { color: var(--c-warn); }
+
+.derivation__note {
+  margin-top: var(--sp-3);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-snug);
+  color: var(--c-text-3);
+  text-wrap: pretty;
+}
+
 /* ── Save to history row ──────────────────────────────────────────────────── */
 .result-card__save {
   display: flex;
