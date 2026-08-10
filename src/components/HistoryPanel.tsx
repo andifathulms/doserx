@@ -133,7 +133,7 @@ export function HistoryPanel({ entries, onUpdated }: HistoryPanelProps) {
         {entries.map((entry, index) => (
           <li key={entry.id} className="history-entry">
             <div className="history-entry__top">
-              <span className="history-entry__drug">{entry.drugName}</span>
+              <h3 className="history-entry__drug">{entry.drugName}</h3>
               {entry.patientLabel && (
                 <span className="history-entry__label">{entry.patientLabel}</span>
               )}

@@ -121,7 +121,7 @@ export function ResultCard({
   return (
     <div className="result-card">
       <div className="result-card__header">
-        <span className="result-card__drug">{drugName}</span>
+        <h2 className="result-card__drug">{drugName}</h2>
         <span className="result-card__weight">{weight} kg</span>
       </div>
 
