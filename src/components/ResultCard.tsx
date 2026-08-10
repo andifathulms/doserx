@@ -134,15 +134,42 @@ export function ResultCard({
         </p>
       )}
 
+      {/* A cap is not a footnote: it is where the published rule stops scaling
+          with weight. Showing the figure it replaced, and the weight where it
+          starts binding, is the difference between "capped" and "this patient
+          is now on a fixed adult ceiling". */}
       {(result.cappedByMaxDay || result.cappedByMaxSingle) && (
         <div className="result-card__warning">
           {result.cappedByMaxDay && (
-            <p>Dosis harian dibatasi ke maksimum ({result.dailyDose} mg/hari).</p>
+            <p>
+              Dosis harian dibatasi ke maksimum:{' '}
+              <span className="cap-was">{result.uncappedDailyDose} mg/hari</span>{' '}
+              → <strong>{result.dailyDose} mg/hari</strong>.
+            </p>
           )}
           {result.cappedByMaxSingle && (
-            <p>Dosis per kali dibatasi ke maksimum ({result.perDose} mg/kali).</p>
+            <p>
+              Dosis per kali dibatasi ke maksimum:{' '}
+              <span className="cap-was">{result.uncappedPerDose} mg/kali</span>{' '}
+              → <strong>{result.perDose} mg/kali</strong>.
+            </p>
+          )}
+          {result.capFromWeightKg != null && (
+            <p className="result-card__crossover">
+              Pada {dosePerKg} mg/kg/hari, batas ini berlaku sejak{' '}
+              <strong>{result.capFromWeightKg} kg</strong> — di atas berat itu dosis tidak
+              lagi mengikuti berat badan.
+            </p>
           )}
         </div>
+      )}
+
+      {/* Not capped, but the ceiling is knowable — say where it starts. */}
+      {!result.cappedByMaxDay && !result.cappedByMaxSingle && result.capFromWeightKg != null && (
+        <p className="result-card__headroom">
+          Masih mengikuti berat badan. Dosis maksimum mulai berlaku di{' '}
+          <strong>{result.capFromWeightKg} kg</strong> pada {dosePerKg} mg/kg/hari.
+        </p>
       )}
 
       {/* Main result values. Per-kali (per dose) is the primary number —

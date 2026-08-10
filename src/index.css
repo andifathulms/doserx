@@ -48,6 +48,7 @@ input  { font: inherit; }
   --amber-50:  #fffbeb;
   --amber-200: #fde68a;
   --amber-600: #d97706;
+  --amber-700: #b45309;
 
   /* Palette — red */
   --red-50:  #fef2f2;
@@ -84,6 +85,10 @@ input  { font: inherit; }
   --c-warn:         var(--amber-600);
   --c-warn-bg:      var(--amber-50);
   --c-warn-bdr:     var(--amber-200);
+  /* --c-warn is a 3.1:1 signal colour on --c-warn-bg — fine for icons and
+     rules, never for sentences. These two are the readable pair. */
+  --c-warn-text:    var(--c-text-2);   /* 6.6:1 on --c-warn-bg */
+  --c-warn-strong:  var(--amber-700);  /* 4.9:1 on --c-warn-bg */
 
   --c-error:        var(--red-600);
   --c-error-bg:     var(--red-50);
@@ -179,6 +184,8 @@ input  { font: inherit; }
   --c-warn:         #fbbf24;
   --c-warn-bg:      rgba(217,119,6,.13);
   --c-warn-bdr:     rgba(217,119,6,.38);
+  --c-warn-text:    var(--slate-100);
+  --c-warn-strong:  #fbbf24;
 
   --c-error:        #f87171;
   --c-error-bg:     rgba(220,38,38,.14);
@@ -839,7 +846,7 @@ body::before {
   background: var(--c-warn-bg);
   border-left: 3px solid var(--c-warn);
   border-radius: 0 var(--r-xs) var(--r-xs) 0;
-  color: var(--c-warn);
+  color: var(--c-warn-text);
   font-weight: 600;
 }
 
@@ -1127,15 +1134,46 @@ body::before {
 }
 
 .result-card__warning {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
   background: var(--c-warn-bg);
   border: 1px solid var(--c-warn-bdr);
+  border-left: 3px solid var(--c-warn);
   border-radius: var(--r-sm);
-  padding: 9px 13px;
-  margin-bottom: 14px;
+  padding: var(--sp-3) var(--sp-4);
+  margin-bottom: var(--sp-4);
   font-size: var(--fs-base);
-  color: var(--c-warn);
-  line-height: 1.5;
+  color: var(--c-warn-text);
+  line-height: var(--lh-body);
+  text-wrap: pretty;
 }
+
+.result-card__warning strong { color: var(--c-warn-strong); font-weight: 700; }
+
+/* The figure the cap replaced — struck, so the size of the gap is legible
+   at a glance rather than inferred. */
+.cap-was {
+  text-decoration: line-through;
+  color: var(--c-text-3);
+}
+
+.result-card__crossover {
+  padding-top: var(--sp-2);
+  border-top: 1px solid var(--c-warn-bdr);
+  font-size: var(--fs-sm);
+}
+
+/* Same fact, stated quietly when the cap has not yet bitten. */
+.result-card__headroom {
+  margin: calc(-1 * var(--sp-2)) 0 var(--sp-4);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-snug);
+  color: var(--c-text-3);
+  text-wrap: pretty;
+}
+
+.result-card__headroom strong { font-weight: 600; color: var(--c-text-2); }
 
 .result-card__values {
   display: grid;
@@ -1320,7 +1358,7 @@ body::before {
   border-radius: var(--r-xs);
 }
 
-.derivation__step--cap .derivation__result { color: var(--c-warn); }
+.derivation__step--cap .derivation__result { color: var(--c-warn-strong); }
 
 .derivation__note {
   margin-top: var(--sp-3);
@@ -1622,7 +1660,7 @@ body::before {
 
 .badge--warn {
   background: var(--c-warn-bg);
-  color: var(--c-warn);
+  color: var(--c-warn-strong);
   border: 1.5px solid var(--c-warn-bdr);
 }
 
@@ -1848,7 +1886,7 @@ body::before {
   gap: 2px;
   font-size: var(--fs-3xs);
   font-weight: 600;
-  color: var(--c-warn);
+  color: var(--c-warn-strong);
   background: var(--c-warn-bg);
   border: 1px solid var(--c-warn-bdr);
   border-radius: var(--r-full);
