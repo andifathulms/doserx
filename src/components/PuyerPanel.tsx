@@ -439,7 +439,7 @@ export function PuyerPanel({ onHistoryUpdated: _onHistoryUpdated }: PuyerPanelPr
               text change rather than on insertion. */}
           <p className="sr-only" role="status">
             {allCalculated
-              ? `Resep puyer siap:  obat,  kilogram,  hari.`
+              ? `Resep puyer siap: ${orderedEntries.length} obat, ${weight} kilogram, ${numDays} hari.`
               : ''}
           </p>
 
