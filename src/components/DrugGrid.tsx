@@ -199,9 +199,14 @@ export function DrugGrid(props: DrugGridProps) {
         )}
       </div>
 
-      {/* Category filter chips */}
-      <div className="cat-chip-row" role="tablist" aria-label="Filter kategori">
+      {/* Category filter chips. These are filter toggles, not tabs — the
+          role="tablist" that used to be here was simply the wrong widget, and
+          the chips carried no pressed state at all, so which filter was
+          active was unavailable to a screen reader. */}
+      <div className="cat-chip-row">
         <button
+          type="button"
+          aria-pressed={activeCat === null}
           className={`cat-chip${activeCat === null ? ' cat-chip--active' : ''}`}
           onClick={() => setActiveCat(null)}
         >
@@ -210,7 +215,9 @@ export function DrugGrid(props: DrugGridProps) {
         {presentCategories.map((cat) => (
           <button
             key={cat}
+            type="button"
             data-cat={cat}
+            aria-pressed={activeCat === cat}
             className={`cat-chip${activeCat === cat ? ' cat-chip--active' : ''}`}
             onClick={() => setActiveCat(activeCat === cat ? null : cat)}
           >

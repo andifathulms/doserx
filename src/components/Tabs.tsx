@@ -19,12 +19,17 @@ export function Tabs({ tabs, active, onChange, label }: TabsProps) {
   return (
     <div className="tabs-group">
       {label && <span className="tabs-group__label">{label}</span>}
-      <div className="tabs" role="tablist" aria-label={label}>
+      {/* Plain buttons, not a tablist. role="tab" promises arrow-key
+          navigation, a roving tabindex and linked tabpanels; none of that
+          existed, so a screen reader announced "tab, 1 of 4" and the arrow
+          keys did nothing. aria-pressed states the same thing truthfully
+          with no keyboard contract to honour. */}
+      <div className="tabs">
         {tabs.map((tab) => (
           <button
             key={tab.id}
-            role="tab"
-            aria-selected={active === tab.id}
+            type="button"
+            aria-pressed={active === tab.id}
             className={`tab-btn${active === tab.id ? ' tab-btn--active' : ''}`}
             onClick={() => onChange(tab.id)}
           >

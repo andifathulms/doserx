@@ -938,6 +938,9 @@ body::before {
   gap: 2px;
 }
 
+/* The segmented control is now radio inputs + labels. The input is
+   sr-only (clipped, NOT display:none — it must stay focusable), so checked
+   and focus state are drawn on the label via sibling selectors. */
 .dose-mode__btn {
   padding: var(--sp-2) var(--sp-4);
   font-size: var(--fs-base);
@@ -948,13 +951,18 @@ body::before {
   border-radius: calc(var(--r-sm) - 2px);
   transition: background .15s, color .15s, box-shadow .15s;
   white-space: nowrap;
+  cursor: pointer;
 }
-.dose-mode__btn--active {
+
+.dose-mode__input:checked + .dose-mode__btn {
   background: var(--c-surface);
   color: var(--c-primary);
   box-shadow: var(--sh-xs);
 }
-.dose-mode__btn:focus-visible { outline: none; box-shadow: var(--sh-ring); }
+
+.dose-mode__input:focus-visible + .dose-mode__btn {
+  box-shadow: var(--sh-ring);
+}
 
 /* ── Form ─────────────────────────────────────────────────────────────────── */
 .form {

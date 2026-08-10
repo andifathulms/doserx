@@ -225,23 +225,29 @@ export function PresetPanel({ onHistoryUpdated, customDrugs, onCustomDrugDeleted
           {/* Dose entry mode — how the doctor thinks about the dose */}
           <div className="dose-mode">
             <span className="dose-mode__label">Cara hitung dosis</span>
-            <div className="dose-mode__toggle" role="radiogroup" aria-label="Cara hitung dosis">
-              <button
-                role="radio"
-                aria-checked={doseMode === 'perDose'}
-                className={`dose-mode__btn${doseMode === 'perDose' ? ' dose-mode__btn--active' : ''}`}
-                onClick={() => handleToggleMode('perDose')}
-              >
-                Per kali
-              </button>
-              <button
-                role="radio"
-                aria-checked={doseMode === 'perDay'}
-                className={`dose-mode__btn${doseMode === 'perDay' ? ' dose-mode__btn--active' : ''}`}
-                onClick={() => handleToggleMode('perDay')}
-              >
-                Per hari
-              </button>
+            {/* Real radios: the browser supplies arrow-key selection, the
+                grouping (shared name) and the checked state for free. The
+                previous role="radio" buttons promised all three and delivered
+                none of them. */}
+            <div className="dose-mode__toggle">
+              <input
+                type="radio"
+                id="preset-mode-perdose"
+                name="preset-dose-mode"
+                className="sr-only dose-mode__input"
+                checked={doseMode === 'perDose'}
+                onChange={() => handleToggleMode('perDose')}
+              />
+              <label className="dose-mode__btn" htmlFor="preset-mode-perdose">Per kali</label>
+              <input
+                type="radio"
+                id="preset-mode-perday"
+                name="preset-dose-mode"
+                className="sr-only dose-mode__input"
+                checked={doseMode === 'perDay'}
+                onChange={() => handleToggleMode('perDay')}
+              />
+              <label className="dose-mode__btn" htmlFor="preset-mode-perday">Per hari</label>
             </div>
           </div>
 
