@@ -1594,24 +1594,7 @@ body::before {
   min-height: 48px;
 }
 
-/* ── Medicine suggestions ─────────────────────────────────────────────────── */
-.suggestions { margin-bottom: var(--sp-4); }
 
-.suggestions__label {
-  display: block;
-  font-size: var(--fs-3xs);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: .08em;
-  color: var(--c-text-3);
-  margin-bottom: var(--sp-2);
-}
-
-.suggestions__list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--sp-2);
-}
 
 .suggestion-chip {
   display: inline-flex;
@@ -1637,10 +1620,6 @@ body::before {
   border-color: var(--c-primary-bdr);
 }
 
-.suggestion-chip__actual {
-  font-weight: 400;
-  opacity: .7;
-}
 
 /* ── Per-preparation dose lines ───────────────────────────────────────────── */
 .form-doses { margin-bottom: var(--sp-4); }
@@ -2027,13 +2006,6 @@ body::before {
 .panel { padding-bottom: var(--sp-2); }
 
 /* ── Puyer panel ──────────────────────────────────────────────────────────── */
-.puyer-intro {
-  font-size: var(--fs-base);
-  color: var(--c-text-2);
-  margin-bottom: var(--sp-4);
-  line-height: 1.6;
-}
-
 /* Weight + days side-by-side */
 .puyer-meta-row {
   display: grid;
