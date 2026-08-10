@@ -141,10 +141,18 @@ export function DrugGrid(props: DrugGridProps) {
         >
           <span className="drug-card__name">
             {drug.name}
+            {/* The glyph is decorative: aria-label on a role-less span is
+                ignored by most screen readers, and the warning text itself
+                lived only in `title`, which keyboard and touch users never
+                see. The meaning now rides in the card's accessible name; the
+                full text appears in the drug note once selected. */}
             {flagged && (
-              <span className="drug-card__flag" title={drug.warning ?? drug.contraindication} aria-label="Perhatian">
-                ⚠
-              </span>
+              <>
+                <span className="drug-card__flag" aria-hidden="true">⚠</span>
+                <span className="sr-only">
+                  {drug.contraindication ? ' — ada kontraindikasi' : ' — ada peringatan'}
+                </span>
+              </>
             )}
           </span>
           <span className="drug-card__route">{drug.route}</span>
