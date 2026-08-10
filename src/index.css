@@ -1,3 +1,25 @@
+/* ── Inter, self-hosted ───────────────────────────────────────────────────────
+   Was three requests to two third-party origins (a render-blocking 12,535 B
+   stylesheet declaring 35 @font-face blocks across 7 subsets, plus the file).
+   Every weight Google served for latin resolved to ONE variable woff2 — the
+   same 48,432 B file shipped here, so rendering is byte-identical.
+
+   The unicode-range is Google's own latin subset, copied verbatim: glyphs
+   outside it (★ ⚠ ✓) fell back to a system font before this change too, so
+   nothing moves. Self-hosting also means the font is precached by the service
+   worker and the app finally works offline on a cold first load, which PRD §6
+   requires and the runtime font fetch quietly broke. ───────────────────── */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/inter-latin-var.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
 /* ── Reset ────────────────────────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 button { font: inherit; cursor: pointer; }

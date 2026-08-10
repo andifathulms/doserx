@@ -23,19 +23,10 @@ export default defineConfig({
         ],
       },
       workbox: {
+        // The font is same-origin now, so it is picked up by the precache
+        // glob below — the two runtimeCaching rules for Google's origins are
+        // gone with the origins themselves.
         globPatterns: ['**/*.{js,css,html,svg,woff2}'],
-        runtimeCaching: [
-          {
-            urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
-            handler: 'CacheFirst',
-            options: { cacheName: 'google-fonts', expiration: { maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 * 365 } },
-          },
-          {
-            urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
-            handler: 'CacheFirst',
-            options: { cacheName: 'gstatic-fonts', expiration: { maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 * 365 } },
-          },
-        ],
       },
     }),
   ],
