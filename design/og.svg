@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#f2f8f6"/>
+  <rect width="1200" height="10" fill="#0f766e"/>
+  <text x="80" y="250" font-family="Helvetica,Arial,sans-serif" font-weight="700" font-size="104" fill="#0f2b28">Dose<tspan fill="#0d9488">Rx</tspan></text>
+  <text x="80" y="330" font-family="Helvetica,Arial,sans-serif" font-weight="400" font-size="42" fill="#4b5f5b">Kalkulator dosis berbasis berat badan</text>
+  <text x="80" y="425" font-family="Helvetica,Arial,sans-serif" font-weight="600" font-size="36" fill="#0d9488">Berat badan  &#8594;  dosis mg  &#8594;  volume mL</text>
+  <text x="80" y="540" font-family="Helvetica,Arial,sans-serif" font-weight="400" font-size="28" fill="#5a6d69">92 obat &#183; sumber IDAI, BNFc, Fornas, WHO, Kemenkes &#183; berjalan offline</text>
+</svg>
