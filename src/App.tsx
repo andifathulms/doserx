@@ -14,6 +14,8 @@ import {
 } from './lib/storage'
 import { Link, Redirect, useLocation, navigate } from './lib/router'
 import { resolveRoute } from './lib/route-match'
+import { SkipLink, SiteHeader, BottomNav, RouteAnnouncer } from './components/SiteNav'
+import { ROUTES } from './routes'
 
 /**
  * Puyer, Infus and History sit behind a tab or a nav link — never on screen at
@@ -62,15 +64,6 @@ const TABS = [
 ]
 
 const MODE_IDS = TABS.map((t) => t.id)
-
-// Most specific first — resolveRoute takes the first match.
-const ROUTES: { path: string; id: string }[] = [
-  { path: '/', id: 'home' },
-  { path: '/hitung', id: 'calculator-index' },
-  { path: '/hitung/:mode', id: 'calculator' },
-  { path: '/riwayat', id: 'history' },
-  { path: '*', id: 'notfound' },
-]
 
 function App() {
   const path = useLocation()
@@ -127,27 +120,28 @@ function App() {
 
   return (
     <div className="app">
-      <header className="app-header">
-        <div className="header-brand">
-          <h1 className="app-title">Dose<span>Rx</span></h1>
-          <p className="app-subtitle">
-            Masukkan berat badan pasien — langsung dapat <strong>dosis mg</strong> dan{' '}
-            <strong>volume mL</strong> yang harus diberikan.
+      <SkipLink />
+      <SiteHeader
+        path={path}
+        historyCount={history.length}
+        historyActive={routeId === 'history'}
+      />
+      <RouteAnnouncer routeId={routeId} />
+
+      <main className="app-main" id="main">
+        {/* Each page owns its <h1>; the wordmark in the header is a link, not
+            a heading. Focus lands here on every route change. */}
+        <div className="page-head">
+          <h1 className="page-title" tabIndex={-1}>
+            {routeId === 'history' ? 'Riwayat perhitungan' : 'Kalkulator dosis'}
+          </h1>
+          <p className="page-lede">
+            {routeId === 'history'
+              ? 'Tersimpan di perangkat ini saja — tidak ada yang dikirim ke server.'
+              : 'Masukkan berat badan pasien, dapatkan dosis mg dan volume mL siap pakai.'}
           </p>
         </div>
-        <Link
-          className={`history-toggle${routeId === 'history' ? ' history-toggle--active' : ''}`}
-          to={routeId === 'history' ? `/hitung/${loadLastMode(MODE_IDS, 'preset')}` : '/riwayat'}
-          aria-current={routeId === 'history' ? 'page' : undefined}
-        >
-          Riwayat
-          {history.length > 0 && (
-            <span className="history-toggle__count">{history.length}</span>
-          )}
-        </Link>
-      </header>
 
-      <main className="app-main">
         {/* The flow, carried through with real numbers and a live weight —
             an abstract three-step strip demonstrated nothing. */}
         {showCalculator && <WorkedExample />}
@@ -194,6 +188,8 @@ function App() {
         )}
         {routeId === 'notfound' && <NotFound />}
       </main>
+
+      <BottomNav path={path} historyCount={history.length} />
 
       <footer className="app-footer">
         <div className="app-footer__bar">

@@ -290,179 +290,165 @@ body::before {
   padding: 0 var(--pad);
 }
 
-/* ── Header ───────────────────────────────────────────────────────────────── */
-.app-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--sp-3);
-  padding: var(--sp-5) 0 var(--sp-4);
+/* ── Site header ──────────────────────────────────────────────────────────────
+   Sticky, slim, and the same on every route. The wordmark is a link home; the
+   page's own <h1> lives in <main>. ────────────────────────────────────────── */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: color-mix(in srgb, var(--c-bg) 92%, transparent);
+  backdrop-filter: saturate(1.4) blur(8px);
   border-bottom: 1px solid var(--c-border);
-  margin-bottom: var(--sp-2);
 }
 
-.header-brand { display: flex; flex-direction: column; gap: var(--sp-2); max-width: 46ch; }
+.site-header__inner {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  padding: var(--sp-3) var(--pad);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+}
 
-.app-title {
-  font-size: var(--fs-2xl);
-  font-weight: 700;
+.site-brand {
+  font-size: var(--fs-lg);
+  font-weight: 800;
   letter-spacing: -0.02em;
-  line-height: 1;
   color: var(--c-text);
-}
-
-.app-title span {
-  color: var(--c-primary);
-}
-
-/* The one line that has to land in five seconds. It states the outcome
-   (weight in -> mg + mL out), not the category, so it is sized and coloured
-   as real copy rather than as a caption. */
-.app-subtitle {
-  font-size: var(--fs-md);
-  line-height: var(--lh-snug);
-  color: var(--c-text-2);
-  font-weight: 400;
-  letter-spacing: -0.005em;
-  text-wrap: pretty;
-}
-
-.app-subtitle strong {
-  font-weight: 600;
-  color: var(--c-text);
-}
-
-/* ── Worked example — the landing demo ───────────────────────────────────── */
-.worked {
-  margin: var(--sp-3) 0 0;
-  padding: var(--sp-3) var(--sp-4);
-  background: var(--c-surface);
-  border: 1px solid var(--c-border);
-  border-radius: var(--r);
-  box-shadow: var(--sh-xs);
-}
-
-.worked__title {
-  font-size: var(--fs-sm);
-  font-weight: 500;
-  color: var(--c-text-2);
-  margin-bottom: var(--sp-3);
-}
-
-.worked__title strong { font-weight: 700; color: var(--c-text); }
-
-/* Citation sits with the rule it applies, not in a footnote. */
-.worked__cite { color: var(--c-text-3); font-weight: 400; }
-
-.worked__steps {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-2);
-  list-style: none;
-}
-
-.worked__step {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: var(--sp-2);
-  font-size: var(--fs-sm);
-  color: var(--c-text-2);
-}
-
-.worked__num {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
+  text-decoration: none;
   flex-shrink: 0;
-  font-size: var(--fs-2xs);
-  font-weight: 700;
-  color: var(--c-primary-dark);
-  background: var(--c-primary-bg);
-  border: 1px solid var(--c-primary-bdr);
-  border-radius: var(--r-full);
 }
 
-.worked__label { min-width: 8.5em; font-weight: 600; }
+.site-brand span { color: var(--c-primary); }
+.site-brand:focus-visible { outline: none; box-shadow: var(--sh-ring); border-radius: var(--r-xs); }
 
-.worked__val { color: var(--c-text-2); font-variant-numeric: tabular-nums; }
-
-.worked__val--result { font-size: var(--fs-base); color: var(--c-text); }
-.worked__val--result strong { color: var(--c-primary-dark); font-weight: 700; }
-
-.worked__step--out .worked__num {
-  color: #fff;
-  background: var(--c-primary);
-  border-color: var(--c-primary);
-}
-
-/* The manipulable bit — moving this re-derives everything below it. */
-.worked__control {
-  display: inline-flex;
+.site-nav {
+  display: flex;
   align-items: center;
   gap: var(--sp-1);
+  margin-right: auto;
 }
 
-.worked__step-btn {
-  width: var(--sp-8);
-  height: var(--sp-8);
-  min-width: var(--target-min);
+.site-nav__link {
+  padding: var(--sp-2) var(--sp-3);
   min-height: var(--target-min);
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  font-size: var(--fs-base);
-  font-weight: 700;
+  font-size: var(--fs-sm);
+  font-weight: 600;
   color: var(--c-text-2);
-  background: var(--c-surface-2);
-  border: 1.5px solid var(--c-border-mid);
+  text-decoration: none;
   border-radius: var(--r-sm);
-  line-height: 1;
 }
 
-.worked__step-btn:hover:not(:disabled) {
-  border-color: var(--c-primary);
+.site-nav__link:hover { background: var(--c-surface); color: var(--c-text); }
+.site-nav__link:focus-visible { outline: none; box-shadow: var(--sh-ring); }
+
+.site-nav__link--active {
   color: var(--c-primary-dark);
+  background: var(--c-primary-bg);
 }
 
-.worked__step-btn:disabled { opacity: .45; cursor: not-allowed; }
-.worked__step-btn:focus-visible { outline: none; box-shadow: var(--sh-ring); }
+/* ── Page head — every route owns its heading ─────────────────────────────── */
+.page-head {
+  padding: var(--sp-6) 0 var(--sp-4);
+}
 
-.worked__weight {
-  min-width: 4.5em;
-  text-align: center;
-  font-size: var(--fs-base);
+.page-title {
+  font-size: var(--fs-2xl);
   font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: var(--lh-tight);
   color: var(--c-text);
-  font-variant-numeric: tabular-nums;
 }
 
-/* Intermediate values, not just input and answer. */
-.worked__working {
-  margin-top: var(--sp-3);
-  padding-top: var(--sp-3);
-  border-top: 1px solid var(--c-border);
-  font-size: var(--fs-sm);
-  line-height: var(--lh-body);
-  color: var(--c-text-3);
-  font-variant-numeric: tabular-nums;
-  text-wrap: pretty;
-}
+/* Focus target on route change: a destination, never a tab stop, and no ring
+   since the announcement is what carries the change. */
+.page-title:focus { outline: none; }
 
-.worked__working strong { color: var(--c-text-2); font-weight: 600; }
-.worked__working-step { white-space: nowrap; }
-
-.worked__note {
+.page-lede {
   margin-top: var(--sp-2);
-  font-size: var(--fs-sm);
+  max-width: 46ch;
+  font-size: var(--fs-md);
   line-height: var(--lh-snug);
-  color: var(--c-text-3);
+  color: var(--c-text-2);
   text-wrap: pretty;
 }
 
-.worked__note--cap { color: var(--c-warn-strong); font-weight: 600; }
+/* ── Skip link ────────────────────────────────────────────────────────────────
+   Justified now that the site has repeated nav chrome above the content; with
+   a single page and no nav it would have been noise. ─────────────────────── */
+.skip-link {
+  position: absolute;
+  left: var(--sp-2);
+  top: var(--sp-2);
+  z-index: 100;
+  padding: var(--sp-2) var(--sp-4);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--c-surface);
+  background: var(--c-text);
+  border-radius: var(--r-sm);
+  transform: translateY(-200%);
+  transition: transform .15s;
+}
+
+.skip-link:focus { transform: translateY(0); outline: none; box-shadow: var(--sh-ring); }
+
+/* ── Bottom nav (mobile) ──────────────────────────────────────────────────────
+   The thumb-reachable half of a one-handed phone, which is the posture the
+   PRD describes for bedside use. Hidden on desktop, where the header nav
+   already covers it. ─────────────────────────────────────────────────────── */
+.bottom-nav { display: none; }
+
+@media (max-width: 560px) {
+  .bottom-nav {
+    position: fixed;
+    inset: auto 0 0 0;
+    z-index: 30;
+    display: flex;
+    justify-content: space-around;
+    gap: var(--sp-1);
+    padding: var(--sp-2) var(--sp-2) calc(var(--sp-2) + env(safe-area-inset-bottom));
+    background: color-mix(in srgb, var(--c-surface) 94%, transparent);
+    backdrop-filter: saturate(1.4) blur(10px);
+    border-top: 1px solid var(--c-border);
+  }
+
+  .bottom-nav__link {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--sp-1);
+    min-height: var(--sp-10);
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    color: var(--c-text-3);
+    text-decoration: none;
+    border-radius: var(--r-sm);
+  }
+
+  .bottom-nav__link--active { color: var(--c-primary-dark); background: var(--c-primary-bg); }
+  .bottom-nav__link:focus-visible { outline: none; box-shadow: var(--sh-ring); }
+
+  .bottom-nav__count {
+    min-width: 18px;
+    padding: 0 var(--sp-1);
+    font-size: var(--fs-3xs);
+    font-weight: 700;
+    color: #fff;
+    background: var(--c-primary);
+    border-radius: var(--r-full);
+  }
+
+  /* Keep the bar from covering the end of the page. */
+  .app-footer { padding-bottom: calc(var(--sp-12) + env(safe-area-inset-bottom)); }
+
+  .site-nav { display: none; }
+  .site-header__inner { justify-content: space-between; }
+}
 
 /* ── Header history toggle ────────────────────────────────────────────────── */
 .history-toggle {
@@ -2478,7 +2464,7 @@ body::before {
 @media (max-width: 560px) {
   :root { --pad: 16px; }
 
-  .app-title { font-size: var(--fs-xl); }
+  .page-title { font-size: var(--fs-xl); }
 
   .form { grid-template-columns: 1fr; }
 
