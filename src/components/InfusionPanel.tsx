@@ -51,6 +51,33 @@ function InfusionResultCard({ result, drug, weight }: { result: InfusionResult; 
         Total dosis: <strong>{result.dosePerHr} {result.dosePerHrUnit}</strong>
       </div>
 
+      {/* This mode hides the app's most dangerous arithmetic — mg↔mcg (×1000)
+          and jam↔menit (÷60) — behind a single mL/jam figure. Every
+          conversion gets a line of its own. */}
+      <details className="derivation">
+        <summary className="derivation__summary">Cara hitung</summary>
+        <div className="derivation__body">
+          <p className="derivation__basis">
+            Dihitung dari <strong>{drug.doseUnit}</strong>, dinormalkan ke satuan per menit,
+            lalu dibagi konsentrasi stok.
+          </p>
+          <ol className="derivation__steps">
+            {result.steps.map((step, i) => (
+              <li key={i} className="derivation__step">
+                <span className="derivation__expr">{step.expression}</span>
+                <span className="derivation__eq" aria-hidden="true">=</span>
+                <span className="derivation__result">{step.result}</span>
+              </li>
+            ))}
+          </ol>
+          <p className="derivation__note">
+            Tetes per menit memakai faktor set infus: <strong>20 tetes/mL</strong> untuk makro
+            dan <strong>60 tetes/mL</strong> untuk mikro. Set yang Anda pakai bisa berbeda —
+            periksa kemasannya, karena angka tpm ikut berubah.
+          </p>
+        </div>
+      </details>
+
       <div className="result-card__actions">
         <button className="btn btn--ghost btn--sm" onClick={handleCopy}>
           {copied ? '✓ Disalin' : 'Salin'}
@@ -154,7 +181,14 @@ export function InfusionPanel() {
                 step="0.1"
                 value={stockConc}
                 onChange={(e) => { setStockConc(e.target.value); setResult(null) }}
+                aria-describedby="infusion-conc-hint"
               />
+              {/* The preset number describes one specific bag. Saying which
+                  one is the difference between a default and an assumption. */}
+              <p className="field__hint" id="infusion-conc-hint">
+                Nilai awal mengasumsikan <strong>{selected.dilution}</strong>. Kalau
+                pengenceran Anda berbeda, ubah angka ini — seluruh hasil ikut berubah.
+              </p>
             </div>
 
             <div className="field">

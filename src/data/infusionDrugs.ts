@@ -11,6 +11,13 @@ export interface InfusionPreset {
   stockUnit: string            // label shown to user, e.g. "mcg/mL"
   diluentVolumeDefault: number // mL
   note: string
+  /**
+   * The dilution this preset's stockConcentration assumes. It lived only in a
+   * code comment, so the user saw "1600 mcg/mL" with no way to check which
+   * bag it describes — and a different dilution silently makes every figure
+   * wrong. Shown next to the concentration field.
+   */
+  dilution: string
 }
 
 export const INFUSION_PRESETS: InfusionPreset[] = [
@@ -25,6 +32,7 @@ export const INFUSION_PRESETS: InfusionPreset[] = [
     stockUnit: 'mcg/mL',
     diluentVolumeDefault: 250,
     note: '2–5 mcg/kg/mnt: efek renal/dopaminergik. 5–10: efek inotropik. >10: vasopressor.',
+    dilution: '400 mg dalam 250 mL NS',
   },
   {
     id: 'dobutamine',
@@ -37,6 +45,7 @@ export const INFUSION_PRESETS: InfusionPreset[] = [
     stockUnit: 'mcg/mL',
     diluentVolumeDefault: 250,
     note: '2–20 mcg/kg/mnt. Inotropik positif. Hindari pada stenosis hipertrofik.',
+    dilution: '250 mg dalam 250 mL',
   },
   {
     id: 'norepinephrine',
@@ -49,6 +58,7 @@ export const INFUSION_PRESETS: InfusionPreset[] = [
     stockUnit: 'mcg/mL',
     diluentVolumeDefault: 250,
     note: '0.01–2 mcg/kg/mnt. Vasopressor pilihan pada syok septik.',
+    dilution: '4 mg dalam 250 mL',
   },
   {
     id: 'epinephrine-infusion',
@@ -61,6 +71,7 @@ export const INFUSION_PRESETS: InfusionPreset[] = [
     stockUnit: 'mcg/mL',
     diluentVolumeDefault: 250,
     note: '0.01–1 mcg/kg/mnt. Bronkospasme berat, syok anafilaktik atau kardiogenik.',
+    dilution: '1 mg dalam 250 mL',
   },
   {
     id: 'morphine',
@@ -73,6 +84,7 @@ export const INFUSION_PRESETS: InfusionPreset[] = [
     stockUnit: 'mcg/mL',
     diluentVolumeDefault: 250,
     note: '10–40 mcg/kg/jam. Analgesik opioid. Monitor respirasi.',
+    dilution: '10 mg dalam 250 mL',
   },
   {
     id: 'midazolam',
@@ -85,6 +97,7 @@ export const INFUSION_PRESETS: InfusionPreset[] = [
     stockUnit: 'mcg/mL',
     diluentVolumeDefault: 250,
     note: '30–200 mcg/kg/jam. Sedasi ICU. Titrasi ke target RASS.',
+    dilution: '50 mg dalam 250 mL',
   },
   {
     id: 'aminophylline',
@@ -97,6 +110,7 @@ export const INFUSION_PRESETS: InfusionPreset[] = [
     stockUnit: 'mg/mL',
     diluentVolumeDefault: 250,
     note: '0.5–1 mg/kg/jam maintenance. Loading: 5–6 mg/kg bolus IV lambat. Monitor kadar.',
+    dilution: '250 mg dalam 250 mL',
   },
   {
     id: 'kcl',
@@ -109,5 +123,6 @@ export const INFUSION_PRESETS: InfusionPreset[] = [
     stockUnit: 'mcg/mL',
     diluentVolumeDefault: 250,
     note: 'Maks 0.5 mEq/kg/jam (≈40mg/kg/jam). Harus diencerkan, jangan bolus. Monitor EKG.',
+    dilution: '500 mg (≈7 mEq) dalam 250 mL',
   },
 ]
