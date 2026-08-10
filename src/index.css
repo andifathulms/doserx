@@ -767,7 +767,11 @@ body::before {
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--_cat, var(--c-primary)) 35%, transparent);
 }
 
+/* At 320px the grid is two 140px columns; minus the card padding and the
+   38px star lane, a name has ~92px. Long catalog names (Kotrimoksazol,
+   Metilprednisolon) overflowed rather than breaking. */
 .drug-card__name {
+  overflow-wrap: anywhere;
   font-size: var(--fs-base);
   font-weight: 600;
   color: var(--c-text);
