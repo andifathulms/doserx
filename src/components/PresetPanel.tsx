@@ -6,6 +6,7 @@ import { DrugPreset } from '../data/drugs'
 import { CustomDrugPreset, deleteCustomDrug, DoseMode, loadDoseMode, saveDoseMode } from '../lib/storage'
 import { calculate, CalcResult } from '../lib/calculate'
 import { errorCopy } from '../lib/errorCopy'
+import { announceResult } from '../lib/announce'
 
 interface PresetPanelProps {
   onHistoryUpdated: () => void
@@ -312,11 +313,19 @@ export function PresetPanel({ onHistoryUpdated, customDrugs, onCustomDrugDeleted
             </div>
           </div>
 
-          {error && <p className="error">{error}</p>}
+          {/* role="alert" has no native equivalent: a validation failure must
+              be announced without moving focus off the field being fixed. */}
+          {error && <p className="error" role="alert">{error}</p>}
 
           <button className="btn btn--primary" onClick={handleCalculate}>
             Hitung
           </button>
+
+          {/* Mounted with the form, before any result exists, so the
+              announcement fires on text change rather than on insertion. */}
+          <p className="sr-only" role="status">
+            {result ? announceResult(selected.name, result, parseFloat(freq)) : ''}
+          </p>
 
           {result && (
             <ResultCard

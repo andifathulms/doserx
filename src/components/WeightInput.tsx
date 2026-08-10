@@ -109,8 +109,10 @@ export function WeightInput({ id, value, onChange, autoFocus = false }: WeightIn
               Hitung
             </button>
           </div>
+          {/* The estimate replaces the weight field's value without moving
+              focus, so it has to be spoken. */}
           {estimated != null && (
-            <p className="estimate-panel__result">
+            <p className="estimate-panel__result" role="status">
               Estimasi: <strong>{estimated} kg</strong>
               <span className="estimate-panel__formula">
                 {' '}(formula APLS — hanya perkiraan, konfirmasi jika memungkinkan)
@@ -118,7 +120,7 @@ export function WeightInput({ id, value, onChange, autoFocus = false }: WeightIn
             </p>
           )}
           {(ageYears || ageMonths) && estimated == null && (
-            <p className="estimate-panel__result estimate-panel__result--warn">
+            <p className="estimate-panel__result estimate-panel__result--warn" role="alert">
               Usia tidak valid atau ≥18 tahun — masukkan berat manual.
             </p>
           )}

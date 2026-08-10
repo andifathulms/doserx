@@ -171,11 +171,23 @@ export function InfusionPanel() {
             </div>
           </div>
 
-          {error && <p className="error">{error}</p>}
+          {/* role="alert" has no native equivalent: a validation failure must
+              be announced without moving focus off the field being fixed. */}
+          {error && <p className="error" role="alert">{error}</p>}
 
           <button className="btn btn--primary" onClick={handleCalculate}>
             Hitung Kecepatan Infus
           </button>
+
+          {/* Mounted before any result exists, so the announcement fires on
+              text change rather than on insertion. */}
+          <p className="sr-only" role="status">
+            {result
+              ? `${selected.name}: ${result.ratePerHr} mililiter per jam, ` +
+                `${result.dropsMacro} tetes per menit makro, ` +
+                `${result.dropsMicro} tetes per menit mikro.`
+              : ''}
+          </p>
 
           {result && (
             <InfusionResultCard result={result} drug={selected} weight={weight} />

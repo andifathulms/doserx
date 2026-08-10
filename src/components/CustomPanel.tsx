@@ -3,6 +3,7 @@ import { ResultCard } from './ResultCard'
 import { WeightInput } from './WeightInput'
 import { calculate, CalcResult } from '../lib/calculate'
 import { errorCopy } from '../lib/errorCopy'
+import { announceResult } from '../lib/announce'
 import { saveCustomDrug, generateId } from '../lib/storage'
 
 interface CustomPanelProps {
@@ -141,11 +142,19 @@ export function CustomPanel({ onHistoryUpdated, onPresetSaved }: CustomPanelProp
         </div>
       </div>
 
-      {error && <p className="error">{error}</p>}
+      {/* role="alert" has no native equivalent: a validation failure must be
+          announced without moving focus away from the field being corrected. */}
+      {error && <p className="error" role="alert">{error}</p>}
 
       <button className="btn btn--primary" onClick={handleCalculate}>
         Hitung
       </button>
+
+      {/* Mounted with the form, before any result exists, so the announcement
+          fires on text change rather than on insertion. */}
+      <p className="sr-only" role="status">
+        {result ? announceResult(drugName || 'Obat kustom', result, parseFloat(freq)) : ''}
+      </p>
 
       {/* Save as preset */}
       {canSavePreset() && !savingPreset && (

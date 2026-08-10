@@ -316,7 +316,8 @@ export function PuyerPanel({ onHistoryUpdated: _onHistoryUpdated }: PuyerPanelPr
                 value={weight}
                 onChange={(e) => { setWeight(e.target.value); setCalculated(false) }}
               />
-              {weightError && <p className="error" style={{ marginTop: 4 }}>{weightError}</p>}
+              {/* role="alert": validation failure announced without moving focus. */}
+              {weightError && <p className="error" role="alert" style={{ marginTop: 4 }}>{weightError}</p>}
             </div>
             <div className="field">
               <label className="label" htmlFor="puyer-days">Jumlah hari</label>
@@ -419,6 +420,14 @@ export function PuyerPanel({ onHistoryUpdated: _onHistoryUpdated }: PuyerPanelPr
           <button className="btn btn--primary" onClick={handleCalculate}>
             Hitung Puyer
           </button>
+
+          {/* Mounted before the recipe exists, so the announcement fires on
+              text change rather than on insertion. */}
+          <p className="sr-only" role="status">
+            {allCalculated
+              ? `Resep puyer siap:  obat,  kilogram,  hari.`
+              : ''}
+          </p>
 
           {/* ── Recipe card ───────────────────────────────── */}
           {allCalculated && (
