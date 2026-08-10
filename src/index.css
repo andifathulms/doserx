@@ -718,6 +718,23 @@ body::before {
   }
 }
 
+/* The app's primary control had no visible keyboard focus at all — the ring
+   token already existed, the 92-card grid just never used it. */
+.drug-card:focus-visible {
+  outline: none;
+  border-color: var(--_cat, var(--c-primary));
+  box-shadow: var(--sh-ring);
+}
+
+.cat-chip:focus-visible,
+.selected-drug-bar:focus-visible,
+.tab-btn:focus-visible,
+.history-toggle:focus-visible,
+.monograph__summary:focus-visible {
+  outline: none;
+  box-shadow: var(--sh-ring);
+}
+
 /* Selected ≠ hover: 2px border + accent ring make it unmistakable at a glance */
 .drug-card--selected {
   background: var(--_cat-bg);
