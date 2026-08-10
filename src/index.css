@@ -1554,12 +1554,16 @@ body::before {
 
 .history-entry:hover { box-shadow: var(--sh-sm); }
 
+/* Right padding reserves the absolutely-positioned delete button's lane.
+   Without it a long drug name plus a patient label plus a timestamp wraps
+   underneath "Hapus" — which only shows up with real catalog names. */
 .history-entry__top {
   display: flex;
   align-items: baseline;
   gap: 8px;
   flex-wrap: wrap;
   margin-bottom: 5px;
+  padding-right: 72px;
 }
 
 .history-entry__drug {
