@@ -1,13 +1,28 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect, lazy, Suspense } from 'react'
 import { Tabs } from './components/Tabs'
 import { PresetPanel } from './components/PresetPanel'
 import { CustomPanel } from './components/CustomPanel'
-import { HistoryPanel } from './components/HistoryPanel'
-import { PuyerPanel } from './components/PuyerPanel'
-import { InfusionPanel } from './components/InfusionPanel'
 import { MakerSignature } from './components/MakerSignature'
 import { WorkedExample } from './components/WorkedExample'
 import { loadHistory, loadCustomDrugs, HistoryEntry, CustomDrugPreset } from './lib/storage'
+
+/**
+ * Puyer, Infus and History sit behind a tab or the header button — never on
+ * screen at first paint and never needed in the first interaction, which is
+ * always Preset. Splitting them takes 5.5 kB gzip off the critical path.
+ *
+ * Preset, DrugGrid, ResultCard and the worked example stay eagerly imported:
+ * they ARE the first interaction.
+ */
+const HistoryPanel = lazy(() =>
+  import('./components/HistoryPanel').then((m) => ({ default: m.HistoryPanel })),
+)
+const PuyerPanel = lazy(() =>
+  import('./components/PuyerPanel').then((m) => ({ default: m.PuyerPanel })),
+)
+const InfusionPanel = lazy(() =>
+  import('./components/InfusionPanel').then((m) => ({ default: m.InfusionPanel })),
+)
 
 // Calculator modes only. History is a record, not a calculator — it lives in the
 // header (see below) rather than crowding the segmented control to 5 items.
@@ -41,6 +56,24 @@ function App() {
   const [activeTab, setActiveTab] = useState('preset')
   const [history, setHistory] = useState<HistoryEntry[]>(() => loadHistory())
   const [customDrugs, setCustomDrugs] = useState<CustomDrugPreset[]>(() => loadCustomDrugs())
+
+  // Warm the split chunks once the page is idle, so switching tabs never waits
+  // on a network round trip. Without this the split would be a perceptible
+  // change, which is exactly what this pass is not allowed to introduce.
+  useEffect(() => {
+    const warm = () => {
+      void import('./components/PuyerPanel')
+      void import('./components/InfusionPanel')
+      void import('./components/HistoryPanel')
+    }
+    const ric = window.requestIdleCallback
+    if (typeof ric === 'function') {
+      const id = ric(warm, { timeout: 3000 })
+      return () => window.cancelIdleCallback?.(id)
+    }
+    const id = window.setTimeout(warm, 1500)
+    return () => window.clearTimeout(id)
+  }, [])
 
   const refreshHistory = useCallback(() => {
     setHistory(loadHistory())
@@ -124,13 +157,19 @@ function App() {
           />
         )}
         {activeTab === 'puyer' && (
-          <PuyerPanel onHistoryUpdated={refreshHistory} />
+          <Suspense fallback={<div className="panel-loading" aria-hidden="true" />}>
+            <PuyerPanel onHistoryUpdated={refreshHistory} />
+          </Suspense>
         )}
         {activeTab === 'infus' && (
-          <InfusionPanel />
+          <Suspense fallback={<div className="panel-loading" aria-hidden="true" />}>
+            <InfusionPanel />
+          </Suspense>
         )}
         {activeTab === 'history' && (
-          <HistoryPanel entries={history} onUpdated={refreshHistory} />
+          <Suspense fallback={<div className="panel-loading" aria-hidden="true" />}>
+            <HistoryPanel entries={history} onUpdated={refreshHistory} />
+          </Suspense>
         )}
       </main>
 

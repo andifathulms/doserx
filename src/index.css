@@ -232,6 +232,10 @@ input  { font: inherit; }
   --sh-md: 0 10px 20px rgba(0,0,0,.5), 0 4px 8px rgba(0,0,0,.4);
 }
 
+/* Holds vertical space while a split panel chunk resolves. Only visible if a
+   tab is opened before the idle prefetch completes. */
+.panel-loading { min-height: 40vh; }
+
 /* ── Screen-reader-only text ──────────────────────────────────────────────────
    For content that must be announced but not shown: live-region summaries and
    the warning-flag wording that an icon cannot convey. Not display:none — that
