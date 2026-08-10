@@ -749,14 +749,18 @@ body::before {
 
 /* ── Card wrapper + favorite star ─────────────────────────────────────────── */
 .drug-card-wrap { position: relative; display: flex; }
-.drug-card-wrap > .drug-card { width: 100%; padding-right: 26px; }
+.drug-card-wrap > .drug-card { width: 100%; padding-right: 38px; }
 
+/* Hit area, not glyph size: the star sits on top of a card whose entire
+   surface selects the drug, so a thumb aimed at the corner used to favourite
+   instead of select. 32px clears WCAG 2.2's 24px minimum with room for a
+   one-handed bedside tap; the ★ itself is unchanged. */
 .drug-card__star {
   position: absolute;
-  top: 5px;
-  right: 5px;
-  width: 22px;
-  height: 22px;
+  top: 2px;
+  right: 2px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
