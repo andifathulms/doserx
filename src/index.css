@@ -242,7 +242,7 @@ body::before {
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
-  padding: 24px 0 18px;
+  padding: var(--sp-5) 0 var(--sp-4);
   border-bottom: 1px solid var(--c-border);
   margin-bottom: 6px;
 }
@@ -285,8 +285,8 @@ body::before {
   align-items: center;
   gap: var(--sp-2) var(--sp-3);
   list-style: none;
-  margin: var(--sp-4) 0 0;
-  padding: var(--sp-3) var(--sp-4);
+  margin: var(--sp-3) 0 0;
+  padding: var(--sp-2) var(--sp-4);
   background: var(--c-surface);
   border: 1px solid var(--c-border);
   border-radius: var(--r);
@@ -400,7 +400,7 @@ body::before {
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  margin: var(--sp-4) 0 var(--sp-1);
+  margin: var(--sp-3) 0 0;
   padding: var(--sp-3) var(--sp-4);
   background: var(--c-surface);
   border: 1px solid var(--c-border);
@@ -517,7 +517,7 @@ body::before {
   display: flex;
   flex-direction: column;
   gap: var(--sp-2);
-  margin: var(--sp-4) 0 var(--sp-5);
+  margin: var(--sp-3) 0 var(--sp-3);
 }
 
 .tabs-group__label {
@@ -599,7 +599,7 @@ body::before {
   display: flex;
   flex-direction: column;
   gap: var(--sp-1);
-  margin-bottom: var(--sp-3);
+  margin-bottom: var(--sp-2);
 }
 
 .grid-lede__title {
@@ -2263,6 +2263,31 @@ body::before {
   .puyer-weight { max-width: 100%; }
   .tabs { gap: 1px; }
   .tab-btn { font-size: var(--fs-sm); padding: 7px 4px; }
+
+  /* Preamble compaction — five explanatory blocks stack before the catalog
+     (flow strip, mode label, tabs, mode hint, disclaimer, lede). Each earns
+     its place, but together they pushed the first drug card past the fold on
+     a 667px screen. Same information, tighter, so step 1's affordance is
+     visible while step 1 is being read. */
+  .flow-strip {
+    padding: var(--sp-2) var(--sp-3);
+    gap: var(--sp-1) var(--sp-2);
+    box-shadow: none;
+  }
+
+  .flow-strip__step { font-size: var(--fs-xs); }
+
+  .flow-strip__num {
+    width: 18px;
+    height: 18px;
+    font-size: var(--fs-3xs);
+  }
+
+  .flow-strip__step + .flow-strip__step::before { margin-right: 0; }
+
+  .safety-banner { padding: var(--sp-2) var(--sp-3); }
+
+  .grid-lede__title { font-size: var(--fs-md); }
 }
 
 @media (min-width: 680px) {
