@@ -4,6 +4,7 @@ import { DrugGrid } from './DrugGrid'
 import { calculate, CalcResult } from '../lib/calculate'
 import { suggestForms, FormSuggestion } from '../lib/suggest'
 import { DoseMode, loadDoseMode, saveDoseMode } from '../lib/storage'
+import { scrollBehavior } from '../lib/motion'
 
 interface PuyerEntry {
   drug: DrugPreset
@@ -189,7 +190,7 @@ export function PuyerPanel({ onHistoryUpdated: _onHistoryUpdated }: PuyerPanelPr
   function handleProceed() {
     setGridOpen(false)
     requestAnimationFrame(() =>
-      formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+      formRef.current?.scrollIntoView({ behavior: scrollBehavior(), block: 'nearest' })
     )
   }
 

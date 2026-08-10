@@ -7,6 +7,7 @@ import { CustomDrugPreset, deleteCustomDrug, DoseMode, loadDoseMode, saveDoseMod
 import { calculate, CalcResult } from '../lib/calculate'
 import { errorCopy } from '../lib/errorCopy'
 import { announceResult } from '../lib/announce'
+import { scrollBehavior } from '../lib/motion'
 
 interface PresetPanelProps {
   onHistoryUpdated: () => void
@@ -63,7 +64,7 @@ export function PresetPanel({ onHistoryUpdated, customDrugs, onCustomDrugDeleted
     clearResults()
     setError(null)
     requestAnimationFrame(() =>
-      formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+      formRef.current?.scrollIntoView({ behavior: scrollBehavior(), block: 'nearest' })
     )
   }
 
