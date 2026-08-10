@@ -9,6 +9,9 @@ interface SingleSelectProps {
   drugs?: DrugPreset[]
   selected: string | null
   onSelect: (drug: DrugPreset) => void
+  /** Set when the grid reopens after a selection was cleared: focus has to
+   *  land somewhere, and search is where the returning user is headed. */
+  autoFocusSearch?: boolean
 }
 
 // ── Multi-select mode (Puyer tab) ─────────────────────────────────────────────
@@ -18,6 +21,7 @@ interface MultiSelectProps {
   drugs: DrugPreset[]
   selectedIds: string[]
   onToggle: (drug: DrugPreset) => void
+  autoFocusSearch?: boolean
 }
 
 type DrugGridProps = SingleSelectProps | MultiSelectProps
@@ -199,6 +203,7 @@ export function DrugGrid(props: DrugGridProps) {
           type="search"
           placeholder="Cari obat… (misal paracetamol, demam)"
           value={search}
+          autoFocus={props.autoFocusSearch}
           onChange={(e) => setSearch(e.target.value)}
           aria-label="Cari obat"
         />

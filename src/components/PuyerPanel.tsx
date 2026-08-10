@@ -153,6 +153,9 @@ export function PuyerPanel({ onHistoryUpdated: _onHistoryUpdated }: PuyerPanelPr
   const [calculated, setCalculated] = useState(false)
   const [weightError, setWeightError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
+  // True only when the grid is reopened by "Ubah pilihan" — the initial page
+  // load must NOT steal focus into search.
+  const [returningToGrid, setReturningToGrid] = useState(false)
 
   const formRef = useRef<HTMLDivElement>(null)
 
@@ -189,13 +192,16 @@ export function PuyerPanel({ onHistoryUpdated: _onHistoryUpdated }: PuyerPanelPr
 
   function handleProceed() {
     setGridOpen(false)
+    setReturningToGrid(false)
     requestAnimationFrame(() =>
       formRef.current?.scrollIntoView({ behavior: scrollBehavior(), block: 'nearest' })
     )
   }
 
+  // Reopening the grid unmounts the focused button; send focus to search.
   function handleChangeSelection() {
     setGridOpen(true)
+    setReturningToGrid(true)
     setCalculated(false)
   }
 
@@ -269,6 +275,7 @@ export function PuyerPanel({ onHistoryUpdated: _onHistoryUpdated }: PuyerPanelPr
             drugs={ALL_DRUGS}
             selectedIds={selectedIds}
             onToggle={handleToggle}
+            autoFocusSearch={returningToGrid}
           />
 
           {selectedIds.length > 0 && (

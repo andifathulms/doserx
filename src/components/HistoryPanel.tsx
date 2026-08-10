@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { HistoryEntry, deleteEntry, clearHistory, updateEntryNote } from '../lib/storage'
 
 interface HistoryPanelProps {
@@ -22,6 +22,15 @@ function formatTime(ts: number): string {
 function NoteEditor({ entry, onSaved }: { entry: HistoryEntry; onSaved: () => void }) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(entry.note ?? '')
+  const triggerRef = useRef<HTMLButtonElement>(null)
+  const wasEditing = useRef(false)
+
+  // Closing the editor unmounts the focused button. Hand focus back to the
+  // trigger that opened it rather than dropping it on <body>.
+  useEffect(() => {
+    if (wasEditing.current && !editing) triggerRef.current?.focus()
+    wasEditing.current = editing
+  }, [editing])
 
   function handleSave() {
     updateEntryNote(entry.id, draft)
@@ -36,6 +45,7 @@ function NoteEditor({ entry, onSaved }: { entry: HistoryEntry; onSaved: () => vo
           <span className="history-note">{entry.note}</span>
         ) : null}
         <button
+          ref={triggerRef}
           className="note-edit-btn"
           onClick={() => { setDraft(entry.note ?? ''); setEditing(true) }}
         >
@@ -65,15 +75,33 @@ function NoteEditor({ entry, onSaved }: { entry: HistoryEntry; onSaved: () => vo
 }
 
 export function HistoryPanel({ entries, onUpdated }: HistoryPanelProps) {
-  function handleDelete(id: string) {
+  const listRef = useRef<HTMLUListElement>(null)
+  const clearRef = useRef<HTMLButtonElement>(null)
+  const emptyRef = useRef<HTMLParagraphElement>(null)
+
+  // Deleting removes the <li> that holds the focused button. Move focus to the
+  // entry that takes its place, or to the surrounding controls when the list
+  // shortens or empties — never to <body>.
+  function handleDelete(id: string, index: number) {
     deleteEntry(id)
     onUpdated()
+    requestAnimationFrame(() => {
+      const buttons = listRef.current?.querySelectorAll<HTMLButtonElement>(
+        '.history-entry__delete',
+      )
+      if (buttons && buttons.length > 0) {
+        buttons[Math.min(index, buttons.length - 1)].focus()
+        return
+      }
+      ;(clearRef.current ?? emptyRef.current)?.focus()
+    })
   }
 
   function handleClearAll() {
     if (window.confirm('Hapus semua riwayat kalkulasi?')) {
       clearHistory()
       onUpdated()
+      requestAnimationFrame(() => emptyRef.current?.focus())
     }
   }
 
@@ -81,7 +109,11 @@ export function HistoryPanel({ entries, onUpdated }: HistoryPanelProps) {
     return (
       <div className="panel">
         <div className="empty-state">
-          <p className="empty-state__msg">Belum ada kalkulasi tersimpan.</p>
+          {/* tabIndex={-1}: not a tab stop, but a valid focus destination when
+              the list this replaced is emptied. */}
+          <p className="empty-state__msg" ref={emptyRef} tabIndex={-1}>
+            Belum ada kalkulasi tersimpan.
+          </p>
           <p className="empty-state__hint">Hitung dosis lalu tekan “Simpan”.</p>
         </div>
       </div>
@@ -92,13 +124,13 @@ export function HistoryPanel({ entries, onUpdated }: HistoryPanelProps) {
     <div className="panel">
       <div className="history-header">
         <span className="history-count">{entries.length} tersimpan</span>
-        <button className="btn btn--ghost btn--sm" onClick={handleClearAll}>
+        <button ref={clearRef} className="btn btn--ghost btn--sm" onClick={handleClearAll}>
           Hapus semua
         </button>
       </div>
 
-      <ul className="history-list">
-        {entries.map((entry) => (
+      <ul className="history-list" ref={listRef}>
+        {entries.map((entry, index) => (
           <li key={entry.id} className="history-entry">
             <div className="history-entry__top">
               <span className="history-entry__drug">{entry.drugName}</span>
@@ -126,7 +158,7 @@ export function HistoryPanel({ entries, onUpdated }: HistoryPanelProps) {
             <NoteEditor entry={entry} onSaved={onUpdated} />
             <button
               className="btn btn--ghost btn--sm history-entry__delete"
-              onClick={() => handleDelete(entry.id)}
+              onClick={() => handleDelete(entry.id, index)}
               aria-label={`Hapus entri ${entry.drugName}`}
             >
               Hapus

@@ -39,8 +39,12 @@ export function PresetPanel({ onHistoryUpdated, customDrugs, onCustomDrugDeleted
   const [resultMin, setResultMin] = useState<CalcResult | null>(null)
   const [resultMax, setResultMax] = useState<CalcResult | null>(null)
   const [error, setError] = useState<string | null>(null)
+  // True only when the grid is reopened by "Ganti obat" — the initial page
+  // load must NOT steal focus into search.
+  const [returningToGrid, setReturningToGrid] = useState(false)
 
   const formRef = useRef<HTMLDivElement>(null)
+  const customListRef = useRef<HTMLDivElement>(null)
 
   const doseUnit = doseMode === 'perDose' ? 'mg/kg/kali' : 'mg/kg/hari'
 
@@ -58,6 +62,7 @@ export function PresetPanel({ onHistoryUpdated, customDrugs, onCustomDrugDeleted
   function handleSelect(drug: DrugPreset) {
     setSelected(drug)
     setGridOpen(false)
+    setReturningToGrid(false)
     setDose(String(dayToMode(drug.dosePerKg, drug.freq, doseMode)))
     setFreq(String(drug.freq))
     setConcentration(drug.concentration != null ? String(drug.concentration) : '')
@@ -84,11 +89,31 @@ export function PresetPanel({ onHistoryUpdated, customDrugs, onCustomDrugDeleted
     handleSelect(asDrugPreset)
   }
 
+  // Reopening the grid unmounts the button that was focused. Send focus to
+  // the search field rather than dropping it on <body>.
   function handleChangeDrug() {
     setGridOpen(true)
     setSelected(null)
+    setReturningToGrid(true)
     clearResults()
     setError(null)
+  }
+
+  // Same for deleting a custom preset: focus the next one, or fall back to
+  // the grid's search field when the section empties.
+  function handleDeleteCustom(id: string) {
+    deleteCustomDrug(id)
+    onCustomDrugDeleted()
+    requestAnimationFrame(() => {
+      const remaining = customListRef.current?.querySelectorAll<HTMLButtonElement>(
+        '.custom-drug-card__delete',
+      )
+      if (remaining && remaining.length > 0) {
+        remaining[remaining.length - 1].focus()
+        return
+      }
+      document.querySelector<HTMLInputElement>('.drug-search-input')?.focus()
+    })
   }
 
   function handleToggleMode(mode: DoseMode) {
@@ -157,7 +182,7 @@ export function PresetPanel({ onHistoryUpdated, customDrugs, onCustomDrugDeleted
               <div className="drug-category-label custom-drugs-section__label">
                 Preset Saya
               </div>
-              <div className="drug-grid custom-drugs-grid">
+              <div className="drug-grid custom-drugs-grid" ref={customListRef}>
                 {customDrugs.map((drug) => (
                   <div key={drug.id} className={`drug-card custom-drug-card${selected?.id === drug.id ? ' drug-card--selected' : ''}`}>
                     <button
@@ -169,7 +194,7 @@ export function PresetPanel({ onHistoryUpdated, customDrugs, onCustomDrugDeleted
                     </button>
                     <button
                       className="custom-drug-card__delete"
-                      onClick={() => { deleteCustomDrug(drug.id); onCustomDrugDeleted() }}
+                      onClick={() => handleDeleteCustom(drug.id)}
                       aria-label={`Hapus preset ${drug.name}`}
                       title="Hapus preset"
                     >
@@ -182,7 +207,11 @@ export function PresetPanel({ onHistoryUpdated, customDrugs, onCustomDrugDeleted
           )}
           {/* The "pilih obat" instruction now leads the grid (see DrugGrid's
               lede) instead of trailing ~90 cards where nobody scrolled to it. */}
-          <DrugGrid selected={selected?.id ?? null} onSelect={handleSelect} />
+          <DrugGrid
+            selected={selected?.id ?? null}
+            onSelect={handleSelect}
+            autoFocusSearch={returningToGrid}
+          />
         </>
       ) : selected && (
         <button className="selected-drug-bar" onClick={handleChangeDrug}>
