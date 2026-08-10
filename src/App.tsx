@@ -15,6 +15,7 @@ import {
 import { Link, Redirect, useLocation, navigate } from './lib/router'
 import { resolveRoute } from './lib/route-match'
 import { SkipLink, SiteHeader, BottomNav, RouteAnnouncer } from './components/SiteNav'
+import { CatalogPage } from './pages/CatalogPage'
 import { ROUTES } from './routes'
 
 /**
@@ -33,6 +34,11 @@ const PuyerPanel = lazy(() =>
 )
 const InfusionPanel = lazy(() =>
   import('./components/InfusionPanel').then((m) => ({ default: m.InfusionPanel })),
+)
+// A drug page is a destination reached from the catalog or from outside; it is
+// never the first interaction on the calculator route.
+const DrugPage = lazy(() =>
+  import('./pages/DrugPage').then((m) => ({ default: m.DrugPage })),
 )
 
 // Calculator modes only. History is a record, not a calculator — it is its own
@@ -131,16 +137,18 @@ function App() {
       <main className="app-main" id="main">
         {/* Each page owns its <h1>; the wordmark in the header is a link, not
             a heading. Focus lands here on every route change. */}
-        <div className="page-head">
-          <h1 className="page-title" tabIndex={-1}>
-            {routeId === 'history' ? 'Riwayat perhitungan' : 'Kalkulator dosis'}
-          </h1>
-          <p className="page-lede">
-            {routeId === 'history'
-              ? 'Tersimpan di perangkat ini saja — tidak ada yang dikirim ke server.'
-              : 'Masukkan berat badan pasien, dapatkan dosis mg dan volume mL siap pakai.'}
-          </p>
-        </div>
+        {(showCalculator || routeId === 'history') && (
+          <div className="page-head">
+            <h1 className="page-title" tabIndex={-1}>
+              {routeId === 'history' ? 'Riwayat perhitungan' : 'Kalkulator dosis'}
+            </h1>
+            <p className="page-lede">
+              {routeId === 'history'
+                ? 'Tersimpan di perangkat ini saja — tidak ada yang dikirim ke server.'
+                : 'Masukkan berat badan pasien, dapatkan dosis mg dan volume mL siap pakai.'}
+            </p>
+          </div>
+        )}
 
         {/* The flow, carried through with real numbers and a live weight —
             an abstract three-step strip demonstrated nothing. */}
@@ -150,6 +158,14 @@ function App() {
           <Tabs tabs={TABS} active={mode!} onChange={handleTabChange} label="Mode hitung" />
         )}
 
+        {routeId === 'catalog' && <CatalogPage />}
+        {routeId === 'drug' && (
+          <Suspense fallback={<div className="panel-loading" aria-hidden="true" />}>
+            <DrugPage id={match!.params.id} onHistoryUpdated={refreshHistory} />
+          </Suspense>
+        )}
+
+        {(showCalculator || routeId === 'drug') && (
         <div className="safety-banner" role="note">
           <span className="safety-banner__icon" aria-hidden="true">⚠</span>
           <span>
@@ -157,6 +173,7 @@ function App() {
             Verifikasi setiap dosis dengan panduan institusi/klinis terkini sebelum digunakan.
           </span>
         </div>
+        )}
 
         {mode === 'preset' && (
           <PresetPanel

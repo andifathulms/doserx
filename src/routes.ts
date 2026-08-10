@@ -51,6 +51,23 @@ export const ROUTES: RouteDef[] = [
     index: true,
   },
   {
+    path: '/obat',
+    id: 'catalog',
+    title: 'Katalog obat',
+    description:
+      'Katalog 92 obat dengan dosis berbasis berat badan, sediaan yang tersedia, efek samping dan sumber acuannya (IDAI, BNFc, Fornas, WHO, Kemenkes).',
+    navLabel: 'Obat',
+    nav: true,
+    index: true,
+  },
+  {
+    path: '/obat/:id',
+    id: 'drug',
+    title: 'Obat',
+    description: '',
+    index: true,
+  },
+  {
     path: '/riwayat',
     id: 'history',
     title: 'Riwayat perhitungan',

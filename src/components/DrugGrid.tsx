@@ -1,6 +1,8 @@
 import { useState, useMemo } from 'react'
 import { DRUG_PRESETS, DrugPreset, DrugCategory } from '../data/drugs'
 import { loadRecents, loadFavorites, recordRecent, toggleFavorite } from '../lib/storage'
+import { scoreDrug } from '../lib/search'
+import { CATEGORY_ORDER } from '../data/categories'
 
 // ── Single-select mode (Preset tab) ──────────────────────────────────────────
 
@@ -26,38 +28,8 @@ interface MultiSelectProps {
 
 type DrugGridProps = SingleSelectProps | MultiSelectProps
 
-const CATEGORY_ORDER: DrugCategory[] = [
-  'Gawat Darurat',
-  'Analgesik/NSAID',
-  'Antibiotik',
-  'Antivirus',
-  'Antijamur',
-  'Anti-TB (OAT)',
-  'Antiparasit',
-  'Antikonvulsan',
-  'Kardiovaskular',
-  'Pulmologi',
-  'Gastrointestinal',
-  'Kortikosteroid',
-  'Antihistamin/Alergi',
-  'Vitamin/Mineral',
-  'Cairan & Elektrolit',
-  'Antimalarial',
-  'Lain-lain',
-]
 
 const PINNED_MAX = 6
-
-// Relevance score for a query against a drug. Higher = better; 0 = no match.
-function scoreDrug(d: DrugPreset, q: string): number {
-  const name = d.name.toLowerCase()
-  if (name.startsWith(q)) return 5
-  if (name.includes(q)) return 4
-  if (d.aliases?.some((a) => a.toLowerCase().includes(q))) return 3
-  if (d.indications?.some((i) => i.toLowerCase().includes(q))) return 2
-  if (d.category.toLowerCase().includes(q) || d.route.toLowerCase().includes(q)) return 1
-  return 0
-}
 
 export function DrugGrid(props: DrugGridProps) {
   const [search, setSearch] = useState('')

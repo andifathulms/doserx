@@ -684,6 +684,45 @@ body::before {
 [data-cat="Antimalarial"]        { --_cat: #0d9488; }  /* teal */
 [data-cat="Lain-lain"]           { --_cat: #64748b; }  /* slate */
 
+/* ── Catalog page ─────────────────────────────────────────────────────────────
+   The catalog is made of links, not buttons: every drug is a destination with
+   its own URL. Shares the card look with the picker so the library reads the
+   same in both places. ───────────────────────────────────────────────────── */
+.catalog-card {
+  text-decoration: none;
+  color: inherit;
+}
+
+.catalog-card:hover { text-decoration: none; }
+
+.catalog-card__dose {
+  margin-top: var(--sp-1);
+  font-size: var(--fs-3xs);
+  font-weight: 600;
+  color: var(--c-text-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.drug-category-count { font-weight: 400; color: var(--c-text-faint); }
+
+/* ── Breadcrumb ───────────────────────────────────────────────────────────── */
+.breadcrumb {
+  padding-top: var(--sp-4);
+  font-size: var(--fs-sm);
+  color: var(--c-text-3);
+}
+
+.breadcrumb a { color: var(--c-text-2); }
+.breadcrumb__current { color: var(--c-text-3); }
+
+.drug-page__aliases {
+  margin-top: var(--sp-2);
+  font-size: var(--fs-sm);
+  color: var(--c-text-3);
+}
+
+.related { margin-top: var(--sp-8); }
+
 /* ── Drug grid ────────────────────────────────────────────────────────────── */
 .drug-grid-wrapper { margin-bottom: var(--sp-4); }
 
