@@ -50,7 +50,7 @@ export function WeightInput({ id, value, onChange, autoFocus = false }: WeightIn
               type="button"
               className="estimate-toggle"
               onClick={handleToggle}
-              title="Estimasi berat dari usia"
+              aria-label={estimating ? 'Batal estimasi berat dari usia' : 'Estimasi berat badan dari usia'}
             >
               {estimating ? 'Batal' : 'Dari usia?'}
             </button>

@@ -174,7 +174,6 @@ export function DrugGrid(props: DrugGridProps) {
           onClick={(e) => handleToggleFav(e, drug.id)}
           aria-label={fav ? `Hapus ${drug.name} dari favorit` : `Tandai ${drug.name} favorit`}
           aria-pressed={fav}
-          title={fav ? 'Favorit' : 'Tandai favorit'}
         >
           {fav ? '★' : '☆'}
         </button>

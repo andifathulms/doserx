@@ -394,9 +394,9 @@ export function PuyerPanel({ onHistoryUpdated: _onHistoryUpdated }: PuyerPanelPr
                           <button
                             className="reset-btn"
                             onClick={() => resetDose(entry.drug.id)}
-                            title={`Reset ke ${defaultDose} ${doseUnit}`}
+                            aria-label={`Reset dosis ${entry.drug.name} ke ${defaultDose} ${doseUnit}`}
                           >
-                            ↺ {defaultDose}
+                            <span aria-hidden="true">↺ {defaultDose}</span>
                           </button>
                         )}
                       </div>

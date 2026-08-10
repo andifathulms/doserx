@@ -196,7 +196,6 @@ export function PresetPanel({ onHistoryUpdated, customDrugs, onCustomDrugDeleted
                       className="custom-drug-card__delete"
                       onClick={() => handleDeleteCustom(drug.id)}
                       aria-label={`Hapus preset ${drug.name}`}
-                      title="Hapus preset"
                     >
                       ×
                     </button>
@@ -299,9 +298,9 @@ export function PresetPanel({ onHistoryUpdated, customDrugs, onCustomDrugDeleted
                   <button
                     className="reset-btn"
                     onClick={() => { setDose(String(defaultDose)); clearResults() }}
-                    title={`Reset ke ${defaultDose} ${doseUnit}`}
+                    aria-label={`Reset dosis ke ${defaultDose} ${doseUnit}`}
                   >
-                    ↺ {defaultDose}
+                    <span aria-hidden="true">↺ {defaultDose}</span>
                   </button>
                 )}
               </div>
