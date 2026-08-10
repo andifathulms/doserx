@@ -107,8 +107,12 @@ export function HistoryPanel({ entries, onUpdated }: HistoryPanelProps) {
               )}
               <span className="history-entry__time">{formatTime(entry.timestamp)}</span>
             </div>
+            {/* The stored dosePerKg is per DAY (panels convert via modeToDay
+                before saving), and the per-kali/per-hari toggle makes exactly
+                this the thing to get wrong. History is read later without the
+                form's context, so the period is stated. */}
             <div className="history-entry__inputs">
-              {entry.weight} kg · {entry.dosePerKg} mg/kg · {entry.freq}×/hari
+              {entry.weight} kg · {entry.dosePerKg} mg/kg/hari · {entry.freq}×/hari
             </div>
             <div className="history-entry__outputs">
               <span>Harian: <strong>{entry.dailyDose} mg</strong></span>
