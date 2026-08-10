@@ -300,7 +300,7 @@ export function PresetPanel({ onHistoryUpdated, customDrugs, onCustomDrugDeleted
                 type="number"
                 min="0"
                 step="0.1"
-                placeholder="mis. 24 — sirup 120mg/5mL = 24 mg/mL"
+                placeholder="misal 24 — sirup 120mg/5mL = 24 mg/mL"
                 value={concentration}
                 onChange={(e) => { setConcentration(e.target.value); clearResults() }}
                 aria-describedby="preset-conc-hint"

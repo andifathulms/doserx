@@ -82,7 +82,7 @@ export function HistoryPanel({ entries, onUpdated }: HistoryPanelProps) {
       <div className="panel">
         <div className="empty-state">
           <p className="empty-state__msg">Belum ada kalkulasi tersimpan.</p>
-          <p className="empty-state__hint">Hitung dosis lalu tekan "Simpan".</p>
+          <p className="empty-state__hint">Hitung dosis lalu tekan “Simpan”.</p>
         </div>
       </div>
     )

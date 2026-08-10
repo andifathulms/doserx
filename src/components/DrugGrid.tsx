@@ -189,7 +189,7 @@ export function DrugGrid(props: DrugGridProps) {
         <input
           className="input drug-search-input"
           type="search"
-          placeholder="Cari obat… (mis. paracetamol, demam)"
+          placeholder="Cari obat… (misal paracetamol, demam)"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           aria-label="Cari obat"
