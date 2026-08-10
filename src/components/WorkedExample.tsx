@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { DRUG_PRESETS } from '../data/drugs'
+import { DEMO_DRUG } from '../data/landing-facts'
 import { calculate } from '../lib/calculate'
 
 /**
@@ -12,8 +12,9 @@ import { calculate } from '../lib/calculate'
  * weight is a live control: moving it re-derives every number below. Watching
  * the chain move is the explanation; there is nothing to read.
  *
- * Everything here comes from the catalog entry and calculate() — the same
- * engine and the same data the real calculator uses. No hardcoded results.
+ * The figures come from calculate() — the same engine the real calculator uses.
+ * The drug fields come from data/landing-facts, a catalog subset kept honest by
+ * a test, so the landing page does not pull all 92 drugs to demo one.
  */
 /** The demo is the only piece of the app that is bilingual, because it is the
  *  one piece the landing page reuses. */
@@ -40,7 +41,6 @@ const LABELS = {
   },
 } as const
 
-const DEMO_DRUG_ID = 'paracetamol'
 const MIN_KG = 4
 const MAX_KG = 60
 const STEP_KG = 2
@@ -49,8 +49,7 @@ export function WorkedExample({ lang = 'id' }: { lang?: 'id' | 'en' }) {
   const [weight, setWeight] = useState(14)
   const t = LABELS[lang]
 
-  const drug = DRUG_PRESETS.find((d) => d.id === DEMO_DRUG_ID)
-  if (!drug) return null
+  const drug = DEMO_DRUG
 
   const out = calculate({
     weight,

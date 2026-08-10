@@ -1,5 +1,4 @@
-import { DRUG_PRESETS } from '../data/drugs'
-import { CATEGORY_ORDER } from '../data/categories'
+import { CATALOG_STATS } from '../data/landing-facts'
 
 /**
  * Landing copy, both languages in one file.
@@ -11,23 +10,22 @@ import { CATEGORY_ORDER } from '../data/categories'
  * applied to the metadata: a translation maintained in a separate file gets
  * updated on one side only.
  *
- * The figures are DERIVED from the catalog, never typed in. "92 drugs" written
- * by hand becomes a lie the first time a drug is added.
+ * The figures come from data/landing-facts — a catalog subset whose every value
+ * is asserted against the real catalog by a test, so the landing can state them
+ * without pulling all 92 drugs onto its critical path.
  */
 
 export type Lang = 'id' | 'en'
 
-const drugCount = DRUG_PRESETS.length
-const categoryCount = new Set(DRUG_PRESETS.map((d) => d.category)).size
-const sources = [...new Set(DRUG_PRESETS.map((d) => d.source).filter(Boolean))] as string[]
+const drugCount = CATALOG_STATS.drugs
+const categoryCount = CATALOG_STATS.categories
+const sources: readonly string[] = CATALOG_STATS.sources
 
 export const CATALOG_FACTS = {
   drugs: drugCount,
   categories: categoryCount,
   sources,
   calculators: 4,
-  // Ordered for display; unused categories are already filtered by the catalog.
-  categoryNames: CATEGORY_ORDER,
 }
 
 interface LandingCopy {

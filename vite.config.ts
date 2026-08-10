@@ -77,6 +77,39 @@ function metaTags() {
 
 export default defineConfig({
   base: '/doserx/',
+  build: {
+    rollupOptions: {
+      output: {
+        /**
+         * Explicit chunking. Left to itself, Rollup merges the small shared
+         * modules back into the entry, which quietly undoes the route split:
+         * the landing copy, the methodology copy and the 92-drug catalog all
+         * ended up on the critical path of every route.
+         *
+         * react-vendor is separated because it is the largest single thing
+         * here and it never changes between deploys — a content edit should
+         * not invalidate 46 kB of framework in everyone's cache.
+         */
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (/[\\/]node_modules[\\/](react|react-dom|scheduler)[\\/]/.test(id)) {
+              return 'react-vendor'
+            }
+            return 'vendor'
+          }
+          // The drug catalog: needed by the calculator, the catalog index and
+          // every drug page, but NOT by the methodology page.
+          if (id.includes('/src/data/')) return 'catalog'
+          // Landing and about copy, shared by the two bilingual routes only.
+          if (id.includes('/src/content/')) return 'content'
+          return undefined
+        },
+        // Small shared chunks are the point of this split; do not let them be
+        // merged back into their importers.
+        experimentalMinChunkSize: 0,
+      },
+    },
+  },
   plugins: [
     react(),
     metaTags(),

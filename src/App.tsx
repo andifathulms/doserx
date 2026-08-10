@@ -1,9 +1,5 @@
-import { useState, useCallback, useEffect, lazy, Suspense } from 'react'
-import { Tabs } from './components/Tabs'
-import { PresetPanel } from './components/PresetPanel'
-import { CustomPanel } from './components/CustomPanel'
+import { useState, useCallback, useEffect, Suspense } from 'react'
 import { MakerSignature } from './components/MakerSignature'
-import { WorkedExample } from './components/WorkedExample'
 import {
   loadHistory,
   loadCustomDrugs,
@@ -12,40 +8,21 @@ import {
   HistoryEntry,
   CustomDrugPreset,
 } from './lib/storage'
-import { Link, Redirect, useLocation, navigate } from './lib/router'
+import { Link, Redirect, useLocation } from './lib/router'
 import { resolveRoute } from './lib/route-match'
 import { SkipLink, SiteHeader, BottomNav, RouteAnnouncer } from './components/SiteNav'
-import { CatalogPage } from './pages/CatalogPage'
-import { LandingPage } from './pages/LandingPage'
-// Content routes are imported eagerly: renderToString cannot resolve a
-// React.lazy boundary, so a lazy page prerenders as an empty Suspense
-// fallback — exactly the blank markup this phase exists to eliminate. Phase 7
-// splits these per route, where the split is correct rather than harmful.
-import { AboutPage } from './pages/AboutPage'
-import { DrugPage } from './pages/DrugPage'
-import { ROUTES, CALCULATOR_MODES, MODE_IDS } from './routes'
-
-/**
- * Puyer, Infus and History sit behind a tab or a nav link — never on screen at
- * first paint and never needed in the first interaction, which is always
- * Preset. Splitting them takes 5.5 kB gzip off the critical path.
- *
- * Preset, DrugGrid, ResultCard and the worked example stay eagerly imported:
- * they ARE the first interaction.
- */
-const HistoryPanel = lazy(() =>
-  import('./components/HistoryPanel').then((m) => ({ default: m.HistoryPanel })),
-)
-const PuyerPanel = lazy(() =>
-  import('./components/PuyerPanel').then((m) => ({ default: m.PuyerPanel })),
-)
-const InfusionPanel = lazy(() =>
-  import('./components/InfusionPanel').then((m) => ({ default: m.InfusionPanel })),
-)
-
-// The mode table lives in routes.ts — the prerender expands /hitung/:mode
-// from the same list, and two hand-written copies would drift.
-const TABS = CALCULATOR_MODES.map((m) => ({ ...m }))
+// Eager on the server so they prerender, lazy in the browser so a route only
+// pays for itself. See pages/index.tsx.
+import {
+  LandingPage,
+  CatalogPage,
+  AboutPage,
+  DrugPage,
+  CalculatorPage,
+  HistoryPage,
+  ROUTE_CHUNKS,
+} from './pages'
+import { ROUTES, MODE_IDS } from './routes'
 
 function App() {
   const path = useLocation()
@@ -68,10 +45,11 @@ function App() {
   // Warm the split chunks once the page is idle, so switching tabs never waits
   // on a network round trip.
   useEffect(() => {
+    // Warm the routes she is most likely to reach next, so navigation never
+    // waits on a round trip. The service worker precaches them all anyway;
+    // this only matters on a first visit.
     const warm = () => {
-      void import('./components/PuyerPanel')
-      void import('./components/InfusionPanel')
-      void import('./components/HistoryPanel')
+      for (const load of Object.values(ROUTE_CHUNKS)) void load()
     }
     const ric = window.requestIdleCallback
     if (typeof ric === 'function') {
@@ -95,10 +73,6 @@ function App() {
     setCustomDrugs(loadCustomDrugs())
   }, [])
 
-  function handleTabChange(id: string) {
-    navigate(`/hitung/${id}`)
-  }
-
   // Only /hitung redirects now — '/' is a real page. The doctor never pays for
   // it: the installed PWA opens straight into /hitung/preset.
   if (routeId === 'calculator-index') {
@@ -121,75 +95,39 @@ function App() {
       <RouteAnnouncer routeId={routeId} />
 
       <main className="app-main" id="main">
-        {/* Each page owns its <h1>; the wordmark in the header is a link, not
-            a heading. Focus lands here on every route change. */}
-        {(showCalculator || routeId === 'history') && (
-          <div className="page-head">
-            <h1 className="page-title" tabIndex={-1}>
-              {routeId === 'history' ? 'Riwayat perhitungan' : 'Kalkulator dosis'}
-            </h1>
-            <p className="page-lede">
-              {routeId === 'history'
-                ? 'Tersimpan di perangkat ini saja — tidak ada yang dikirim ke server.'
-                : 'Masukkan berat badan pasien, dapatkan dosis mg dan volume mL siap pakai.'}
-            </p>
-          </div>
-        )}
-
-        {/* The flow, carried through with real numbers and a live weight —
-            an abstract three-step strip demonstrated nothing. */}
-        {showCalculator && <WorkedExample />}
-
-        {showCalculator && (
-          <Tabs tabs={TABS} active={mode!} onChange={handleTabChange} label="Mode hitung" />
-        )}
-
-        {routeId === 'home' && <LandingPage lang="id" />}
-        {routeId === 'home-en' && <LandingPage lang="en" />}
-        {(routeId === 'about' || routeId === 'about-en') && (
-          <AboutPage lang={routeId === 'about-en' ? 'en' : 'id'} />
-        )}
-        {routeId === 'catalog' && <CatalogPage />}
-        {routeId === 'drug' && (
-          <DrugPage id={match!.params.id} onHistoryUpdated={refreshHistory} />
-        )}
-
-        {(showCalculator || routeId === 'drug') && (
-        <div className="safety-banner" role="note">
-          <span className="safety-banner__icon" aria-hidden="true">⚠</span>
-          <span>
-            <strong>Alat bantu hitung saja</strong> — bukan sistem pendukung keputusan klinis atau resep.
-            Verifikasi setiap dosis dengan panduan institusi/klinis terkini sebelum digunakan.
-          </span>
-        </div>
-        )}
-
-        {mode === 'preset' && (
-          <PresetPanel
-            onHistoryUpdated={refreshHistory}
-            customDrugs={customDrugs}
-            onCustomDrugDeleted={refreshCustomDrugs}
-          />
-        )}
-        {mode === 'custom' && (
-          <CustomPanel
-            onHistoryUpdated={refreshHistory}
-            onPresetSaved={refreshCustomDrugs}
-          />
-        )}
-        {mode === 'puyer' && (
+        {(routeId === 'home' || routeId === 'home-en') && (
           <Suspense fallback={<div className="panel-loading" aria-hidden="true" />}>
-            <PuyerPanel onHistoryUpdated={refreshHistory} />
+            <LandingPage lang={routeId === 'home-en' ? 'en' : 'id'} />
           </Suspense>
         )}
-        {mode === 'infus' && (
+        {(routeId === 'about' || routeId === 'about-en') && (
           <Suspense fallback={<div className="panel-loading" aria-hidden="true" />}>
-            <InfusionPanel />
+            <AboutPage lang={routeId === 'about-en' ? 'en' : 'id'} />
+          </Suspense>
+        )}
+        {routeId === 'catalog' && (
+          <Suspense fallback={<div className="panel-loading" aria-hidden="true" />}>
+            <CatalogPage />
+          </Suspense>
+        )}
+        {routeId === 'drug' && (
+          <Suspense fallback={<div className="panel-loading" aria-hidden="true" />}>
+            <DrugPage id={match!.params.id} onHistoryUpdated={refreshHistory} />
+          </Suspense>
+        )}
+        {showCalculator && (
+          <Suspense fallback={<div className="panel-loading" aria-hidden="true" />}>
+            <CalculatorPage
+              mode={mode!}
+              customDrugs={customDrugs}
+              onHistoryUpdated={refreshHistory}
+              onCustomDrugsChanged={refreshCustomDrugs}
+            />
           </Suspense>
         )}
         {routeId === 'history' && (
           <Suspense fallback={<div className="panel-loading" aria-hidden="true" />}>
-            <HistoryPanel entries={history} onUpdated={refreshHistory} />
+            <HistoryPage entries={history} onUpdated={refreshHistory} />
           </Suspense>
         )}
         {routeId === 'notfound' && <NotFound />}

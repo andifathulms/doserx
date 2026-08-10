@@ -1,0 +1,90 @@
+import { lazy, Suspense } from 'react'
+import { Tabs } from '../components/Tabs'
+import { PresetPanel } from '../components/PresetPanel'
+import { CustomPanel } from '../components/CustomPanel'
+import { WorkedExample } from '../components/WorkedExample'
+import { CALCULATOR_MODES } from '../routes'
+import { navigate } from '../lib/router'
+import { CustomDrugPreset } from '../lib/storage'
+
+/**
+ * /hitung/:mode — the calculator route, as one chunk.
+ *
+ * Pulled out of App so the shell carries no calculator code: a visitor reading
+ * the landing page or a drug monograph never downloads the four panels, and
+ * someone calculating never downloads the landing copy.
+ *
+ * Puyer and Infus stay lazy WITHIN this chunk: they are separate modes behind
+ * a tab, not part of the first interaction, and they are warmed on idle.
+ */
+const PuyerPanel = lazy(() =>
+  import('../components/PuyerPanel').then((m) => ({ default: m.PuyerPanel })),
+)
+const InfusionPanel = lazy(() =>
+  import('../components/InfusionPanel').then((m) => ({ default: m.InfusionPanel })),
+)
+
+interface CalculatorPageProps {
+  mode: string
+  customDrugs: CustomDrugPreset[]
+  onHistoryUpdated: () => void
+  onCustomDrugsChanged: () => void
+}
+
+export function CalculatorPage({
+  mode,
+  customDrugs,
+  onHistoryUpdated,
+  onCustomDrugsChanged,
+}: CalculatorPageProps) {
+  return (
+    <>
+      <div className="page-head">
+        <h1 className="page-title" tabIndex={-1}>Kalkulator dosis</h1>
+        <p className="page-lede">
+          Masukkan berat badan pasien, dapatkan dosis mg dan volume mL siap pakai.
+        </p>
+      </div>
+
+      {/* The flow, carried through with real numbers and a live weight —
+          an abstract three-step strip demonstrated nothing. */}
+      <WorkedExample />
+
+      <Tabs
+        tabs={CALCULATOR_MODES.map((m) => ({ ...m }))}
+        active={mode}
+        onChange={(id) => navigate(`/hitung/${id}`)}
+        label="Mode hitung"
+      />
+
+      <div className="safety-banner" role="note">
+        <span className="safety-banner__icon" aria-hidden="true">⚠</span>
+        <span>
+          <strong>Alat bantu hitung saja</strong> — bukan sistem pendukung keputusan klinis atau resep.
+          Verifikasi setiap dosis dengan panduan institusi/klinis terkini sebelum digunakan.
+        </span>
+      </div>
+
+      {mode === 'preset' && (
+        <PresetPanel
+          onHistoryUpdated={onHistoryUpdated}
+          customDrugs={customDrugs}
+          onCustomDrugDeleted={onCustomDrugsChanged}
+        />
+      )}
+      {mode === 'custom' && (
+        <CustomPanel onHistoryUpdated={onHistoryUpdated} onPresetSaved={onCustomDrugsChanged} />
+      )}
+      {mode === 'puyer' && (
+        <Suspense fallback={<div className="panel-loading" aria-hidden="true" />}>
+          <PuyerPanel onHistoryUpdated={onHistoryUpdated} />
+        </Suspense>
+      )}
+      {mode === 'infus' && (
+        <Suspense fallback={<div className="panel-loading" aria-hidden="true" />}>
+          <InfusionPanel />
+        </Suspense>
+      )}
+    </>
+  )
+}
