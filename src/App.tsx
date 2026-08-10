@@ -4,12 +4,21 @@ import { PresetPanel } from './components/PresetPanel'
 import { CustomPanel } from './components/CustomPanel'
 import { MakerSignature } from './components/MakerSignature'
 import { WorkedExample } from './components/WorkedExample'
-import { loadHistory, loadCustomDrugs, HistoryEntry, CustomDrugPreset } from './lib/storage'
+import {
+  loadHistory,
+  loadCustomDrugs,
+  loadLastMode,
+  saveLastMode,
+  HistoryEntry,
+  CustomDrugPreset,
+} from './lib/storage'
+import { Link, Redirect, useLocation, navigate } from './lib/router'
+import { resolveRoute } from './lib/route-match'
 
 /**
- * Puyer, Infus and History sit behind a tab or the header button — never on
- * screen at first paint and never needed in the first interaction, which is
- * always Preset. Splitting them takes 5.5 kB gzip off the critical path.
+ * Puyer, Infus and History sit behind a tab or a nav link — never on screen at
+ * first paint and never needed in the first interaction, which is always
+ * Preset. Splitting them takes 5.5 kB gzip off the critical path.
  *
  * Preset, DrugGrid, ResultCard and the worked example stay eagerly imported:
  * they ARE the first interaction.
@@ -24,8 +33,8 @@ const InfusionPanel = lazy(() =>
   import('./components/InfusionPanel').then((m) => ({ default: m.InfusionPanel })),
 )
 
-// Calculator modes only. History is a record, not a calculator — it lives in the
-// header (see below) rather than crowding the segmented control to 5 items.
+// Calculator modes only. History is a record, not a calculator — it is its own
+// route rather than crowding the segmented control to 5 items.
 // Each mode carries a one-line hint: the bare labels are jargon to anyone
 // meeting the app for the first time, and nothing else on screen says these
 // four are calculators rather than drug categories.
@@ -52,14 +61,28 @@ const TABS = [
   },
 ]
 
+const MODE_IDS = TABS.map((t) => t.id)
+
+// Most specific first — resolveRoute takes the first match.
+const ROUTES: { path: string; id: string }[] = [
+  { path: '/', id: 'home' },
+  { path: '/hitung', id: 'calculator-index' },
+  { path: '/hitung/:mode', id: 'calculator' },
+  { path: '/riwayat', id: 'history' },
+  { path: '*', id: 'notfound' },
+]
+
 function App() {
-  const [activeTab, setActiveTab] = useState('preset')
+  const path = useLocation()
+  const match = resolveRoute(ROUTES, path)
+  const routeId = match?.route.id ?? 'notfound'
+  const mode = match?.params.mode
+
   const [history, setHistory] = useState<HistoryEntry[]>(() => loadHistory())
   const [customDrugs, setCustomDrugs] = useState<CustomDrugPreset[]>(() => loadCustomDrugs())
 
   // Warm the split chunks once the page is idle, so switching tabs never waits
-  // on a network round trip. Without this the split would be a perceptible
-  // change, which is exactly what this pass is not allowed to introduce.
+  // on a network round trip.
   useEffect(() => {
     const warm = () => {
       void import('./components/PuyerPanel')
@@ -75,6 +98,11 @@ function App() {
     return () => window.clearTimeout(id)
   }, [])
 
+  // Remember the mode so /hitung returns her to where she left off.
+  useEffect(() => {
+    if (routeId === 'calculator' && mode && MODE_IDS.includes(mode)) saveLastMode(mode)
+  }, [routeId, mode])
+
   const refreshHistory = useCallback(() => {
     setHistory(loadHistory())
   }, [])
@@ -84,19 +112,18 @@ function App() {
   }, [])
 
   function handleTabChange(id: string) {
-    setActiveTab(id)
+    navigate(`/hitung/${id}`)
   }
 
-  function toggleHistory() {
-    if (activeTab === 'history') {
-      setActiveTab('preset')
-    } else {
-      refreshHistory()
-      setActiveTab('history')
-    }
+  // The landing page arrives in a later phase; until then '/' is the calculator.
+  if (routeId === 'home' || routeId === 'calculator-index') {
+    return <Redirect to={`/hitung/${loadLastMode(MODE_IDS, 'preset')}`} />
+  }
+  if (routeId === 'calculator' && (!mode || !MODE_IDS.includes(mode))) {
+    return <Redirect to="/hitung/preset" />
   }
 
-  const showCalculator = activeTab !== 'history'
+  const showCalculator = routeId === 'calculator'
 
   return (
     <div className="app">
@@ -108,17 +135,16 @@ function App() {
             <strong>volume mL</strong> yang harus diberikan.
           </p>
         </div>
-        <button
-          type="button"
-          className={`history-toggle${activeTab === 'history' ? ' history-toggle--active' : ''}`}
-          onClick={toggleHistory}
-          aria-pressed={activeTab === 'history'}
+        <Link
+          className={`history-toggle${routeId === 'history' ? ' history-toggle--active' : ''}`}
+          to={routeId === 'history' ? `/hitung/${loadLastMode(MODE_IDS, 'preset')}` : '/riwayat'}
+          aria-current={routeId === 'history' ? 'page' : undefined}
         >
           Riwayat
           {history.length > 0 && (
             <span className="history-toggle__count">{history.length}</span>
           )}
-        </button>
+        </Link>
       </header>
 
       <main className="app-main">
@@ -127,12 +153,7 @@ function App() {
         {showCalculator && <WorkedExample />}
 
         {showCalculator && (
-          <Tabs
-            tabs={TABS}
-            active={activeTab}
-            onChange={handleTabChange}
-            label="Mode hitung"
-          />
+          <Tabs tabs={TABS} active={mode!} onChange={handleTabChange} label="Mode hitung" />
         )}
 
         <div className="safety-banner" role="note">
@@ -143,34 +164,35 @@ function App() {
           </span>
         </div>
 
-        {activeTab === 'preset' && (
+        {mode === 'preset' && (
           <PresetPanel
             onHistoryUpdated={refreshHistory}
             customDrugs={customDrugs}
             onCustomDrugDeleted={refreshCustomDrugs}
           />
         )}
-        {activeTab === 'custom' && (
+        {mode === 'custom' && (
           <CustomPanel
             onHistoryUpdated={refreshHistory}
             onPresetSaved={refreshCustomDrugs}
           />
         )}
-        {activeTab === 'puyer' && (
+        {mode === 'puyer' && (
           <Suspense fallback={<div className="panel-loading" aria-hidden="true" />}>
             <PuyerPanel onHistoryUpdated={refreshHistory} />
           </Suspense>
         )}
-        {activeTab === 'infus' && (
+        {mode === 'infus' && (
           <Suspense fallback={<div className="panel-loading" aria-hidden="true" />}>
             <InfusionPanel />
           </Suspense>
         )}
-        {activeTab === 'history' && (
+        {routeId === 'history' && (
           <Suspense fallback={<div className="panel-loading" aria-hidden="true" />}>
             <HistoryPanel entries={history} onUpdated={refreshHistory} />
           </Suspense>
         )}
+        {routeId === 'notfound' && <NotFound />}
       </main>
 
       <footer className="app-footer">
@@ -182,6 +204,19 @@ function App() {
           <MakerSignature />
         </div>
       </footer>
+    </div>
+  )
+}
+
+function NotFound() {
+  return (
+    <div className="panel">
+      <div className="empty-state">
+        <p className="empty-state__msg">Halaman tidak ditemukan.</p>
+        <p className="empty-state__hint">
+          <Link to="/hitung/preset">Kembali ke kalkulator</Link>
+        </p>
+      </div>
     </div>
   )
 }

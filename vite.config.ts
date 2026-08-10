@@ -1,3 +1,5 @@
+import { copyFileSync, existsSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
@@ -48,6 +50,16 @@ function metaTags() {
           '</urlset>\n',
       })
     },
+    // GitHub Pages has no rewrite rules, so a deep link like /obat/paracetamol
+    // would 404 on refresh or when opened cold. Pages serves 404.html for any
+    // unknown path; shipping a copy of the built index.html there hands control
+    // to the client router with the URL intact. Copied in closeBundle, after
+    // the HTML has been transformed and written.
+    closeBundle() {
+      const out = resolve(__dirname, 'dist')
+      const html = resolve(out, 'index.html')
+      if (existsSync(html)) copyFileSync(html, resolve(out, '404.html'))
+    },
     transformIndexHtml() {
       return [
         { tag: 'title', children: SITE.title, injectTo: 'head' as const },
@@ -72,6 +84,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['icon-192.svg', 'icon-512.svg'],
       manifest: {
+        // The installed app is the doctor's tool: it opens straight into the
+        // calculator and never shows the marketing landing page.
+        start_url: '/doserx/hitung/preset',
         name: SITE.title,
         short_name: SITE.name,
         description: SITE.description,
@@ -79,7 +94,6 @@ export default defineConfig({
         theme_color: SITE.themeColor,
         background_color: SITE.backgroundColor,
         display: 'standalone',
-        start_url: '/doserx/',
         icons: [
           { src: 'icon-192.svg', sizes: '192x192', type: 'image/svg+xml' },
           { src: 'icon-512.svg', sizes: '512x512', type: 'image/svg+xml', purpose: 'any maskable' },

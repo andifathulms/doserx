@@ -4,6 +4,7 @@ const RECENTS_KEY = 'doserx_recents'
 const FAVORITES_KEY = 'doserx_favorites'
 const RECENTS_MAX = 8
 const DOSE_MODE_KEY = 'doserx_dose_mode'
+const LAST_MODE_KEY = 'doserx_last_mode'
 
 // ── Dose-entry preference: per single dose (per kali) vs per day (per hari) ────
 
@@ -20,6 +21,28 @@ export function loadDoseMode(): DoseMode {
 export function saveDoseMode(mode: DoseMode): void {
   try {
     localStorage.setItem(DOSE_MODE_KEY, mode)
+  } catch {
+    /* ignore */
+  }
+}
+
+// ── Last calculator mode ──────────────────────────────────────────────────────
+// /hitung redirects here, so the doctor lands back where she left off instead
+// of always on Preset. Validated against the caller's list of known modes so a
+// stale or hand-edited value can never route to a dead page.
+
+export function loadLastMode(valid: readonly string[], fallback: string): string {
+  try {
+    const v = localStorage.getItem(LAST_MODE_KEY)
+    return v && valid.includes(v) ? v : fallback
+  } catch {
+    return fallback
+  }
+}
+
+export function saveLastMode(mode: string): void {
+  try {
+    localStorage.setItem(LAST_MODE_KEY, mode)
   } catch {
     /* ignore */
   }
