@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { ResultCard } from './ResultCard'
 import { WeightInput } from './WeightInput'
 import { calculate, CalcResult } from '../lib/calculate'
+import { errorCopy } from '../lib/errorCopy'
 import { saveCustomDrug, generateId } from '../lib/storage'
 
 interface CustomPanelProps {
@@ -32,7 +33,7 @@ export function CustomPanel({ onHistoryUpdated, onPresetSaved }: CustomPanelProp
       concentration: concentration ? parseFloat(concentration) : undefined,
     })
     if (!out.valid) {
-      setError(out.error)
+      setError(errorCopy(out.error))
       setResult(null)
     } else {
       setError(null)

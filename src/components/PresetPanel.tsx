@@ -5,6 +5,7 @@ import { WeightInput } from './WeightInput'
 import { DrugPreset } from '../data/drugs'
 import { CustomDrugPreset, deleteCustomDrug, DoseMode, loadDoseMode, saveDoseMode } from '../lib/storage'
 import { calculate, CalcResult } from '../lib/calculate'
+import { errorCopy } from '../lib/errorCopy'
 
 interface PresetPanelProps {
   onHistoryUpdated: () => void
@@ -120,7 +121,7 @@ export function PresetPanel({ onHistoryUpdated, customDrugs, onCustomDrugDeleted
     const out = calculate({ ...base, dosePerKg: modeToDay(doseNum, freqNum, doseMode) })
 
     if (!out.valid) {
-      setError(out.error)
+      setError(errorCopy(out.error))
       clearResults()
       return
     }
