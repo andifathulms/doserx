@@ -3,6 +3,8 @@ import { renderToString } from 'react-dom/server'
 import { CatalogPage } from './CatalogPage'
 import { DrugPage } from './DrugPage'
 import { LandingPage } from './LandingPage'
+import { AboutPage } from './AboutPage'
+import { SOURCE_COUNTS, ABOUT_FACTS } from '../content/about'
 import { DRUG_PRESETS } from '../data/drugs'
 
 /**
@@ -72,5 +74,39 @@ describe('LandingPage', () => {
   it('always offers a route into the calculator', () => {
     const html = renderToString(<LandingPage lang="id" />)
     expect(html).toContain('/doserx/hitung/preset')
+  })
+})
+
+describe('AboutPage', () => {
+  it('derives the source breakdown from the catalog', () => {
+    const html = renderToString(<AboutPage lang="id" />)
+    for (const [source, count] of SOURCE_COUNTS) {
+      expect(html).toContain(source)
+      expect(html).toContain(`<td>${count}</td>`)
+    }
+    // Counts must add up to the catalog, or the table is lying by omission.
+    const total = SOURCE_COUNTS.reduce((n, [, c]) => n + c, 0) + ABOUT_FACTS.uncited
+    expect(total).toBe(DRUG_PRESETS.length)
+  })
+
+  it('states the limitations, not just the strengths', () => {
+    const id = renderToString(<AboutPage lang="id" />)
+    const en = renderToString(<AboutPage lang="en" />)
+    expect(id).toContain('Batasan')
+    expect(en).toContain('Known limitations')
+    // The infusion catalog has no citations yet; the page must admit it.
+    expect(id).toMatch(/belum mencantumkan sumber/)
+    expect(en).toMatch(/does not yet cite sources/)
+  })
+
+  it('lists the PRD non-goals as explicit non-goals', () => {
+    const html = renderToString(<AboutPage lang="en" />)
+    expect(html).toContain('drug interaction checker')
+    expect(html).toContain('clinical decision support system')
+  })
+
+  it('links between the two languages', () => {
+    expect(renderToString(<AboutPage lang="id" />)).toContain('/doserx/en/about')
+    expect(renderToString(<AboutPage lang="en" />)).toContain('/doserx/tentang')
   })
 })

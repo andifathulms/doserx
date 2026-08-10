@@ -17,6 +17,10 @@ import { resolveRoute } from './lib/route-match'
 import { SkipLink, SiteHeader, BottomNav, RouteAnnouncer } from './components/SiteNav'
 import { CatalogPage } from './pages/CatalogPage'
 import { LandingPage } from './pages/LandingPage'
+// Methodology is a read, not an interaction — never needed at first paint.
+const AboutPage = lazy(() =>
+  import('./pages/AboutPage').then((m) => ({ default: m.AboutPage })),
+)
 import { ROUTES } from './routes'
 
 /**
@@ -162,6 +166,11 @@ function App() {
 
         {routeId === 'home' && <LandingPage lang="id" />}
         {routeId === 'home-en' && <LandingPage lang="en" />}
+        {(routeId === 'about' || routeId === 'about-en') && (
+          <Suspense fallback={<div className="panel-loading" aria-hidden="true" />}>
+            <AboutPage lang={routeId === 'about-en' ? 'en' : 'id'} />
+          </Suspense>
+        )}
         {routeId === 'catalog' && <CatalogPage />}
         {routeId === 'drug' && (
           <Suspense fallback={<div className="panel-loading" aria-hidden="true" />}>

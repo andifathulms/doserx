@@ -77,6 +77,26 @@ export const ROUTES: RouteDef[] = [
     index: true,
   },
   {
+    path: '/tentang',
+    id: 'about',
+    title: 'Cara kerja & sumber',
+    description:
+      'Dari mana nilai dosis DoseRx berasal (IDAI, BNFc, Fornas, WHO, Kemenkes), bagaimana ' +
+      'perhitungannya, dan di mana aplikasi ini membulatkan, memperkirakan atau belum punya rujukan.',
+    navLabel: 'Tentang',
+    nav: true,
+    index: true,
+  },
+  {
+    path: '/en/about',
+    id: 'about-en',
+    title: 'How it works & sources',
+    description:
+      'Where DoseRx dosing values come from, how the arithmetic runs, and where the app rounds, ' +
+      'estimates, assumes or lacks a citation.',
+    index: true,
+  },
+  {
     path: '/riwayat',
     id: 'history',
     title: 'Riwayat perhitungan',
