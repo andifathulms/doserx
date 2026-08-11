@@ -142,5 +142,8 @@ export default defineConfig({
   ],
   test: {
     environment: 'node',
+    // Vitest stubs CSS imports to '' by default, which would make the
+    // stylesheet-coverage test silently pass against an empty string.
+    css: true,
   },
 })

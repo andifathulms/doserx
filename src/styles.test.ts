@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { readFileSync, readdirSync, statSync } from 'node:fs'
-import { join } from 'node:path'
+import cssText from './index.css?raw'
 
 /**
  * Every className in the app must have a CSS rule.
@@ -11,29 +10,23 @@ import { join } from 'node:path'
  * rendered — as an unstyled <ol> with double numbering. It took a screenshot
  * from a human to notice.
  *
- * Static analysis, not rendering: cheap, and it catches the deletion at the
- * moment it happens rather than in review.
+ * Uses Vite's own glob rather than node:fs, so it needs no @types/node.
  */
-function walk(dir: string, out: string[] = []): string[] {
-  for (const entry of readdirSync(dir)) {
-    const p = join(dir, entry)
-    if (statSync(p).isDirectory()) walk(p, out)
-    else if (p.endsWith('.tsx')) out.push(p)
-  }
-  return out
-}
+const sources = import.meta.glob('./**/*.tsx', {
+  query: '?raw',
+  import: 'default',
+  eager: true,
+}) as Record<string, string>
 
-const css = readFileSync('src/index.css', 'utf8')
-const defined = new Set([...css.matchAll(/\.([a-zA-Z][\w-]*)/g)].map((m) => m[1]))
+const defined = new Set([...cssText.matchAll(/\.([a-zA-Z][\w-]*)/g)].map((m) => m[1]))
 
 const used = new Map<string, string>()
-for (const file of walk('src')) {
-  if (file.endsWith('.test.tsx')) continue
-  const src = readFileSync(file, 'utf8')
+for (const [file, src] of Object.entries(sources)) {
+  if (file.includes('.test.')) continue
   for (const m of src.matchAll(/className=[`"{]([^`"}]*)/g)) {
     for (const cls of m[1].match(/[a-zA-Z][\w-]*/g) ?? []) {
-      // Skip JSX identifiers inside template expressions (they are camelCase
-      // variables, not class names — real classes are kebab/BEM).
+      // Skip identifiers inside template expressions — real class names are
+      // kebab/BEM or plain lowercase words.
       if (!/[-_]/.test(cls) && !/^[a-z]+$/.test(cls)) continue
       if (!used.has(cls)) used.set(cls, file)
     }
@@ -46,5 +39,11 @@ describe('stylesheet covers every className', () => {
       .filter(([cls]) => !defined.has(cls))
       .map(([cls, file]) => `${cls}  (${file})`)
     expect(missing).toEqual([])
+  })
+
+  it('is actually scanning the app, not silently reading nothing', () => {
+    expect(Object.keys(sources).length).toBeGreaterThan(10)
+    expect(used.size).toBeGreaterThan(100)
+    expect(defined.size).toBeGreaterThan(100)
   })
 })
