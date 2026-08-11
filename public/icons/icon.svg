@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect x="0" y="0" width="512" height="512" rx="108" fill="#0c1424" stroke="#1b2437" stroke-width="1"></rect>
+  <text x="256" y="225.28" text-anchor="middle" dominant-baseline="central" font-family="Inter, Helvetica, Arial, sans-serif" font-weight="800" font-size="225" letter-spacing="-2" fill="#f4f6fa">R<tspan fill="#3b82f6">x</tspan></text>
+  <g transform="translate(140.8,348.16)" opacity="1">
+    <polyline points="11.520000000000001,69.632 76.03200000000001,44.2368 140.544,53.248000000000005 216.576,12.288" fill="none" stroke="#3b82f6" stroke-width="9.216" stroke-linecap="round" stroke-linejoin="round"></polyline>
+    <circle cx="216.576" cy="12.288" r="12.288" fill="#3b82f6"></circle>
+  </g>
+</svg>

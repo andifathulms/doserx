@@ -127,7 +127,7 @@ export default defineConfig({
     metaTags(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['icon-192.svg', 'icon-512.svg'],
+      includeAssets: ['icons/icon.svg', 'icons/icon-32.png', 'icons/apple-touch-icon.png'],
       manifest: {
         // The installed app is the doctor's tool: it opens straight into the
         // calculator and never shows the marketing landing page.
@@ -140,15 +140,21 @@ export default defineConfig({
         background_color: SITE.backgroundColor,
         display: 'standalone',
         icons: [
-          { src: 'icon-192.svg', sizes: '192x192', type: 'image/svg+xml' },
-          { src: 'icon-512.svg', sizes: '512x512', type: 'image/svg+xml', purpose: 'any maskable' },
+          // PNG rather than SVG: Android's launcher support for SVG icons is
+          // still patchy. Declared 'any' only — the brand icon already has its
+          // own rounded corners, and 'maskable' would let the launcher crop
+          // them a second time.
+          { src: 'icons/icon-192.png', sizes: '192x192', type: 'image/png' },
+          { src: 'icons/icon-512.png', sizes: '512x512', type: 'image/png' },
         ],
       },
       workbox: {
         // The font is same-origin now, so it is picked up by the precache
         // glob below — the two runtimeCaching rules for Google's origins are
         // gone with the origins themselves.
-        globPatterns: ['**/*.{js,css,html,svg,woff2}'],
+        // icons/*.png is listed explicitly so the launcher icons are cached
+        // without dragging the 57 kB social preview image into the precache.
+        globPatterns: ['**/*.{js,css,html,svg,woff2}', 'icons/*.png'],
       },
     }),
   ],

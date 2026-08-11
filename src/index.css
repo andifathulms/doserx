@@ -1070,7 +1070,9 @@ body::before {
   display: flex;
   align-items: flex-start;
   gap: var(--sp-3);
-  margin: var(--sp-3) 0 0;
+  /* Bottom margin was zeroed during the preamble compaction, which left the
+     disclaimer butting straight into the panel below it on all four tabs. */
+  margin: var(--sp-3) 0 var(--sp-5);
   padding: var(--sp-3) var(--sp-4);
   background: var(--c-surface);
   border: 1px solid var(--c-border);
