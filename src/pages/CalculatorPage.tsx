@@ -2,7 +2,6 @@ import { lazy, Suspense } from 'react'
 import { Tabs } from '../components/Tabs'
 import { PresetPanel } from '../components/PresetPanel'
 import { CustomPanel } from '../components/CustomPanel'
-import { WorkedExample } from '../components/WorkedExample'
 import { CALCULATOR_MODES } from '../routes'
 import { navigate } from '../lib/router'
 import { CustomDrugPreset } from '../lib/storage'
@@ -39,16 +38,15 @@ export function CalculatorPage({
 }: CalculatorPageProps) {
   return (
     <>
+      {/* The demo lives on the landing page, not here. On the tool it sat
+          between the heading and the tabs, delaying the thing the doctor came
+          for — and it duplicated what the form below does for real. */}
       <div className="page-head">
         <h1 className="page-title" tabIndex={-1}>Kalkulator dosis</h1>
         <p className="page-lede">
           Masukkan berat badan pasien, dapatkan dosis mg dan volume mL siap pakai.
         </p>
       </div>
-
-      {/* The flow, carried through with real numbers and a live weight —
-          an abstract three-step strip demonstrated nothing. */}
-      <WorkedExample />
 
       <Tabs
         tabs={CALCULATOR_MODES.map((m) => ({ ...m }))}

@@ -266,8 +266,16 @@ input  { font: inherit; }
 /* ── Brand accent bar (top of page) ──────────────────────────────────────── */
 body {
   min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
   padding-top: 3px;
   background: var(--c-bg);
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
 
 body::before {
@@ -284,7 +292,7 @@ body::before {
 .app {
   display: flex;
   flex-direction: column;
-  min-height: 100dvh;
+  flex: 1;
   max-width: var(--max-w);
   margin: 0 auto;
   padding: 0 var(--pad);
@@ -294,6 +302,7 @@ body::before {
    Sticky, slim, and the same on every route. The wordmark is a link home; the
    page's own <h1> lives in <main>. ────────────────────────────────────────── */
 .site-header {
+  /* Full-bleed bar; the inner container is what aligns with page content. */
   position: sticky;
   top: 0;
   z-index: 20;
@@ -356,7 +365,7 @@ body::before {
    clear pitch and no growth-marketing theatre. ───────────────────────────── */
 .landing { padding-bottom: var(--sp-8); }
 
-.landing-hero { padding: var(--sp-8) 0 var(--sp-6); }
+.landing-hero { padding: var(--sp-8) 0 var(--sp-4); }
 
 .landing-hero__head {
   display: flex;
@@ -432,7 +441,7 @@ body::before {
 .landing-section {
   padding-top: var(--sp-8);
   border-top: 1px solid var(--c-border);
-  margin-top: var(--sp-8);
+  margin-top: var(--sp-6);
 }
 
 .landing-section__title {
@@ -538,7 +547,8 @@ body::before {
   font-size: var(--fs-base);
   font-weight: 700;
   color: var(--c-text);
-  margin-bottom: var(--sp-1);
+  margin-bottom: var(--sp-2);
+  text-wrap: balance;
 }
 
 .trust__body {
@@ -692,135 +702,201 @@ body::before {
   color: var(--c-text-2);
 }
 
-/* ── Worked example — the landing/calculator demo ────────────────────────────
-   RESTORED: this block was destroyed by an edit in the routing pass whose
-   replacement range spanned it, which is why the demo rendered as a bare <ol>
-   with double numbering. ─────────────────────────────────────────────────── */
-.worked {
-  margin: var(--sp-4) 0 0;
-  padding: var(--sp-4);
+/* ── Live demo card ──────────────────────────────────────────────────────────
+   One input, one output, working underneath. No step numbers: the chain
+   section below the demo owns the 1-2-3, and having both made each harder to
+   read. ─────────────────────────────────────────────────────────────────── */
+.demo {
+  margin-top: var(--sp-4);
+  padding: var(--sp-5);
   background: var(--c-surface);
   border: 1px solid var(--c-border);
-  border-radius: var(--r);
-  box-shadow: var(--sh-xs);
+  border-radius: var(--r-lg);
+  box-shadow: var(--sh-sm);
 }
 
-.worked__title {
-  font-size: var(--fs-sm);
-  font-weight: 500;
-  color: var(--c-text-2);
-  margin-bottom: var(--sp-3);
+.demo__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  padding-bottom: var(--sp-4);
+  border-bottom: 1px solid var(--c-border);
 }
 
-.worked__title strong { font-weight: 700; color: var(--c-text); }
+.demo__drug {
+  font-size: var(--fs-md);
+  font-weight: 700;
+  color: var(--c-text);
+}
+
+.demo__for { font-weight: 400; color: var(--c-text-3); }
 
 /* Citation sits with the rule it applies, not in a footnote. */
-.worked__cite { color: var(--c-text-3); font-weight: 400; }
+.demo__cite { font-size: var(--fs-sm); color: var(--c-text-3); }
 
-.worked__steps {
+.demo__body {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: var(--sp-4);
+  padding: var(--sp-5) 0;
+}
+
+.demo__panel {
   display: flex;
   flex-direction: column;
   gap: var(--sp-2);
-  list-style: none;
+  min-width: 0;
 }
 
-.worked__step {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: var(--sp-2);
-  font-size: var(--fs-sm);
-  color: var(--c-text-2);
-}
+.demo__panel--out { align-items: flex-start; }
 
-.worked__num {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 22px;
-  flex-shrink: 0;
+.demo__label {
   font-size: var(--fs-2xs);
   font-weight: 700;
-  color: var(--c-primary-dark);
-  background: var(--c-primary-bg);
-  border: 1px solid var(--c-primary-bdr);
-  border-radius: var(--r-full);
+  text-transform: uppercase;
+  letter-spacing: .09em;
+  color: var(--c-text-3);
 }
 
-.worked__label { min-width: 9em; font-weight: 600; }
-.worked__val { color: var(--c-text-2); font-variant-numeric: tabular-nums; }
-
-.worked__val--result { font-size: var(--fs-base); color: var(--c-text); }
-.worked__val--result strong { color: var(--c-primary-dark); font-weight: 700; }
-
-.worked__step--out .worked__num {
-  color: #fff;
-  background: var(--c-primary);
-  border-color: var(--c-primary);
+.demo__arrow {
+  font-size: var(--fs-xl);
+  color: var(--c-border-mid);
+  line-height: 1;
 }
 
 /* The manipulable bit — moving this re-derives everything below it. */
-.worked__control { display: inline-flex; align-items: center; gap: var(--sp-2); }
+.demo__stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
 
-.worked__step-btn {
-  width: var(--sp-8);
-  height: var(--sp-8);
-  min-width: var(--target-min);
-  min-height: var(--target-min);
+.demo__step-btn {
+  width: var(--sp-10);
+  height: var(--sp-10);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: var(--fs-md);
+  font-size: var(--fs-lg);
   font-weight: 700;
+  line-height: 1;
   color: var(--c-text-2);
   background: var(--c-surface-2);
   border: 1.5px solid var(--c-border-mid);
   border-radius: var(--r-sm);
-  line-height: 1;
 }
 
-.worked__step-btn:hover:not(:disabled) {
+.demo__step-btn:hover:not(:disabled) {
   border-color: var(--c-primary);
   color: var(--c-primary-dark);
+  background: var(--c-primary-bg);
 }
 
-.worked__step-btn:disabled { opacity: .45; cursor: not-allowed; }
-.worked__step-btn:focus-visible { outline: none; box-shadow: var(--sh-ring); }
+.demo__step-btn:disabled { opacity: .4; cursor: not-allowed; }
+.demo__step-btn:focus-visible { outline: none; box-shadow: var(--sh-ring); }
 
-.worked__weight {
-  min-width: 4.5em;
+.demo__weight {
+  min-width: 3.5em;
   text-align: center;
-  font-size: var(--fs-base);
+  font-size: var(--fs-xl);
   font-weight: 700;
   color: var(--c-text);
   font-variant-numeric: tabular-nums;
 }
 
-/* Intermediate values, not just input and answer. */
-.worked__working {
-  margin-top: var(--sp-3);
-  padding-top: var(--sp-3);
-  border-top: 1px solid var(--c-border);
-  font-size: var(--fs-sm);
-  line-height: var(--lh-body);
-  color: var(--c-text-3);
+.demo__result {
+  font-size: var(--fs-xl);
+  font-weight: 700;
+  color: var(--c-primary-dark);
+  line-height: var(--lh-tight);
   font-variant-numeric: tabular-nums;
-  text-wrap: pretty;
 }
 
-.worked__working strong { color: var(--c-text-2); font-weight: 600; }
-.worked__working-step { white-space: nowrap; }
+.demo__result--sub { font-size: var(--fs-md); color: var(--c-text); }
 
-.worked__note {
-  margin-top: var(--sp-2);
+.demo__unit {
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  color: var(--c-text-3);
+  letter-spacing: 0;
+}
+
+.demo__freq { font-size: var(--fs-sm); color: var(--c-text-3); }
+
+/* Working: collapsed, because the card already showed the transformation. */
+.demo__working { border-top: 1px solid var(--c-border); padding-top: var(--sp-3); }
+
+.demo__working-summary {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--c-text-2);
+  list-style: none;
+  min-height: var(--target-min);
+}
+
+.demo__working-summary::-webkit-details-marker { display: none; }
+
+.demo__working-summary::before {
+  content: '▸';
+  font-size: var(--fs-2xs);
+  color: var(--c-text-3);
+  transition: transform .15s;
+}
+
+.demo__working[open] .demo__working-summary::before { transform: rotate(90deg); }
+.demo__working-summary:hover { color: var(--c-text); }
+.demo__working-summary:focus-visible { outline: none; box-shadow: var(--sh-ring); }
+
+.demo__steps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  margin-top: var(--sp-3);
+  list-style: none;
+}
+
+.demo__step {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--sp-1) var(--sp-2);
+  font-size: var(--fs-sm);
+  color: var(--c-text-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.demo__expr { flex: 1 1 auto; min-width: 0; }
+.demo__eq { color: var(--c-text-faint); }
+.demo__value { font-weight: 700; color: var(--c-text); }
+
+.demo__note {
+  margin-top: var(--sp-3);
   font-size: var(--fs-sm);
   line-height: var(--lh-snug);
   color: var(--c-text-3);
   text-wrap: pretty;
 }
 
-.worked__note--cap { color: var(--c-warn-strong); font-weight: 600; }
+.demo__note--cap { color: var(--c-warn-strong); font-weight: 600; }
+
+@media (max-width: 560px) {
+  .demo { padding: var(--sp-4); }
+
+  /* Stack input over output; the arrow turns downward. */
+  .demo__body {
+    grid-template-columns: 1fr;
+    gap: var(--sp-3);
+    padding: var(--sp-4) 0;
+  }
+
+  .demo__arrow { transform: rotate(90deg); justify-self: start; }
+}
 
 /* ── App main ─────────────────────────────────────────────────────────────── */
 .app-main { flex: 1; padding-bottom: var(--sp-8); }
@@ -844,7 +920,7 @@ body::before {
 
 .page-lede {
   margin-top: var(--sp-2);
-  max-width: 46ch;
+  max-width: 62ch;
   font-size: var(--fs-md);
   line-height: var(--lh-snug);
   color: var(--c-text-2);
@@ -2996,24 +3072,6 @@ body::before {
   .puyer-weight { max-width: 100%; }
   .tabs { gap: 1px; }
   .tab-btn { font-size: var(--fs-sm); padding: var(--sp-2) var(--sp-1); }
-
-  /* Preamble compaction — five explanatory blocks stack before the catalog
-     (flow strip, mode label, tabs, mode hint, disclaimer, lede). Each earns
-     its place, but together they pushed the first drug card past the fold on
-     a 667px screen. Same information, tighter, so step 1's affordance is
-     visible while step 1 is being read. */
-  .worked {
-    padding: var(--sp-2) var(--sp-3);
-    box-shadow: none;
-  }
-
-  /* Stack label above value so the numbers keep a full line at 320px. */
-  .worked__label { min-width: 0; }
-  .worked__step { font-size: var(--fs-xs); gap: var(--sp-1) var(--sp-2); }
-  .worked__working { font-size: var(--fs-xs); }
-  .worked__working-step { white-space: normal; }
-
-  .safety-banner { padding: var(--sp-2) var(--sp-3); }
 
   .grid-lede__title { font-size: var(--fs-md); }
 }

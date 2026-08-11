@@ -29,6 +29,25 @@ function mount() {
   else createRoot(container).render(app)
 }
 
+/**
+ * Reload once when a new service worker takes over.
+ *
+ * The SW already ships skipWaiting + clientsClaim, so a deploy activates on
+ * the next load — but the page that is already open keeps serving the old
+ * cached CSS and JS until someone hard-refreshes. That is how a shipped fix
+ * can look like it never landed. Guarded on there having been a controller
+ * already, so a first visit (where claiming is expected) does not reload.
+ */
+if ('serviceWorker' in navigator) {
+  const hadController = Boolean(navigator.serviceWorker.controller)
+  let reloading = false
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!hadController || reloading) return
+    reloading = true
+    window.location.reload()
+  })
+}
+
 const match = resolveRoute(ROUTES, stripBase(window.location.pathname, import.meta.env.BASE_URL))
 const load = match ? ROUTE_CHUNKS[match.route.id] : undefined
 

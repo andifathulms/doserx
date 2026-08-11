@@ -85,14 +85,20 @@ function App() {
   const showCalculator = routeId === 'calculator'
 
   return (
-    <div className="app">
+    <>
       <SkipLink />
+      {/* The header sits OUTSIDE .app so its bar spans the viewport while its
+          inner container lines up with the page content. Nested inside, it was
+          constrained by .app's max-width AND padded again — putting the
+          wordmark 20px further in than everything below it. */}
       <SiteHeader
         path={path}
         historyCount={history.length}
         historyActive={routeId === 'history'}
       />
       <RouteAnnouncer routeId={routeId} />
+
+      <div className="app">
 
       <main className="app-main" id="main">
         {(routeId === 'home' || routeId === 'home-en') && (
@@ -133,8 +139,6 @@ function App() {
         {routeId === 'notfound' && <NotFound />}
       </main>
 
-      <BottomNav path={path} historyCount={history.length} />
-
       <footer className="app-footer">
         <div className="app-footer__bar">
           <p className="app-footer__legal">
@@ -144,7 +148,10 @@ function App() {
           <MakerSignature />
         </div>
       </footer>
-    </div>
+      </div>
+
+      <BottomNav path={path} historyCount={history.length} />
+    </>
   )
 }
 
