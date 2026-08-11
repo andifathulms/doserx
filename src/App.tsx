@@ -146,6 +146,11 @@ function App() {
             Tidak ada data pasien yang dikirim ke server — semua perhitungan berjalan di perangkat ini.
           </p>
           <MakerSignature />
+          {/* Which build you are looking at. Cheap, and it settles the
+              "is this cached?" question without a round trip. */}
+          <span className="build-stamp" title="Versi build">
+            build {__BUILD_ID__}
+          </span>
         </div>
       </footer>
       </div>

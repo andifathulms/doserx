@@ -75,8 +75,20 @@ function metaTags() {
   }
 }
 
+/**
+ * Build stamp, shown small in the footer.
+ *
+ * Half of this project's UI feedback loop has been "is that fixed, or am I
+ * looking at a cached build?" — a visible identifier answers it in one glance
+ * instead of a round trip.
+ */
+const BUILD_ID = new Date().toISOString().slice(0, 16).replace('T', ' ')
+
 export default defineConfig({
   base: '/doserx/',
+  define: {
+    __BUILD_ID__: JSON.stringify(BUILD_ID),
+  },
   build: {
     rollupOptions: {
       output: {

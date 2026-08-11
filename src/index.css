@@ -473,6 +473,7 @@ body::before {
   display: flex;
   flex-direction: column;
   gap: var(--sp-1);
+  min-width: 0;
   padding: var(--sp-4);
   background: var(--c-surface);
   border: 1px solid var(--c-border);
@@ -529,11 +530,27 @@ body::before {
 
 .facts__label { font-size: var(--fs-sm); color: var(--c-text-2); }
 
-/* ── Trust ────────────────────────────────────────────────────────────────── */
+/* ── Trust / limitation cards ─────────────────────────────────────────────────
+   Bodies must start on the same line whether a heading takes one row or two.
+   Subgrid does it properly: the row track is shared across the cards, so the
+   tallest heading sets the height for all of them. min-height is the fallback
+   where subgrid is unavailable. ─────────────────────────────────────────── */
 .trust {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: var(--sp-4);
+}
+
+.trust__item { display: grid; grid-template-rows: auto 1fr; }
+
+@supports (grid-template-rows: subgrid) {
+  .trust { grid-template-rows: auto 1fr; }
+  .trust__item {
+    grid-row: span 2;
+    grid-template-rows: subgrid;
+  }
+  /* Fallback height no longer needed once the rows are shared. */
+  .trust__title { min-height: 0; }
 }
 
 .trust__item {
@@ -544,8 +561,12 @@ body::before {
 }
 
 .trust__title {
+  /* Two lines' worth, so a one-line heading still pushes its body to the same
+     baseline as a two-line one. Overridden to 0 when subgrid is available. */
+  min-height: calc(2 * var(--lh-snug) * 1em);
   font-size: var(--fs-base);
   font-weight: 700;
+  line-height: var(--lh-snug);
   color: var(--c-text);
   margin-bottom: var(--sp-2);
   text-wrap: balance;
@@ -637,6 +658,11 @@ body::before {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: var(--sp-5);
+}
+
+@supports (grid-template-rows: subgrid) {
+  .scope { grid-template-rows: auto 1fr; }
+  .scope__col { display: grid; grid-row: span 2; grid-template-rows: subgrid; }
 }
 
 .scope__col {
@@ -871,7 +897,7 @@ body::before {
   font-variant-numeric: tabular-nums;
 }
 
-.demo__expr { flex: 1 1 auto; min-width: 0; }
+.demo__expr { flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; }
 .demo__eq { color: var(--c-text-faint); }
 .demo__value { font-weight: 700; color: var(--c-text); }
 
@@ -1088,6 +1114,14 @@ body::before {
   flex: 1 1 320px;
   margin: 0;
   min-width: 0;
+}
+
+/* Build identifier — deliberately quiet, but findable. */
+.build-stamp {
+  flex-basis: 100%;
+  font-size: var(--fs-2xs);
+  color: var(--c-text-faint);
+  font-variant-numeric: tabular-nums;
 }
 
 /* ── Maker's mark ─────────────────────────────────────────────────────────── */
