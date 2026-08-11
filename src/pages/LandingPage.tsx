@@ -43,7 +43,7 @@ export function LandingPage({ lang }: { lang: Lang }) {
         <p className="landing-lede">{t.lede}</p>
 
         <div className="landing-cta">
-          <Link to="/hitung/preset" className="btn btn--primary landing-cta__primary">
+          <Link to="/hitung/preset" className="btn btn--primary">
             {t.ctaPrimary}
           </Link>
           <Link to="/obat" className="btn btn--ghost">
@@ -116,7 +116,7 @@ export function LandingPage({ lang }: { lang: Lang }) {
       <section className="landing-close">
         <h2 className="landing-close__title">{t.closingTitle}</h2>
         <p className="landing-close__body">{t.closingBody}</p>
-        <Link to="/hitung/preset" className="btn btn--primary landing-cta__primary">
+        <Link to="/hitung/preset" className="btn btn--primary">
           {t.closingCta}
         </Link>
       </section>

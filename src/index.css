@@ -419,14 +419,15 @@ body::before {
   margin-top: var(--sp-6);
 }
 
-/* The primary CTA is a link, not a form button — it must not stretch. */
-.landing-cta__primary {
+/* The primary CTA is a link, not a form button — it must not stretch to the
+   full container the way the in-form "Hitung" button does. Scoped through
+   .landing-cta because .btn--primary is defined later in this file. */
+.landing-cta .btn,
+.landing-close .btn {
   width: auto;
   text-decoration: none;
   padding: var(--sp-3) var(--sp-6);
 }
-
-.landing-cta .btn--ghost { text-decoration: none; }
 
 .landing-section {
   padding-top: var(--sp-8);
@@ -526,6 +527,13 @@ body::before {
   gap: var(--sp-4);
 }
 
+.trust__item {
+  padding: var(--sp-4);
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-sm);
+}
+
 .trust__title {
   font-size: var(--fs-base);
   font-weight: 700;
@@ -621,6 +629,13 @@ body::before {
   gap: var(--sp-5);
 }
 
+.scope__col {
+  padding: var(--sp-4);
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-sm);
+}
+
 .scope__title {
   font-size: var(--fs-base);
   font-weight: 700;
@@ -676,6 +691,139 @@ body::before {
   font-size: var(--fs-base);
   color: var(--c-text-2);
 }
+
+/* ── Worked example — the landing/calculator demo ────────────────────────────
+   RESTORED: this block was destroyed by an edit in the routing pass whose
+   replacement range spanned it, which is why the demo rendered as a bare <ol>
+   with double numbering. ─────────────────────────────────────────────────── */
+.worked {
+  margin: var(--sp-4) 0 0;
+  padding: var(--sp-4);
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r);
+  box-shadow: var(--sh-xs);
+}
+
+.worked__title {
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  color: var(--c-text-2);
+  margin-bottom: var(--sp-3);
+}
+
+.worked__title strong { font-weight: 700; color: var(--c-text); }
+
+/* Citation sits with the rule it applies, not in a footnote. */
+.worked__cite { color: var(--c-text-3); font-weight: 400; }
+
+.worked__steps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  list-style: none;
+}
+
+.worked__step {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  font-size: var(--fs-sm);
+  color: var(--c-text-2);
+}
+
+.worked__num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  font-size: var(--fs-2xs);
+  font-weight: 700;
+  color: var(--c-primary-dark);
+  background: var(--c-primary-bg);
+  border: 1px solid var(--c-primary-bdr);
+  border-radius: var(--r-full);
+}
+
+.worked__label { min-width: 9em; font-weight: 600; }
+.worked__val { color: var(--c-text-2); font-variant-numeric: tabular-nums; }
+
+.worked__val--result { font-size: var(--fs-base); color: var(--c-text); }
+.worked__val--result strong { color: var(--c-primary-dark); font-weight: 700; }
+
+.worked__step--out .worked__num {
+  color: #fff;
+  background: var(--c-primary);
+  border-color: var(--c-primary);
+}
+
+/* The manipulable bit — moving this re-derives everything below it. */
+.worked__control { display: inline-flex; align-items: center; gap: var(--sp-2); }
+
+.worked__step-btn {
+  width: var(--sp-8);
+  height: var(--sp-8);
+  min-width: var(--target-min);
+  min-height: var(--target-min);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--fs-md);
+  font-weight: 700;
+  color: var(--c-text-2);
+  background: var(--c-surface-2);
+  border: 1.5px solid var(--c-border-mid);
+  border-radius: var(--r-sm);
+  line-height: 1;
+}
+
+.worked__step-btn:hover:not(:disabled) {
+  border-color: var(--c-primary);
+  color: var(--c-primary-dark);
+}
+
+.worked__step-btn:disabled { opacity: .45; cursor: not-allowed; }
+.worked__step-btn:focus-visible { outline: none; box-shadow: var(--sh-ring); }
+
+.worked__weight {
+  min-width: 4.5em;
+  text-align: center;
+  font-size: var(--fs-base);
+  font-weight: 700;
+  color: var(--c-text);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Intermediate values, not just input and answer. */
+.worked__working {
+  margin-top: var(--sp-3);
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--c-border);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-body);
+  color: var(--c-text-3);
+  font-variant-numeric: tabular-nums;
+  text-wrap: pretty;
+}
+
+.worked__working strong { color: var(--c-text-2); font-weight: 600; }
+.worked__working-step { white-space: nowrap; }
+
+.worked__note {
+  margin-top: var(--sp-2);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-snug);
+  color: var(--c-text-3);
+  text-wrap: pretty;
+}
+
+.worked__note--cap { color: var(--c-warn-strong); font-weight: 600; }
+
+/* ── App main ─────────────────────────────────────────────────────────────── */
+.app-main { flex: 1; padding-bottom: var(--sp-8); }
 
 /* ── Page head — every route owns its heading ─────────────────────────────── */
 .page-head {
@@ -1901,6 +2049,7 @@ body::before {
   font-variant-numeric: tabular-nums;
 }
 
+.derivation__expr { flex: 1 1 auto; min-width: 0; }
 .derivation__eq { color: var(--c-text-3); }
 
 .derivation__result {
@@ -2596,6 +2745,8 @@ body::before {
 }
 
 /* ── Per-form row with total ─────────────────────────────────────────────── */
+.puyer-grid-section { margin-bottom: var(--sp-5); }
+
 .puyer-recipe__cite { font-size: var(--fs-sm); font-weight: 400; color: var(--c-text-3); }
 
 .puyer-recipe__working {
