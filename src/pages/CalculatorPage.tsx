@@ -22,6 +22,9 @@ const PuyerPanel = lazy(() =>
 const InfusionPanel = lazy(() =>
   import('../components/InfusionPanel').then((m) => ({ default: m.InfusionPanel })),
 )
+const FluidPanel = lazy(() =>
+  import('../components/FluidPanel').then((m) => ({ default: m.FluidPanel })),
+)
 
 interface CalculatorPageProps {
   mode: string
@@ -81,6 +84,11 @@ export function CalculatorPage({
       {mode === 'infus' && (
         <Suspense fallback={<div className="panel-loading" aria-hidden="true" />}>
           <InfusionPanel />
+        </Suspense>
+      )}
+      {mode === 'cairan' && (
+        <Suspense fallback={<div className="panel-loading" aria-hidden="true" />}>
+          <FluidPanel />
         </Suspense>
       )}
     </>

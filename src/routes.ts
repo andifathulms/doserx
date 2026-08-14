@@ -145,6 +145,11 @@ export const CALCULATOR_MODES = [
     label: 'Infus',
     hint: 'Obat drip — hitung kecepatan infus (mL/jam) dan tetes per menit.',
   },
+  {
+    id: 'cairan',
+    label: 'Cairan',
+    hint: 'Cairan rumatan anak (mL/jam, tetes per menit) dan koreksi dekstrosa g/kg.',
+  },
 ] as const
 
 export const MODE_IDS: readonly string[] = CALCULATOR_MODES.map((m) => m.id)
