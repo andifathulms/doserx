@@ -1784,6 +1784,14 @@ body::before {
 .input::placeholder { color: var(--c-text-3); }
 .input--sm { font-size: var(--fs-base); padding: var(--sp-2) var(--sp-3); }
 
+/* Live validity, not just post-submit — a negative or non-numeric weight/
+   dose used to be silently accepted until "Hitung" was pressed. */
+.input--invalid,
+.input--invalid:focus {
+  border-color: var(--c-error);
+}
+.input--invalid:focus { box-shadow: 0 0 0 3px var(--c-error-bg); }
+
 /* ── Buttons ──────────────────────────────────────────────────────────────── */
 .btn {
   display: inline-flex;
@@ -2804,6 +2812,16 @@ body::before {
 .input--overridden:focus {
   border-color: var(--c-warn);
   box-shadow: 0 0 0 3px var(--c-warn-bdr);
+}
+
+/* A dose that's both overridden AND invalid must read as invalid — an
+   incorrect number is a correctness problem, not a style choice, and the
+   error color would otherwise lose to .input--overridden's later position
+   in the cascade. */
+.input--overridden.input--invalid,
+.input--overridden.input--invalid:focus {
+  border-color: var(--c-error);
+  background: var(--c-error-bg);
 }
 
 /* ── Puyer recipe card ────────────────────────────────────────────────────── */

@@ -4,6 +4,7 @@ import { Tabs } from './Tabs'
 import { WeightInput } from './WeightInput'
 import { calculateFluidRate, FluidRateResult } from '../lib/calculateFluidRate'
 import { calculateDextrose, DextroseConcentration, DextroseResult } from '../lib/calculateDextrose'
+import { isInvalidPositiveNumber } from '../lib/validateNumber'
 
 const SUB_MODES = [
   { id: 'rumatan', label: 'Rumatan', hint: 'Kecepatan cairan rumatan (aturan 4-2-1) dan tetes per menit.' },
@@ -258,11 +259,12 @@ export function FluidPanel() {
                 <label className="label" htmlFor="fluid-manual-rate">Kecepatan (mL/kg/jam)</label>
                 <input
                   id="fluid-manual-rate"
-                  className="input"
+                  className={`input${isInvalidPositiveNumber(manualRate) ? ' input--invalid' : ''}`}
                   type="number"
                   min="0"
                   step="0.1"
                   value={manualRate}
+                  aria-invalid={isInvalidPositiveNumber(manualRate)}
                   onChange={(e) => { setManualRate(e.target.value); setRateResult(null) }}
                 />
               </div>
@@ -298,11 +300,12 @@ export function FluidPanel() {
               </label>
               <input
                 id="dextrose-dose"
-                className="input"
+                className={`input${isInvalidPositiveNumber(dextroseDose) ? ' input--invalid' : ''}`}
                 type="number"
                 min="0"
                 step="0.1"
                 value={dextroseDose}
+                aria-invalid={isInvalidPositiveNumber(dextroseDose)}
                 onChange={(e) => { setDextroseDose(e.target.value); setDextroseResult(null) }}
               />
             </div>

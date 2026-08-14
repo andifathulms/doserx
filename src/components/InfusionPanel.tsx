@@ -3,6 +3,7 @@ import { CheckIcon } from '@radix-ui/react-icons'
 import { INFUSION_PRESETS, InfusionPreset } from '../data/infusionDrugs'
 import { calculateInfusion, InfusionResult } from '../lib/calculateInfusion'
 import { WeightInput } from './WeightInput'
+import { isInvalidPositiveNumber } from '../lib/validateNumber'
 
 function InfusionResultCard({ result, drug, weight }: { result: InfusionResult; drug: InfusionPreset; weight: string }) {
   const [copied, setCopied] = useState(false)
@@ -161,11 +162,12 @@ export function InfusionPanel() {
               </label>
               <input
                 id="infusion-dose"
-                className="input"
+                className={`input${isInvalidPositiveNumber(dose) ? ' input--invalid' : ''}`}
                 type="number"
                 min="0"
                 step="0.01"
                 value={dose}
+                aria-invalid={isInvalidPositiveNumber(dose)}
                 onChange={(e) => { setDose(e.target.value); setResult(null) }}
               />
             </div>
@@ -176,11 +178,12 @@ export function InfusionPanel() {
               </label>
               <input
                 id="infusion-conc"
-                className="input"
+                className={`input${isInvalidPositiveNumber(stockConc) ? ' input--invalid' : ''}`}
                 type="number"
                 min="0"
                 step="0.1"
                 value={stockConc}
+                aria-invalid={isInvalidPositiveNumber(stockConc)}
                 onChange={(e) => { setStockConc(e.target.value); setResult(null) }}
                 aria-describedby="infusion-conc-hint"
               />
@@ -196,11 +199,12 @@ export function InfusionPanel() {
               <label className="label" htmlFor="infusion-vol">Volume pelarut (mL)</label>
               <input
                 id="infusion-vol"
-                className="input"
+                className={`input${isInvalidPositiveNumber(diluentVol) ? ' input--invalid' : ''}`}
                 type="number"
                 min="0"
                 step="1"
                 value={diluentVol}
+                aria-invalid={isInvalidPositiveNumber(diluentVol)}
                 onChange={(e) => { setDiluentVol(e.target.value); setResult(null) }}
               />
             </div>

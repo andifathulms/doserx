@@ -6,6 +6,7 @@ import { calculate, CalcResult } from '../lib/calculate'
 import { errorCopy } from '../lib/errorCopy'
 import { announceResult } from '../lib/announce'
 import { saveCustomDrug, generateId } from '../lib/storage'
+import { isInvalidPositiveNumber } from '../lib/validateNumber'
 
 interface CustomPanelProps {
   onHistoryUpdated: () => void
@@ -93,12 +94,13 @@ export function CustomPanel({ onHistoryUpdated, onPresetSaved }: CustomPanelProp
           <label className="label" htmlFor="custom-dose">Dosis (mg/kg)</label>
           <input
             id="custom-dose"
-            className="input"
+            className={`input${isInvalidPositiveNumber(dosePerKg) ? ' input--invalid' : ''}`}
             type="number"
             min="0"
             step="0.01"
             placeholder="misal 7.5"
             value={dosePerKg}
+            aria-invalid={isInvalidPositiveNumber(dosePerKg)}
             onChange={(e) => { setDosePerKg(e.target.value); setResult(null) }}
           />
         </div>
@@ -106,12 +108,13 @@ export function CustomPanel({ onHistoryUpdated, onPresetSaved }: CustomPanelProp
           <label className="label" htmlFor="custom-freq">Frekuensi/hari</label>
           <input
             id="custom-freq"
-            className="input"
+            className={`input${isInvalidPositiveNumber(freq) ? ' input--invalid' : ''}`}
             type="number"
             min="1"
             step="1"
             placeholder="misal 3"
             value={freq}
+            aria-invalid={isInvalidPositiveNumber(freq)}
             onChange={(e) => { setFreq(e.target.value); setResult(null) }}
           />
         </div>
@@ -119,12 +122,13 @@ export function CustomPanel({ onHistoryUpdated, onPresetSaved }: CustomPanelProp
           <label className="label" htmlFor="custom-maxday">Dosis maks/hari (mg) <span className="label--optional">opsional</span></label>
           <input
             id="custom-maxday"
-            className="input"
+            className={`input${isInvalidPositiveNumber(maxDay) ? ' input--invalid' : ''}`}
             type="number"
             min="0"
             step="1"
             placeholder="misal 2000"
             value={maxDay}
+            aria-invalid={isInvalidPositiveNumber(maxDay)}
             onChange={(e) => { setMaxDay(e.target.value); setResult(null) }}
           />
         </div>
@@ -132,12 +136,13 @@ export function CustomPanel({ onHistoryUpdated, onPresetSaved }: CustomPanelProp
           <label className="label" htmlFor="custom-conc">Konsentrasi stok (mg/mL) <span className="label--optional">opsional</span></label>
           <input
             id="custom-conc"
-            className="input"
+            className={`input${isInvalidPositiveNumber(concentration) ? ' input--invalid' : ''}`}
             type="number"
             min="0"
             step="0.1"
             placeholder="misal 50"
             value={concentration}
+            aria-invalid={isInvalidPositiveNumber(concentration)}
             onChange={(e) => { setConcentration(e.target.value); setResult(null) }}
           />
         </div>

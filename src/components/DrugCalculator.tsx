@@ -7,6 +7,7 @@ import { DoseMode, loadDoseMode, saveDoseMode } from '../lib/storage'
 import { calculate, CalcResult } from '../lib/calculate'
 import { errorCopy } from '../lib/errorCopy'
 import { announceResult } from '../lib/announce'
+import { isInvalidPositiveNumber } from '../lib/validateNumber'
 
 /**
  * Everything that happens once a drug is chosen: the clinical note, the dose
@@ -236,11 +237,12 @@ export function DrugCalculator({
           </div>
           <input
             id={`${idPrefix}-dose`}
-            className={`input${doseOverridden ? ' input--overridden' : ''}`}
+            className={`input${doseOverridden ? ' input--overridden' : ''}${isInvalidPositiveNumber(dose) ? ' input--invalid' : ''}`}
             type="number"
             min="0"
             step="0.01"
             value={dose}
+            aria-invalid={isInvalidPositiveNumber(dose)}
             onChange={(e) => { setDose(e.target.value); clearResults() }}
           />
           {/* Trying the top of the range used to mean retyping the number by
@@ -270,11 +272,12 @@ export function DrugCalculator({
           <label className="label" htmlFor={`${idPrefix}-freq`}>Frekuensi/hari</label>
           <input
             id={`${idPrefix}-freq`}
-            className="input"
+            className={`input${isInvalidPositiveNumber(freq) ? ' input--invalid' : ''}`}
             type="number"
             min="1"
             step="1"
             value={freq}
+            aria-invalid={isInvalidPositiveNumber(freq)}
             onChange={(e) => { setFreq(e.target.value); clearResults() }}
           />
         </div>
@@ -284,12 +287,13 @@ export function DrugCalculator({
           </label>
           <input
             id={`${idPrefix}-conc`}
-            className="input"
+            className={`input${isInvalidPositiveNumber(concentration) ? ' input--invalid' : ''}`}
             type="number"
             min="0"
             step="0.1"
             placeholder="misal 24 — sirup 120mg/5mL = 24 mg/mL"
             value={concentration}
+            aria-invalid={isInvalidPositiveNumber(concentration)}
             onChange={(e) => { setConcentration(e.target.value); clearResults() }}
             aria-describedby={`${idPrefix}-conc-hint`}
           />

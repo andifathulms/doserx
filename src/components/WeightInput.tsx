@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { estimateWeight, WeightEstimate } from '../lib/estimateWeight'
+import { isInvalidPositiveNumber } from '../lib/validateNumber'
 
 interface WeightInputProps {
   id: string
@@ -57,13 +58,14 @@ export function WeightInput({ id, value, onChange, autoFocus = false }: WeightIn
           </div>
           <input
             id={id}
-            className="input"
+            className={`input${isInvalidPositiveNumber(value) ? ' input--invalid' : ''}`}
             type="number"
             min="0"
             step="0.1"
             placeholder="misal 14"
             value={value}
             autoFocus={autoFocus}
+            aria-invalid={isInvalidPositiveNumber(value)}
             onChange={(e) => { onChange(e.target.value); setEstimated(null) }}
           />
         </div>
