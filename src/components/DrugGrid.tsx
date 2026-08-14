@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react'
+import { ExclamationTriangleIcon, CheckIcon, StarIcon, StarFilledIcon } from '@radix-ui/react-icons'
 import { DRUG_PRESETS, DrugPreset, DrugCategory } from '../data/drugs'
 import { loadRecents, loadFavorites, recordRecent, toggleFavorite } from '../lib/storage'
 import { scoreDrug } from '../lib/search'
@@ -128,7 +129,7 @@ export function DrugGrid(props: DrugGridProps) {
                 full text appears in the drug note once selected. */}
             {flagged && (
               <>
-                <span className="drug-card__flag" aria-hidden="true">⚠</span>
+                <ExclamationTriangleIcon className="drug-card__flag" width="1em" height="1em" aria-hidden="true" />
                 <span className="sr-only">
                   {drug.contraindication ? ' — ada kontraindikasi' : ' — ada peringatan'}
                 </span>
@@ -143,7 +144,11 @@ export function DrugGrid(props: DrugGridProps) {
               {drug.minWeightKg ? `≥${drug.minWeightKg} kg` : ''}
             </span>
           )}
-          {selected && <span className="drug-card__check">✓ Dipilih</span>}
+          {selected && (
+            <span className="drug-card__check">
+              <CheckIcon width="1em" height="1em" aria-hidden="true" /> Dipilih
+            </span>
+          )}
         </button>
         <button
           className={`drug-card__star${fav ? ' drug-card__star--on' : ''}`}
@@ -151,7 +156,9 @@ export function DrugGrid(props: DrugGridProps) {
           aria-label={fav ? `Hapus ${drug.name} dari favorit` : `Tandai ${drug.name} favorit`}
           aria-pressed={fav}
         >
-          {fav ? '★' : '☆'}
+          {fav
+            ? <StarFilledIcon width="18" height="18" aria-hidden="true" />
+            : <StarIcon width="18" height="18" aria-hidden="true" />}
         </button>
       </div>
     )
@@ -217,7 +224,9 @@ export function DrugGrid(props: DrugGridProps) {
       {/* Pinned recents/favorites */}
       {pinned.length > 0 && (
         <div className="drug-category-group drug-pinned-section">
-          <div className="drug-category-label">★ Sering dipakai</div>
+          <div className="drug-category-label">
+            <StarFilledIcon width="1em" height="1em" aria-hidden="true" /> Sering dipakai
+          </div>
           <div className="drug-grid">{pinned.map(renderCard)}</div>
         </div>
       )}

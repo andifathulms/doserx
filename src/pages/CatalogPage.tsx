@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
 import { DRUG_PRESETS, DrugCategory } from '../data/drugs'
 import { searchDrugs } from '../lib/search'
 import { Link } from '../lib/router'
@@ -117,7 +118,7 @@ function CatalogCard({ drug }: { drug: (typeof DRUG_PRESETS)[number] }) {
         {drug.name}
         {flagged && (
           <>
-            <span className="drug-card__flag" aria-hidden="true">⚠</span>
+            <ExclamationTriangleIcon className="drug-card__flag" width="1em" height="1em" aria-hidden="true" />
             <span className="sr-only">
               {drug.contraindication ? ' — ada kontraindikasi' : ' — ada peringatan'}
             </span>

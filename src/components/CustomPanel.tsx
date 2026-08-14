@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { CheckIcon } from '@radix-ui/react-icons'
 import { ResultCard } from './ResultCard'
 import { WeightInput } from './WeightInput'
 import { calculate, CalcResult } from '../lib/calculate'
@@ -160,7 +161,9 @@ export function CustomPanel({ onHistoryUpdated, onPresetSaved }: CustomPanelProp
       {canSavePreset() && !savingPreset && (
         <div className="save-preset-row">
           {presetSaved ? (
-            <span className="save-preset-confirm">✓ Preset tersimpan di tab Preset</span>
+            <span className="save-preset-confirm">
+              <CheckIcon width="1em" height="1em" aria-hidden="true" /> Preset tersimpan di tab Preset
+            </span>
           ) : (
             <button className="btn btn--ghost btn--sm" onClick={() => setSavingPreset(true)}>
               + Simpan sebagai preset

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { CheckIcon } from '@radix-ui/react-icons'
 import { INFUSION_PRESETS, InfusionPreset } from '../data/infusionDrugs'
 import { calculateInfusion, InfusionResult } from '../lib/calculateInfusion'
 import { WeightInput } from './WeightInput'
@@ -80,7 +81,7 @@ function InfusionResultCard({ result, drug, weight }: { result: InfusionResult; 
 
       <div className="result-card__actions">
         <button className="btn btn--ghost btn--sm" onClick={handleCopy}>
-          {copied ? '✓ Disalin' : 'Salin'}
+          {copied ? <><CheckIcon width="1em" height="1em" aria-hidden="true" /> Disalin</> : 'Salin'}
         </button>
       </div>
     </div>

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { CheckIcon } from '@radix-ui/react-icons'
 import { Tabs } from './Tabs'
 import { WeightInput } from './WeightInput'
 import { calculateFluidRate, FluidRateResult } from '../lib/calculateFluidRate'
@@ -103,7 +104,7 @@ function FluidRateResultCard({ result, fluidType }: { result: FluidRateResult; f
 
       <div className="result-card__actions">
         <button className="btn btn--ghost btn--sm" onClick={handleCopy}>
-          {copied ? '✓ Disalin' : 'Salin'}
+          {copied ? <><CheckIcon width="1em" height="1em" aria-hidden="true" /> Disalin</> : 'Salin'}
         </button>
       </div>
     </div>
@@ -165,7 +166,7 @@ function DextroseResultCard({ result, concentration }: { result: DextroseResult;
 
       <div className="result-card__actions">
         <button className="btn btn--ghost btn--sm" onClick={handleCopy}>
-          {copied ? '✓ Disalin' : 'Salin'}
+          {copied ? <><CheckIcon width="1em" height="1em" aria-hidden="true" /> Disalin</> : 'Salin'}
         </button>
       </div>
     </div>

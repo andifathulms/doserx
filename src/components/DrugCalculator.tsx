@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
 import { ResultCard } from './ResultCard'
 import { WeightInput } from './WeightInput'
 import { DrugPreset } from '../data/drugs'
@@ -152,7 +153,11 @@ export function DrugCalculator({
           </span>
         )}
         {drug.note}
-        {drug.warning && <p className="drug-note__warning">⚠ {drug.warning}</p>}
+        {drug.warning && (
+          <p className="drug-note__warning">
+            <ExclamationTriangleIcon width="1em" height="1em" aria-hidden="true" /> {drug.warning}
+          </p>
+        )}
         {drug.contraindication && (
           <p className="drug-note__contra">⛔ Kontraindikasi: {drug.contraindication}</p>
         )}

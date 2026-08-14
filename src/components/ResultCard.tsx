@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { CheckIcon } from '@radix-ui/react-icons'
 import { CalcResult } from '../lib/calculate'
 import { HistoryEntry, generateId, saveEntry } from '../lib/storage'
 import { DrugForm } from '../data/drugs'
@@ -334,7 +335,7 @@ export function ResultCard({
 
       <div className="result-card__actions">
         <button className="btn btn--ghost btn--sm" onClick={handleCopy}>
-          {copied ? '✓ Disalin' : 'Salin'}
+          {copied ? <><CheckIcon width="1em" height="1em" aria-hidden="true" /> Disalin</> : 'Salin'}
         </button>
       </div>
 

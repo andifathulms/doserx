@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react'
+import { CheckIcon } from '@radix-ui/react-icons'
 import { ALL_DRUGS, DrugPreset } from '../data/drugs'
 import { DrugGrid } from './DrugGrid'
 import { calculate, CalcResult } from '../lib/calculate'
@@ -565,7 +566,7 @@ export function PuyerPanel({ onHistoryUpdated: _onHistoryUpdated }: PuyerPanelPr
 
               <div className="puyer-recipe__actions">
                 <button className="btn btn--ghost btn--sm" onClick={handleCopyRecipe}>
-                  {copied ? '✓ Disalin' : 'Salin Resep'}
+                  {copied ? <><CheckIcon width="1em" height="1em" aria-hidden="true" /> Disalin</> : 'Salin Resep'}
                 </button>
                 <button className="btn btn--ghost btn--sm" onClick={handlePrintRecipe}>
                   Cetak

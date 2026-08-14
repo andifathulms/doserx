@@ -1,4 +1,5 @@
 import { lazy, Suspense } from 'react'
+import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
 import { Tabs } from '../components/Tabs'
 import { PresetPanel } from '../components/PresetPanel'
 import { CustomPanel } from '../components/CustomPanel'
@@ -59,7 +60,7 @@ export function CalculatorPage({
       />
 
       <div className="safety-banner" role="note">
-        <span className="safety-banner__icon" aria-hidden="true">⚠</span>
+        <ExclamationTriangleIcon className="safety-banner__icon" aria-hidden="true" />
         <span>
           <strong>Alat bantu hitung saja</strong> — bukan sistem pendukung keputusan klinis atau resep.
           Verifikasi setiap dosis dengan panduan institusi/klinis terkini sebelum digunakan.
