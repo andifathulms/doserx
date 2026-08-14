@@ -56,16 +56,16 @@ export const LANDING: Record<Lang, LandingCopy> = {
     title: 'Berat badan masuk, ',
     titleAccent: 'dosis siap pakai keluar.',
     lede:
-      'Masukkan berat badan pasien dan dapatkan dosis dalam mg, volume dalam mL, dan takaran ' +
-      'sediaan yang benar-benar ada di apotek — lengkap dengan cara hitungnya, bukan hanya angka akhir.',
+      'Masukkan berat badan pasien, dapatkan dosis dalam mg, volume dalam mL, dan takaran ' +
+      'sediaan yang benar-benar ada di apotek, lengkap dengan cara hitungnya.',
     ctaPrimary: 'Buka kalkulator',
     ctaSecondary: `Telusuri ${drugCount} obat`,
     demoTitle: 'Coba sekarang',
-    demoNote: 'Ubah berat badannya — semua angka di bawah ikut berubah.',
+    demoNote: 'Ubah berat badannya, semua angka di bawah ikut berubah.',
     chainTitle: 'Setiap angka bisa ditelusuri',
     chainLede:
       'Dosis bukan hasil tebakan yang muncul begitu saja. Ini rantai perhitungannya, ' +
-      'dan aplikasi menampilkan setiap langkahnya — termasuk saat dosis dibatasi maksimum.',
+      'dan aplikasi menampilkan setiap langkahnya, termasuk saat dosis dibatasi maksimum.',
     chain: [
       { label: 'Berat badan × mg/kg/hari', detail: 'Dosis harian total' },
       { label: '÷ frekuensi', detail: 'Dosis per kali pemberian' },
@@ -83,7 +83,7 @@ export const LANDING: Record<Lang, LandingCopy> = {
     trust: [
       {
         title: 'Setiap dosis ada sumbernya',
-        body: `Nilai dosis mengacu pada ${sources.join(', ')} — dicantumkan langsung di tempat angkanya muncul, bukan di catatan kaki.`,
+        body: `Nilai dosis mengacu pada ${sources.join(', ')}, dicantumkan langsung di tempat angkanya muncul, bukan di catatan kaki.`,
       },
       {
         title: 'Tidak ada data yang keluar dari perangkat',
@@ -95,7 +95,7 @@ export const LANDING: Record<Lang, LandingCopy> = {
         title: 'Bisa dipakai tanpa internet',
         body:
           'Setelah dibuka sekali, aplikasi bisa dipasang ke layar utama dan tetap berjalan ' +
-          'penuh saat sinyal hilang — termasuk seluruh katalog obatnya.',
+          'penuh saat sinyal hilang, termasuk seluruh katalog obatnya.',
       },
     ],
     disclaimer:
@@ -113,15 +113,15 @@ export const LANDING: Record<Lang, LandingCopy> = {
     titleAccent: 'ready-to-give dose out.',
     lede:
       "Enter a patient's weight and get the dose in mg, the volume in mL, and the amount of a " +
-      'preparation that actually exists in a pharmacy — with the working shown, not just the answer.',
+      'real pharmacy preparation, with the working shown, not just the answer.',
     ctaPrimary: 'Open the calculator',
     ctaSecondary: `Browse ${drugCount} drugs`,
     demoTitle: 'Try it',
-    demoNote: 'Change the weight — every number below re-derives.',
+    demoNote: 'Change the weight, every number below re-derives.',
     chainTitle: 'Every number is traceable',
     chainLede:
       'A dose is a derivation, not a lookup. This is the chain, and the app shows every step ' +
-      'of it — including where a maximum caps the result.',
+      'of it, including where a maximum caps the result.',
     chain: [
       { label: 'weight × mg/kg/day', detail: 'total daily dose' },
       { label: '÷ frequency', detail: 'dose per administration' },
@@ -139,7 +139,7 @@ export const LANDING: Record<Lang, LandingCopy> = {
     trust: [
       {
         title: 'Every dose cites its source',
-        body: `Dosing values follow ${sources.join(', ')} — shown where the number appears, not in a footnote.`,
+        body: `Dosing values follow ${sources.join(', ')}, shown where the number appears, not in a footnote.`,
       },
       {
         title: 'Nothing leaves the device',
@@ -150,7 +150,7 @@ export const LANDING: Record<Lang, LandingCopy> = {
       {
         title: 'Works without a connection',
         body:
-          'After one visit it installs to a home screen and keeps working with no signal — ' +
+          'After one visit it installs to a home screen and keeps working with no signal, ' +
           'the entire drug catalog included.',
       },
     ],

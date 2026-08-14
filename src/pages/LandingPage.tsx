@@ -1,7 +1,24 @@
 import { useEffect } from 'react'
+import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
 import { Link } from '../lib/router'
 import { WorkedExample } from '../components/WorkedExample'
+import { Reveal } from '../components/Reveal'
 import { LANDING, LANG_PATHS, Lang } from '../content/landing'
+
+// A representative spread of the catalog's therapeutic categories, in real
+// use-frequency order (data/categories.ts) — the same colours that mark every
+// drug card in the calculator and catalog. Real texture, not a decoration
+// invented for this page.
+const SWATCH_CATEGORIES = [
+  'Gawat Darurat',
+  'Analgesik/NSAID',
+  'Antibiotik',
+  'Antivirus',
+  'Kardiovaskular',
+  'Pulmologi',
+  'Antikonvulsan',
+  'Vitamin/Mineral',
+] as const
 
 /**
  * / and /en — the front door for someone who has never seen this before.
@@ -53,73 +70,96 @@ export function LandingPage({ lang }: { lang: Lang }) {
       </section>
 
       {/* The product, running, above the fold — not a screenshot of it. */}
-      <section className="landing-section" aria-labelledby="demo-title">
-        <h2 className="landing-section__title" id="demo-title">{t.demoTitle}</h2>
-        <p className="landing-section__lede">{t.demoNote}</p>
-        <WorkedExample lang={lang} />
-      </section>
+      <Reveal>
+        <section className="landing-section" aria-labelledby="demo-title">
+          <h2 className="landing-section__title" id="demo-title">{t.demoTitle}</h2>
+          <p className="landing-section__lede">{t.demoNote}</p>
+          <WorkedExample lang={lang} />
+        </section>
+      </Reveal>
 
-      <section className="landing-section" aria-labelledby="chain-title">
-        <h2 className="landing-section__title" id="chain-title">{t.chainTitle}</h2>
-        <p className="landing-section__lede">{t.chainLede}</p>
-        <ol className="chain">
-          {t.chain.map((step, i) => (
-            <li key={step.label} className="chain__step">
-              <span className="chain__num" aria-hidden="true">{i + 1}</span>
-              <span className="chain__label">{step.label}</span>
-              <span className="chain__detail">{step.detail}</span>
-            </li>
-          ))}
-        </ol>
-      </section>
+      <Reveal>
+        <section className="landing-section" aria-labelledby="chain-title">
+          <h2 className="landing-section__title" id="chain-title">{t.chainTitle}</h2>
+          <p className="landing-section__lede">{t.chainLede}</p>
+          <ol className="chain">
+            {t.chain.map((step, i) => (
+              <li key={step.label} className="chain__step">
+                <span className="chain__num" aria-hidden="true">{i + 1}</span>
+                <span className="chain__label">{step.label}</span>
+                <span className="chain__detail">{step.detail}</span>
+              </li>
+            ))}
+          </ol>
+        </section>
+      </Reveal>
 
-      <section className="landing-section" aria-labelledby="facts-title">
-        <h2 className="landing-section__title" id="facts-title">{t.factsTitle}</h2>
-        <ul className="facts">
-          {t.facts.map((f) => (
-            <li key={f.label} className="facts__item">
-              {f.href ? (
-                <Link to={f.href} className="facts__link">
-                  <span className="facts__value">{f.value}</span>
-                  <span className="facts__label">{f.label}</span>
+      <Reveal>
+        <section className="landing-section" aria-labelledby="facts-title">
+          <h2 className="landing-section__title" id="facts-title">{t.factsTitle}</h2>
+          <ul className="facts">
+            {t.facts.map((f) => (
+              <li key={f.label} className="facts__item">
+                {f.href ? (
+                  <Link to={f.href} className="facts__link">
+                    <span className="facts__value">{f.value}</span>
+                    <span className="facts__label">{f.label}</span>
+                  </Link>
+                ) : (
+                  <>
+                    <span className="facts__value">{f.value}</span>
+                    <span className="facts__label">{f.label}</span>
+                  </>
+                )}
+              </li>
+            ))}
+          </ul>
+
+          {/* Real category colours from the catalog itself — the same accent
+              that marks every drug card, not a graphic made for this page. */}
+          <ul className="cat-swatches" aria-label={lang === 'id' ? 'Contoh kategori terapi' : 'Sample therapeutic categories'}>
+            {SWATCH_CATEGORIES.map((cat) => (
+              <li key={cat}>
+                <Link to="/obat" className="cat-swatch" data-cat={cat}>
+                  <span className="cat-swatch__dot" aria-hidden="true" />
+                  {cat}
                 </Link>
-              ) : (
-                <>
-                  <span className="facts__value">{f.value}</span>
-                  <span className="facts__label">{f.label}</span>
-                </>
-              )}
-            </li>
-          ))}
-        </ul>
-      </section>
+              </li>
+            ))}
+          </ul>
+        </section>
+      </Reveal>
 
-      <section className="landing-section" aria-labelledby="trust-title">
-        <h2 className="landing-section__title" id="trust-title">{t.trustTitle}</h2>
-        <div className="trust">
-          {t.trust.map((item) => (
-            <div key={item.title} className="trust__item">
-              <h3 className="trust__title">{item.title}</h3>
-              <p className="trust__body">{item.body}</p>
-            </div>
-          ))}
-        </div>
+      <Reveal>
+        <section className="landing-section" aria-labelledby="trust-title">
+          <h2 className="landing-section__title" id="trust-title">{t.trustTitle}</h2>
+          <div className="trust">
+            {t.trust.map((item, i) => (
+              <div key={item.title} className={`trust__item${i === 0 ? ' trust__item--lead' : ''}`}>
+                <h3 className="trust__title">{item.title}</h3>
+                <p className="trust__body">{item.body}</p>
+              </div>
+            ))}
+          </div>
 
-        {/* The disclaimer is part of the pitch, not fine print under it — the
-            PRD makes it a hard requirement and honesty makes it a feature. */}
-        <p className="landing-disclaimer" role="note">
-          <span className="landing-disclaimer__icon" aria-hidden="true">⚠</span>
-          {t.disclaimer}
-        </p>
-      </section>
+          {/* The disclaimer is part of the pitch, not fine print under it — the
+              PRD makes it a hard requirement and honesty makes it a feature. */}
+          <p className="landing-disclaimer" role="note">
+            <ExclamationTriangleIcon className="landing-disclaimer__icon" aria-hidden="true" />
+            {t.disclaimer}
+          </p>
+        </section>
+      </Reveal>
 
-      <section className="landing-close">
-        <h2 className="landing-close__title">{t.closingTitle}</h2>
-        <p className="landing-close__body">{t.closingBody}</p>
-        <Link to="/hitung/preset" className="btn btn--primary">
-          {t.closingCta}
-        </Link>
-      </section>
+      <Reveal>
+        <section className="landing-close">
+          <h2 className="landing-close__title">{t.closingTitle}</h2>
+          <p className="landing-close__body">{t.closingBody}</p>
+          <Link to="/hitung/preset" className="btn btn--primary">
+            {t.closingCta}
+          </Link>
+        </section>
+      </Reveal>
     </div>
   )
 }
