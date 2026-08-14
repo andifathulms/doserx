@@ -1,0 +1,139 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-14T00:00:00Z",
+  "title": "Design System: DoseRx",
+  "extensions": {
+    "colorMeta": {
+      "primary": { "role": "primary", "displayName": "Clinical Blue", "canonical": "#1f6c9f", "tonalRamp": ["#0d2733", "#123f5c", "#185a84", "#1f6c9f", "#4a8cb6", "#7fc1ee", "#b9e0f8", "#e1f3fe"] },
+      "accent-clay": { "role": "secondary", "displayName": "Clay", "canonical": "#8b5e34", "tonalRamp": ["#2e1f11", "#4a3319", "#6b4a26", "#8b5e34", "#a97b52", "#c49b73", "#dcc09e", "#f5ebe0"] },
+      "warn": { "role": "warn", "displayName": "Warm Amber", "canonical": "#8a5a00", "tonalRamp": ["#2e1e00", "#4a3200", "#6b4900", "#8a5a00", "#ad7a1a", "#d4a03e", "#e8c98a", "#fbf3db"] },
+      "error": { "role": "error", "displayName": "Muted Brick", "canonical": "#9f2f2d", "tonalRamp": ["#3a1110", "#571917", "#792320", "#9f2f2d", "#bf5451", "#d98785", "#eebab8", "#fdebec"] },
+      "success": { "role": "success", "displayName": "Muted Green", "canonical": "#346538", "tonalRamp": ["#132513", "#1e3b20", "#284f2b", "#346538", "#4f8452", "#78a77a", "#a9c9ab", "#edf3ec"] },
+      "stone-900": { "role": "neutral", "displayName": "Near-Black Ink", "canonical": "#111111", "tonalRamp": ["#111111", "#2a2a2a", "#57534e", "#75716b", "#948e81", "#a19c93", "#eaeaea", "#fbfbfa"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Landing page hero title only." },
+      "headline": { "displayName": "Headline", "purpose": "Result card drug name — the only serif use inside the working app." },
+      "body": { "displayName": "Body", "purpose": "All prose, form labels, buttons, inputs — the type floor for anything read as language." },
+      "label": { "displayName": "Label", "purpose": "Uppercase eyebrow labels, tabs-group section headers." },
+      "numeral": { "displayName": "Numeral", "purpose": "The calculated dose figure — monospace, tabular-nums, the largest element on the result screen." }
+    },
+    "shadows": [
+      { "name": "xs", "value": "0 1px 2px rgba(40,35,28,.03)", "purpose": "Resting state of interactive cards (drug card, active tab)." },
+      { "name": "sm", "value": "0 1px 3px rgba(40,35,28,.04), 0 1px 2px rgba(40,35,28,.03)", "purpose": "Hover state of interactive cards, primary button hover." },
+      { "name": "default", "value": "0 2px 6px rgba(40,35,28,.04), 0 1px 3px rgba(40,35,28,.03)", "purpose": "Primary button hover, heavier step." },
+      { "name": "md", "value": "0 6px 16px rgba(40,35,28,.045), 0 2px 6px rgba(40,35,28,.03)", "purpose": "The result card at rest — the one surface allowed to look lifted by default." },
+      { "name": "ring", "value": "0 0 0 3px #1f6c9f", "purpose": "Shared focus-visible treatment used everywhere in place of a native outline." }
+    ],
+    "motion": [
+      { "name": "reveal", "value": "opacity .6s cubic-bezier(0.16, 1, 0.3, 1), transform .6s cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Scroll-triggered fade-and-rise (translateY 12px → 0), landing/about pages only. Never used on the calculator, catalog, or history screens." },
+      { "name": "state-transition", "value": "all .15s", "purpose": "Default hover/focus/active transition for buttons, inputs, tabs, chips." },
+      { "name": "card-hover", "value": "transform .12s, box-shadow .12s, border-color .12s, background .12s", "purpose": "Drug card hover lift (translateY(-1px)) and category-tint fade-in." }
+    ],
+    "breakpoints": [
+      { "name": "mobile", "value": "560px" },
+      { "name": "tablet", "value": "640px" },
+      { "name": "desktop", "value": "680px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Full-width solid near-black CTA button, e.g. \"Hitung\" (Calculate).",
+      "html": "<button class=\"ds-btn ds-btn-primary\">Hitung</button>",
+      "css": ".ds-btn { display: inline-flex; align-items: center; justify-content: center; font-size: 1rem; font-weight: 600; border-radius: 6px; border: 1.5px solid transparent; cursor: pointer; transition: all .15s; text-align: center; letter-spacing: -.01em; } .ds-btn-primary { background: #111111; color: #fff; border-color: #111111; width: 100%; padding: 12px; box-shadow: 0 1px 3px rgba(40,35,28,.04), 0 1px 2px rgba(40,35,28,.03); } .ds-btn-primary:hover { background: #333333; border-color: #333333; box-shadow: 0 2px 6px rgba(40,35,28,.04), 0 1px 3px rgba(40,35,28,.03); } .ds-btn-primary:focus-visible { outline: none; box-shadow: 0 0 0 3px #1f6c9f; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Blue-on-white outlined button for secondary actions.",
+      "html": "<button class=\"ds-btn ds-btn-secondary\">Simpan</button>",
+      "css": ".ds-btn { display: inline-flex; align-items: center; justify-content: center; font-size: 1rem; font-weight: 600; border-radius: 6px; border: 1.5px solid transparent; cursor: pointer; transition: all .15s; letter-spacing: -.01em; } .ds-btn-secondary { background: #ffffff; color: #1f6c9f; border-color: #b9e0f8; padding: 8px 16px; } .ds-btn-secondary:hover { background: #e1f3fe; border-color: #1f6c9f; } .ds-btn-secondary:focus-visible { outline: none; box-shadow: 0 0 0 3px #1f6c9f; }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input-field",
+      "description": "Standard form field used for weight, dose/kg, frequency, and search inputs.",
+      "html": "<input class=\"ds-input\" type=\"number\" placeholder=\"Berat badan (kg)\" />",
+      "css": ".ds-input { padding: 8px 12px; font-size: 1rem; border: 1.5px solid #eaeaea; border-radius: 6px; background: #ffffff; color: #111111; outline: none; transition: border-color .15s, box-shadow .15s; width: 100%; } .ds-input:focus { border-color: #1f6c9f; box-shadow: 0 0 0 3px #1f6c9f; } .ds-input::placeholder { color: #75716b; }"
+    },
+    {
+      "name": "Drug Card",
+      "kind": "card",
+      "refersTo": "drug-card",
+      "description": "The preset-picker's core unit: a category-colored card representing one drug in the 92-drug catalog grid.",
+      "html": "<button class=\"ds-drug-card\" style=\"--ds-cat:#5a5a9e\"><span class=\"ds-drug-card__name\">Amoxicillin</span><span class=\"ds-drug-card__route\">Oral</span></button>",
+      "css": ".ds-drug-card { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; padding: 12px; background: #ffffff; border: 1.5px solid #eaeaea; border-left: 3px solid var(--ds-cat, #948e81); border-radius: 6px; text-align: left; transition: transform .12s, box-shadow .12s, border-color .12s, background .12s; box-shadow: 0 1px 2px rgba(40,35,28,.03); cursor: pointer; width: 100%; } .ds-drug-card:hover { transform: translateY(-1px); border-color: var(--ds-cat, #1f6c9f); background: color-mix(in srgb, var(--ds-cat, #1f6c9f) 9%, #ffffff); box-shadow: 0 1px 3px rgba(40,35,28,.04), 0 1px 2px rgba(40,35,28,.03); } .ds-drug-card:focus-visible { outline: none; border-color: var(--ds-cat, #1f6c9f); box-shadow: 0 0 0 3px #1f6c9f; } .ds-drug-card__name { font-size: 1rem; font-weight: 600; color: #111111; line-height: 1.25; } .ds-drug-card__route { font-size: 0.6875rem; color: #75716b; font-weight: 500; }"
+    },
+    {
+      "name": "Result Card",
+      "kind": "card",
+      "refersTo": "result-card",
+      "description": "The calculated-dose output card — the destination of the whole app flow, the one surface with a shadow lift and the serif drug-name heading.",
+      "html": "<div class=\"ds-result-card\"><div class=\"ds-result-card__header\"><span class=\"ds-result-card__drug\">Paracetamol</span></div><div class=\"ds-result-value ds-result-value--highlight\"><span class=\"ds-result-value__label\">Per Dosis</span><span class=\"ds-result-value__num\">120<span class=\"ds-result-value__unit\">mg</span></span></div></div>",
+      "css": ".ds-result-card { margin-top: 20px; background: #ffffff; border: 1.5px solid #eaeaea; border-radius: 12px; padding: 20px 16px 16px; box-shadow: 0 6px 16px rgba(40,35,28,.045), 0 2px 6px rgba(40,35,28,.03); } .ds-result-card__drug { font-family: ui-serif, Georgia, serif; font-size: 1.125rem; font-weight: 700; color: #111111; letter-spacing: -.02em; } .ds-result-value { background: #f7f6f3; border: 1px solid #eaeaea; border-radius: 6px; padding: 12px; display: flex; flex-direction: column; gap: 3px; } .ds-result-value--highlight { background: #e1f3fe; border-color: #b9e0f8; } .ds-result-value__label { font-size: 0.6875rem; color: #75716b; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; } .ds-result-value__num { font-size: 2.375rem; font-weight: 800; color: #1f6c9f; letter-spacing: -0.045em; line-height: 1.1; font-variant-numeric: tabular-nums; font-family: ui-monospace, 'SF Mono', monospace; } .ds-result-value__unit { font-size: 0.6875rem; color: #75716b; font-weight: 500; margin-left: 4px; }"
+    },
+    {
+      "name": "Category Chip",
+      "kind": "chip",
+      "refersTo": "cat-chip",
+      "description": "Pill-shaped category filter chip above the drug grid; active state uses a category-tinted background, never a solid fill.",
+      "html": "<button class=\"ds-cat-chip ds-cat-chip--active\" style=\"--ds-cat:#953737\">Gawat Darurat</button>",
+      "css": ".ds-cat-chip { flex-shrink: 0; font-size: 0.875rem; font-weight: 600; white-space: nowrap; padding: 4px 12px; border-radius: 9999px; border: 1.5px solid #eaeaea; background: #ffffff; color: #57534e; transition: background .12s, border-color .12s, color .12s; cursor: pointer; } .ds-cat-chip:hover { border-color: #948e81; color: #111111; } .ds-cat-chip--active { color: var(--ds-cat, #1f6c9f); background: color-mix(in srgb, var(--ds-cat, #1f6c9f) 12%, #ffffff); border-color: color-mix(in srgb, var(--ds-cat, #1f6c9f) 45%, #ffffff); } .ds-cat-chip:focus-visible { outline: none; box-shadow: 0 0 0 3px #1f6c9f; }"
+    },
+    {
+      "name": "Segmented Tabs",
+      "kind": "nav",
+      "refersTo": "tab-btn",
+      "description": "The Preset / Kustom / Puyer / Infus segmented control that switches calculator modes.",
+      "html": "<div class=\"ds-tabs\"><button class=\"ds-tab-btn ds-tab-btn--active\">Preset</button><button class=\"ds-tab-btn\">Kustom</button><button class=\"ds-tab-btn\">Puyer</button><button class=\"ds-tab-btn\">Infus</button></div>",
+      "css": ".ds-tabs { display: flex; background: #eaeaea; padding: 3px; border-radius: 8px; gap: 2px; } .ds-tab-btn { flex: 1; padding: 8px; font-size: 1rem; font-weight: 500; color: #57534e; background: transparent; border: none; border-radius: 5px; transition: background .15s, color .15s, box-shadow .15s; white-space: nowrap; cursor: pointer; } .ds-tab-btn:hover:not(.ds-tab-btn--active) { background: rgba(255,255,255,.5); color: #111111; } .ds-tab-btn--active { background: #ffffff; color: #1f6c9f; font-weight: 700; box-shadow: 0 1px 2px rgba(40,35,28,.03); }"
+    },
+    {
+      "name": "Safety Disclaimer",
+      "kind": "custom",
+      "refersTo": "safety-banner",
+      "description": "The hard-requirement clinical disclaimer banner shown near every dose decision; never a tooltip, modal, or toast.",
+      "html": "<div class=\"ds-safety-banner\"><svg class=\"ds-safety-banner__icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" width=\"20\" height=\"20\"><path d=\"M12 9v4M12 17h.01M10.29 3.86l-8.18 14.18A2 2 0 0 0 4 21h16a2 2 0 0 0 1.89-2.96L13.71 3.86a2 2 0 0 0-3.42 0z\"/></svg><span><strong>Alat bantu hitung, bukan alat diagnosis.</strong> Verifikasi dosis terhadap pedoman klinis institusi Anda sebelum digunakan.</span></div>",
+      "css": ".ds-safety-banner { display: flex; align-items: flex-start; gap: 12px; margin: 12px 0 20px; padding: 12px 16px; background: #ffffff; border: 1px solid #eaeaea; border-left: 3px solid #8a5a00; border-radius: 6px; font-size: 1rem; line-height: 1.55; color: #57534e; } .ds-safety-banner__icon { flex-shrink: 0; width: 1.2em; height: 1.2em; margin-top: .15em; color: #8a5a00; } .ds-safety-banner strong { color: #111111; font-weight: 700; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Bedside Notebook",
+    "overview": "DoseRx reads like a well-kept clinical reference book, not a SaaS dashboard: warm paper-white surfaces, a near-black ink color for text, one restrained blue for interactive meaning, and a serif reserved for the moments the app is naming something (a drug, a page title) rather than asking for input. The system is built for a doctor's hand at 2am and a doctor's eye during a 3.5-second glance — every choice trades decoration for scan speed, and every number a clinician reads under time pressure gets its own typeface (monospace, tabular) so digits never shift or misalign.\n\nThe palette is deliberately narrow: exactly four semantic pastel pairs (primary/blue, warn/yellow, error/red, success/green), each a WCAG-verified text-on-background pair rather than a raw hue, plus one documented second accent (clay/tan) that exists for a single real clinical distinction — marking a solid preparation (tablet/powder) apart from a liquid dose shown elsewhere on the same screen. The one exception to \"four pastels only\" is the 17-color category-accent map used across the 92-drug catalog: each hue is a desaturated, darkened pass calibrated so the grid stays visually triaged without reading as a rainbow SaaS palette, with the loudest red reserved for true emergencies.\n\nMotion is almost entirely absent from the working screens on purpose. The calculator, catalog, and history views are dense forms a clinician revisits repeatedly under time pressure — motion on every view there is friction, not sophistication. The one motion pattern in the system, a scroll-triggered fade-and-rise, is scoped to the landing/about pages only, where a first-time visitor is reading rather than working.",
+    "keyCharacteristics": [
+      "Warm stone neutrals (never cool gray, never pure black/white) as the entire structural palette",
+      "One accent hue doing real interactive work (links, focus, the CTA-adjacent primary role) plus one documented clay secondary for a real clinical distinction — no decorative color",
+      "Serif for naming (titles, drug names), sans for asking (UI chrome, forms, buttons), monospace+tabular-nums for every clinician-read number",
+      "Crisp, capped corner radii (4-12px); pills reserved for chips, tags, and segmented controls only",
+      "Near-zero motion on task screens; a single quiet scroll-reveal reserved for editorial/landing content",
+      "System font stacks only — no webfont dependency, by requirement (the app must render fully offline from a cold load)"
+    ],
+    "rules": [
+      { "name": "The Four Pastels Rule", "body": "Outside the category-accent map, the palette carries exactly four semantic hues (primary, warn, error, success) plus one documented clay secondary. A new UI state does not get a new color; it's expressed with an existing semantic hue, weight, or icon.", "section": "colors" },
+      { "name": "The Tint-Not-Fill Rule", "body": "Category and semantic colors are applied as a tinted background + colored text/border, never as a solid saturated fill with white text.", "section": "colors" },
+      { "name": "The Read-vs-Non-Read Rule", "body": "Anything a person reads (prose, values, form controls, buttons, drug names) sits at 16px or larger. Sub-16px sizes are reserved for non-prose only: uppercase eyebrows, unit suffixes, count badges, chips.", "section": "typography" },
+      { "name": "The Three-Family Rule", "body": "Sans for asking (UI chrome), serif for naming (titles, drug names), monospace for measuring (every clinician-read number). A component never borrows a family outside its job.", "section": "typography" },
+      { "name": "The Border-Before-Shadow Rule", "body": "A component reaches for a 1-1.5px border first; a shadow is added only when a surface needs to read as physically raised above its neighbors (the result card, hover states).", "section": "elevation" }
+    ],
+    "dos": [
+      "Do keep the interactive accent to one hue (clinical blue) outside the category-accent map and the one documented clay secondary.",
+      "Do use the monospace/tabular-nums family for every number a clinician reads mid-task (doses, mL, weights, timestamps).",
+      "Do express category identity through the shared data-cat color map and the color-mix() tint mechanism, never a hardcoded hex per component.",
+      "Do keep interactive targets at a 24px floor even for controls that sit inline with text.",
+      "Do render the safety disclaimer inline and visible near any dose output — never in a tooltip, modal, or toast.",
+      "Do reach for a border before a shadow; reserve shadow for a surface that genuinely needs to look physically lifted (the result card, hover states)."
+    ],
+    "donts": [
+      "Don't use a solid saturated color fill with white text for a category, tab, or status — tint the background and color the text/border instead.",
+      "Don't apply the landing page's scroll-reveal fade to the calculator, catalog, or history screens — those are dense working forms revisited under time pressure, where motion is friction.",
+      "Don't load a webfont or CDN font asset; the app must render fully offline from a cold first load, and the three system stacks already cover every typographic job.",
+      "Don't reuse the primary blue for a drug category color — blue is reserved for the app's single interactive-accent meaning.",
+      "Don't let pure black (#000) or pure white/cool-gray neutrals creep in; every neutral in the system is warm-tinted (stone/paper), including shadows (never a cool slate-black)."
+    ]
+  }
+}
