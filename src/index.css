@@ -210,7 +210,39 @@ input  { font: inherit; }
 
 /* Holds vertical space while a split panel chunk resolves. Only visible if a
    tab is opened before the idle prefetch completes. */
-.panel-loading { min-height: 40vh; }
+/* ── Route-chunk loading skeleton ─────────────────────────────────────────────
+   Rarely seen — routes are prefetched on idle — but a blank rectangle where a
+   page is about to appear reads as a stall. Shape approximates a page head
+   (title + lede + a content block) so nothing jumps once the real page lands. */
+.panel-loading {
+  min-height: 40vh;
+  padding: var(--sp-6) 0 var(--sp-4);
+}
+
+.skeleton-bar {
+  border-radius: var(--r-xs);
+  background: linear-gradient(
+    90deg,
+    var(--c-border) 25%,
+    var(--c-surface-2) 37%,
+    var(--c-border) 63%
+  );
+  background-size: 400% 100%;
+  animation: skeleton-shimmer 1.4s ease infinite;
+}
+
+.skeleton-bar--title { width: 45%; height: 1.75rem; margin-bottom: var(--sp-4); }
+.skeleton-bar--lede  { width: 70%; height: 1rem; margin-bottom: var(--sp-8); }
+.skeleton-bar--block { width: 100%; height: 12rem; }
+
+@keyframes skeleton-shimmer {
+  0%   { background-position: 100% 50%; }
+  100% { background-position: 0 50%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-bar { animation: none; background: var(--c-border); }
+}
 
 /* ── Screen-reader-only text ──────────────────────────────────────────────────
    For content that must be announced but not shown: live-region summaries and

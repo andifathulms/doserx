@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect, Suspense } from 'react'
 import { MakerSignature } from './components/MakerSignature'
+import { PanelSkeleton } from './components/PanelSkeleton'
 import {
   loadHistory,
   loadCustomDrugs,
@@ -102,27 +103,27 @@ function App() {
 
       <main className="app-main" id="main">
         {(routeId === 'home' || routeId === 'home-en') && (
-          <Suspense fallback={<div className="panel-loading" aria-hidden="true" />}>
+          <Suspense fallback={<PanelSkeleton />}>
             <LandingPage lang={routeId === 'home-en' ? 'en' : 'id'} />
           </Suspense>
         )}
         {(routeId === 'about' || routeId === 'about-en') && (
-          <Suspense fallback={<div className="panel-loading" aria-hidden="true" />}>
+          <Suspense fallback={<PanelSkeleton />}>
             <AboutPage lang={routeId === 'about-en' ? 'en' : 'id'} />
           </Suspense>
         )}
         {routeId === 'catalog' && (
-          <Suspense fallback={<div className="panel-loading" aria-hidden="true" />}>
+          <Suspense fallback={<PanelSkeleton />}>
             <CatalogPage />
           </Suspense>
         )}
         {routeId === 'drug' && (
-          <Suspense fallback={<div className="panel-loading" aria-hidden="true" />}>
+          <Suspense fallback={<PanelSkeleton />}>
             <DrugPage id={match!.params.id} onHistoryUpdated={refreshHistory} />
           </Suspense>
         )}
         {showCalculator && (
-          <Suspense fallback={<div className="panel-loading" aria-hidden="true" />}>
+          <Suspense fallback={<PanelSkeleton />}>
             <CalculatorPage
               mode={mode!}
               customDrugs={customDrugs}
@@ -132,7 +133,7 @@ function App() {
           </Suspense>
         )}
         {routeId === 'history' && (
-          <Suspense fallback={<div className="panel-loading" aria-hidden="true" />}>
+          <Suspense fallback={<PanelSkeleton />}>
             <HistoryPage entries={history} onUpdated={refreshHistory} />
           </Suspense>
         )}
