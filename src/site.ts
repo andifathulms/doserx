@@ -21,12 +21,9 @@ export const SITE = {
   url: 'https://andifathulms.github.io/doserx/',
   ogImage: 'og.png',
 
-  /* NOTE: these two are the CURRENT shipped colours, not the brand palette.
-     theme-color #2563eb is the old blue and does not match --c-primary
-     (teal #0d9488); background #f1f5f9 is slate against a mint #f2f8f6 page.
-     Correcting them changes the browser chrome tint and the PWA splash — a
-     visible change, so it is deliberately NOT made in a performance pass.
-     Left here, named, for whenever that is a decision you want to take. */
-  themeColor: '#2563eb',
-  backgroundColor: '#f1f5f9',
+  /* Matches --stone-900 (the CTA/editorial-chrome colour) and --c-bg (warm
+     bone canvas) in index.css, so the browser chrome tint and PWA splash
+     screen agree with the shipped warm-monochrome brand. */
+  themeColor: '#111111',
+  backgroundColor: '#fbfbfa',
 } as const
