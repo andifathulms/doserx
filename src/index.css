@@ -2724,28 +2724,68 @@ body::before {
   margin-bottom: var(--sp-4);
 }
 
+/* A native <details> — collapsed by default, like the drug monograph
+   elsewhere in the app. For a 4-5 drug puyer, showing every dose/freq field
+   flat undercut the app's own progressive-disclosure pattern; the summary
+   line still surfaces the current dose without opening anything. */
 .puyer-drug-row {
   background: var(--c-surface);
   border: 1.5px solid var(--c-border);
   border-radius: var(--r);
-  padding: var(--sp-3) var(--sp-4);
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-2);
   box-shadow: var(--sh-xs);
+  overflow: hidden;
 }
 
-.puyer-drug-row__header {
+.puyer-drug-row__summary {
   display: flex;
   align-items: center;
   gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-4);
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
 }
+.puyer-drug-row__summary::-webkit-details-marker { display: none; }
+
+/* Same +/− disclosure glyph as the drug monograph, so the two collapsible
+   patterns in the app read as one system rather than two. */
+.puyer-drug-row__summary::before {
+  content: '+';
+  width: 1em;
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--c-text-3);
+}
+.puyer-drug-row[open] .puyer-drug-row__summary::before { content: '\2212'; }
+
+.puyer-drug-row__summary:hover { background: var(--c-surface-2); }
+.puyer-drug-row__summary:focus-visible { outline: none; box-shadow: var(--sh-ring); border-radius: var(--r); }
 
 .puyer-drug-row__name {
   font-size: var(--fs-base);
   font-weight: 700;
   color: var(--c-text);
   letter-spacing: -.01em;
+}
+
+.puyer-drug-row__summary-dose {
+  font-size: var(--fs-sm);
+  color: var(--c-text-3);
+  font-variant-numeric: tabular-nums;
+  margin-right: auto;
+}
+
+.puyer-drug-row__error-flag {
+  color: var(--c-error);
+  flex-shrink: 0;
+}
+
+.puyer-drug-row__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: 0 var(--sp-4) var(--sp-3);
 }
 
 .puyer-drug-row__inputs {
@@ -2763,6 +2803,13 @@ body::before {
   font-weight: 500;
   align-self: center;
   margin-top: var(--sp-4);
+}
+
+/* Reuses .error's warm-red block, just tightened to sit inside a
+   puyer-drug-row card instead of the page-level spacing .error assumes. */
+.puyer-drug-row__error {
+  margin: 0;
+  font-size: var(--fs-sm);
 }
 
 /* ── Dose override UX ────────────────────────────────────────────────────── */

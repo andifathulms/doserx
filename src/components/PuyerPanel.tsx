@@ -1,11 +1,13 @@
 import { useState, useRef } from 'react'
-import { CheckIcon } from '@radix-ui/react-icons'
+import { CheckIcon, ExclamationTriangleIcon } from '@radix-ui/react-icons'
 import { ALL_DRUGS, DrugPreset } from '../data/drugs'
 import { DrugGrid } from './DrugGrid'
 import { calculate, CalcResult } from '../lib/calculate'
 import { suggestForms, FormSuggestion } from '../lib/suggest'
 import { DoseMode, loadDoseMode, saveDoseMode } from '../lib/storage'
 import { scrollBehavior } from '../lib/motion'
+import { errorCopy } from '../lib/errorCopy'
+import { isInvalidPositiveNumber } from '../lib/validateNumber'
 
 interface PuyerEntry {
   drug: DrugPreset
@@ -13,6 +15,9 @@ interface PuyerEntry {
   freq: string
   result: CalcResult | null
   suggestions: FormSuggestion[]
+  /** Set when this entry's own dose/freq couldn't be calculated, so the
+   *  recipe can point at the specific drug instead of just not appearing. */
+  error: string | null
 }
 
 const r2 = (n: number) => Math.round(n * 100) / 100
@@ -33,6 +38,7 @@ function makeEntry(drug: DrugPreset, mode: DoseMode): PuyerEntry {
     freq: String(drug.freq),
     result: null,
     suggestions: [],
+    error: null,
   }
 }
 
@@ -157,6 +163,12 @@ export function PuyerPanel({ onHistoryUpdated: _onHistoryUpdated }: PuyerPanelPr
   // True only when the grid is reopened by "Ubah pilihan" — the initial page
   // load must NOT steal focus into search.
   const [returningToGrid, setReturningToGrid] = useState(false)
+  // Per-drug override rows are collapsed by default — for a 4-5 drug batch,
+  // showing every dose/freq field flat undercuts the app's own
+  // progressive-disclosure pattern (monograph, derivation). A row a
+  // calculation failed for expands itself so the doctor doesn't have to
+  // hunt for which one.
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
 
   const formRef = useRef<HTMLDivElement>(null)
 
@@ -182,7 +194,7 @@ export function PuyerPanel({ onHistoryUpdated: _onHistoryUpdated }: PuyerPanelPr
           isFinite(val) && isFinite(f) && f > 0
             ? String(dayToMode(modeToDay(val, f, doseMode), f, mode))
             : String(dayToMode(e.drug.dosePerKg, e.drug.freq, mode))
-        next[id] = { ...e, dosePerKg, result: null, suggestions: [] }
+        next[id] = { ...e, dosePerKg, result: null, suggestions: [], error: null }
       }
       return next
     })
@@ -208,7 +220,7 @@ export function PuyerPanel({ onHistoryUpdated: _onHistoryUpdated }: PuyerPanelPr
 
   function updateEntry(id: string, patch: Partial<Pick<PuyerEntry, 'dosePerKg' | 'freq'>>) {
     setCalculated(false)
-    setEntries((prev) => ({ ...prev, [id]: { ...prev[id], ...patch, result: null, suggestions: [] } }))
+    setEntries((prev) => ({ ...prev, [id]: { ...prev[id], ...patch, result: null, suggestions: [], error: null } }))
   }
 
   function resetDose(id: string) {
@@ -241,14 +253,34 @@ export function PuyerPanel({ onHistoryUpdated: _onHistoryUpdated }: PuyerPanelPr
       const suggestions = result && entry.drug.availableForms
         ? suggestForms(result.perDose, entry.drug.availableForms)
         : []
-      updated[id] = { ...entry, result, suggestions }
+      // A dose/freq that fails to parse or validate for THIS drug must not
+      // silently drop the whole recipe — the doctor needs to know which
+      // drug it was, at the row where they'd fix it.
+      updated[id] = { ...entry, result, suggestions, error: out.valid ? null : errorCopy(out.error) }
     }
     setEntries((prev) => ({ ...prev, ...updated }))
     setCalculated(true)
+    setExpandedIds((prev) => {
+      const next = new Set(prev)
+      for (const [id, e] of Object.entries(updated)) if (e.error) next.add(id)
+      return next
+    })
+  }
+
+  function toggleExpanded(id: string, open: boolean) {
+    setExpandedIds((prev) => {
+      const next = new Set(prev)
+      if (open) next.add(id)
+      else next.delete(id)
+      return next
+    })
   }
 
   const orderedEntries = selectedIds.map((id) => entries[id]).filter(Boolean)
-  const allCalculated = calculated && orderedEntries.every((e) => e.result !== null)
+  // The recipe renders for whichever drugs calculated successfully; a
+  // failed drug gets a per-row error instead of voiding the whole batch.
+  const anyCalculated = calculated && orderedEntries.some((e) => e.result !== null)
+  const failedEntries = calculated ? orderedEntries.filter((e) => e.error) : []
   const numDays = Math.max(1, parseInt(days) || 1)
 
   function handleCopyRecipe() {
@@ -316,13 +348,14 @@ export function PuyerPanel({ onHistoryUpdated: _onHistoryUpdated }: PuyerPanelPr
               <label className="label" htmlFor="puyer-weight">Berat badan (kg)</label>
               <input
                 id="puyer-weight"
-                className="input"
+                className={`input${isInvalidPositiveNumber(weight) ? ' input--invalid' : ''}`}
                 type="number"
                 min="0"
                 step="0.1"
                 placeholder="misal 14"
                 autoFocus
                 value={weight}
+                aria-invalid={isInvalidPositiveNumber(weight)}
                 onChange={(e) => { setWeight(e.target.value); setCalculated(false) }}
               />
               {/* role="alert": validation failure announced without moving focus. */}
@@ -332,11 +365,12 @@ export function PuyerPanel({ onHistoryUpdated: _onHistoryUpdated }: PuyerPanelPr
               <label className="label" htmlFor="puyer-days">Jumlah hari</label>
               <input
                 id="puyer-days"
-                className="input"
+                className={`input${isInvalidPositiveNumber(days) ? ' input--invalid' : ''}`}
                 type="number"
                 min="1"
                 step="1"
                 value={days}
+                aria-invalid={isInvalidPositiveNumber(days)}
                 onChange={(e) => { setDays(e.target.value); setCalculated(false) }}
               />
             </div>
@@ -387,55 +421,81 @@ export function PuyerPanel({ onHistoryUpdated: _onHistoryUpdated }: PuyerPanelPr
               const isOverridden = entry.dosePerKg !== String(defaultDose)
               const rMin = dayToMode(entry.drug.dosePerKgMin, entry.drug.freq, doseMode)
               const rMax = dayToMode(entry.drug.dosePerKgMax, entry.drug.freq, doseMode)
+              const open = expandedIds.has(entry.drug.id)
               return (
-                <div key={entry.drug.id} className="puyer-drug-row">
-                  <div className="puyer-drug-row__header">
+                <details
+                  key={entry.drug.id}
+                  className="puyer-drug-row"
+                  open={open}
+                  onToggle={(e) => toggleExpanded(entry.drug.id, e.currentTarget.open)}
+                >
+                  <summary className="puyer-drug-row__summary">
                     <span className="puyer-drug-row__name">{entry.drug.name}</span>
-                    {isOverridden && (
-                      <span className="override-badge">diubah</span>
+                    <span className="puyer-drug-row__summary-dose">
+                      {entry.dosePerKg} {doseUnit} · {entry.freq}×/hari
+                    </span>
+                    {isOverridden && <span className="override-badge">diubah</span>}
+                    {entry.error && (
+                      <ExclamationTriangleIcon
+                        className="puyer-drug-row__error-flag"
+                        width="1em"
+                        height="1em"
+                        aria-label="Ada kesalahan pada dosis obat ini"
+                      />
                     )}
-                  </div>
-                  <div className="puyer-drug-row__inputs">
-                    <div className="field">
-                      <div className="label-row">
-                        <label className="label">{doseUnit}</label>
-                        {isOverridden && (
-                          <button
-                            className="reset-btn"
-                            onClick={() => resetDose(entry.drug.id)}
-                            aria-label={`Reset dosis ${entry.drug.name} ke ${defaultDose} ${doseUnit}`}
-                          >
-                            <span aria-hidden="true">↺ {defaultDose}</span>
-                          </button>
-                        )}
+                  </summary>
+                  <div className="puyer-drug-row__body">
+                    <div className="puyer-drug-row__inputs">
+                      <div className="field">
+                        <div className="label-row">
+                          <label className="label">{doseUnit}</label>
+                          {isOverridden && (
+                            <button
+                              className="reset-btn"
+                              onClick={() => resetDose(entry.drug.id)}
+                              aria-label={`Reset dosis ${entry.drug.name} ke ${defaultDose} ${doseUnit}`}
+                            >
+                              <span aria-hidden="true">↺ {defaultDose}</span>
+                            </button>
+                          )}
+                        </div>
+                        <input
+                          className={`input input--sm${isOverridden ? ' input--overridden' : ''}${isInvalidPositiveNumber(entry.dosePerKg) ? ' input--invalid' : ''}`}
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={entry.dosePerKg}
+                          aria-invalid={isInvalidPositiveNumber(entry.dosePerKg)}
+                          onChange={(e) => updateEntry(entry.drug.id, { dosePerKg: e.target.value })}
+                        />
                       </div>
-                      <input
-                        className={`input input--sm${isOverridden ? ' input--overridden' : ''}`}
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        value={entry.dosePerKg}
-                        onChange={(e) => updateEntry(entry.drug.id, { dosePerKg: e.target.value })}
-                      />
+                      <div className="field">
+                        <label className="label">×/hari</label>
+                        <input
+                          className={`input input--sm${isInvalidPositiveNumber(entry.freq) ? ' input--invalid' : ''}`}
+                          type="number"
+                          min="1"
+                          step="1"
+                          value={entry.freq}
+                          aria-invalid={isInvalidPositiveNumber(entry.freq)}
+                          onChange={(e) => updateEntry(entry.drug.id, { freq: e.target.value })}
+                        />
+                      </div>
+                      {rMin != null && rMax != null && (
+                        <span className="puyer-dose-range">
+                          [{rMin}–{rMax}]
+                        </span>
+                      )}
                     </div>
-                    <div className="field">
-                      <label className="label">×/hari</label>
-                      <input
-                        className="input input--sm"
-                        type="number"
-                        min="1"
-                        step="1"
-                        value={entry.freq}
-                        onChange={(e) => updateEntry(entry.drug.id, { freq: e.target.value })}
-                      />
-                    </div>
-                    {rMin != null && rMax != null && (
-                      <span className="puyer-dose-range">
-                        [{rMin}–{rMax}]
-                      </span>
+                    {/* Named at the exact row that caused it — a failed drug
+                        used to just make "Hitung Puyer" produce nothing. */}
+                    {entry.error && (
+                      <p className="error puyer-drug-row__error" role="alert">
+                        {entry.drug.name}: {entry.error}
+                      </p>
                     )}
                   </div>
-                </div>
+                </details>
               )
             })}
           </div>
@@ -447,13 +507,27 @@ export function PuyerPanel({ onHistoryUpdated: _onHistoryUpdated }: PuyerPanelPr
           {/* Mounted before the recipe exists, so the announcement fires on
               text change rather than on insertion. */}
           <p className="sr-only" role="status">
-            {allCalculated
-              ? `Resep puyer siap: ${orderedEntries.length} obat, ${weight} kilogram, ${numDays} hari.`
+            {anyCalculated
+              ? failedEntries.length > 0
+                ? `Resep puyer siap untuk ${orderedEntries.length - failedEntries.length} dari ${orderedEntries.length} obat, ${weight} kilogram, ${numDays} hari.`
+                : `Resep puyer siap: ${orderedEntries.length} obat, ${weight} kilogram, ${numDays} hari.`
               : ''}
           </p>
 
+          {/* A batch-level summary when some — or all — drugs failed. The
+              per-row errors above name the specifics; this says how many
+              were affected without requiring a re-scroll, and covers the
+              all-failed case where there's no recipe card to anchor to. */}
+          {calculated && failedEntries.length > 0 && (
+            <p className="error" role="alert" style={{ marginTop: 4 }}>
+              {anyCalculated
+                ? `${failedEntries.length} dari ${orderedEntries.length} obat tidak bisa dihitung — perbaiki dosis/frekuensi yang ditandai di atas.`
+                : 'Belum ada resep — perbaiki dosis/frekuensi yang ditandai di atas.'}
+            </p>
+          )}
+
           {/* ── Recipe card ───────────────────────────────── */}
-          {allCalculated && (
+          {anyCalculated && (
             <div className="puyer-recipe">
               <div className="puyer-recipe__header">
                 <span className="puyer-recipe__title">Resep Puyer</span>
