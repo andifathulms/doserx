@@ -3228,9 +3228,12 @@ body::before {
   }
 }
 
+/* A thin accent stripe, not a full-tile fill — a solid pastel background on
+   a card this size is the "primary colour on a large element" pattern the
+   rest of the reskin avoids everywhere else. */
 .trust__item--lead {
-  background: var(--c-primary-bg);
-  border-color: var(--c-primary-bdr);
+  border-color: var(--c-border);
+  border-left: 3px solid var(--c-primary);
 }
 
 /* ── Responsive ───────────────────────────────────────────────────────────── */
