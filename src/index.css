@@ -1615,6 +1615,12 @@ body::before {
   color: var(--c-warn);
 }
 
+/* The curated common-drugs fallback isn't a favorite/warning — it borrows
+   the pinned shelf's layout but not the star's warn-amber meaning. */
+.drug-pinned-section .drug-category-label--fallback {
+  color: var(--c-text-2);
+}
+
 /* ── Clinical note ────────────────────────────────────────────────────────── */
 .drug-note {
   background: var(--c-primary-bg);

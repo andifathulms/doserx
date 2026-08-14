@@ -3,7 +3,7 @@ import { ExclamationTriangleIcon, CheckIcon, StarIcon, StarFilledIcon } from '@r
 import { DRUG_PRESETS, DrugPreset, DrugCategory } from '../data/drugs'
 import { loadRecents, loadFavorites, recordRecent, toggleFavorite } from '../lib/storage'
 import { scoreDrug } from '../lib/search'
-import { CATEGORY_ORDER } from '../data/categories'
+import { CATEGORY_ORDER, COMMON_DRUG_IDS } from '../data/categories'
 
 // ── Single-select mode (Preset tab) ──────────────────────────────────────────
 
@@ -72,8 +72,11 @@ export function DrugGrid(props: DrugGridProps) {
   }, [scoped])
 
   // "Sering dipakai" — favorites first, then recents not already favorited.
-  const pinned = useMemo(() => {
-    if (searching || activeCat) return []
+  // Falls back to a curated common-drugs shelf when there's no personal
+  // history yet, so a first-time visit or fresh device isn't dropped
+  // straight into the full ~90-drug wall with nothing narrowing it.
+  const { pinned, pinnedIsFallback } = useMemo(() => {
+    if (searching || activeCat) return { pinned: [], pinnedIsFallback: false }
     const byId = new Map(drugs.map((d) => [d.id, d]))
     const ordered: DrugPreset[] = []
     const seen = new Set<string>()
@@ -85,7 +88,14 @@ export function DrugGrid(props: DrugGridProps) {
         seen.add(id)
       }
     }
-    return ordered.slice(0, PINNED_MAX)
+    if (ordered.length > 0) return { pinned: ordered.slice(0, PINNED_MAX), pinnedIsFallback: false }
+
+    const fallback: DrugPreset[] = []
+    for (const id of COMMON_DRUG_IDS) {
+      const drug = byId.get(id)
+      if (drug) fallback.push(drug)
+    }
+    return { pinned: fallback.slice(0, PINNED_MAX), pinnedIsFallback: true }
   }, [drugs, favorites, recents, searching, activeCat])
 
   function isSelected(id: string): boolean {
@@ -221,11 +231,20 @@ export function DrugGrid(props: DrugGridProps) {
         ))}
       </div>
 
-      {/* Pinned recents/favorites */}
+      {/* Pinned recents/favorites, or — before any exist — a curated common-
+          drugs shelf. The label and icon are honest about which one this is:
+          a filled star claims "you picked this," which would be false for
+          the fallback set. */}
       {pinned.length > 0 && (
         <div className="drug-category-group drug-pinned-section">
-          <div className="drug-category-label">
-            <StarFilledIcon width="1em" height="1em" aria-hidden="true" /> Sering dipakai
+          <div className={`drug-category-label${pinnedIsFallback ? ' drug-category-label--fallback' : ''}`}>
+            {pinnedIsFallback ? (
+              <>Obat umum</>
+            ) : (
+              <>
+                <StarFilledIcon width="1em" height="1em" aria-hidden="true" /> Sering dipakai
+              </>
+            )}
           </div>
           <div className="drug-grid">{pinned.map(renderCard)}</div>
         </div>

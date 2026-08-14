@@ -27,3 +27,22 @@ export const CATEGORY_ORDER: DrugCategory[] = [
   'Antimalarial',
   'Lain-lain',
 ]
+
+/**
+ * Fallback for the "Sering dipakai" shelf before a doctor has any favorites
+ * or recents — i.e. every first-time visit and every fresh device. Without
+ * this, the picker's only narrowing mechanism is empty exactly when it
+ * matters most, and a first-time user meets the full ~90-drug wall with no
+ * starting point. Mirrors the original PRD's 8-drug seed list: the general
+ * practice staples a doctor reaches for most, not an editorial pick.
+ */
+export const COMMON_DRUG_IDS: string[] = [
+  'paracetamol',
+  'amoxicillin',
+  'ibuprofen',
+  'ceftriaxone',
+  'diazepam',
+  'epinephrine',
+  'ondansetron',
+  'salbutamol',
+]
