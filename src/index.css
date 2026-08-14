@@ -2428,6 +2428,28 @@ body::before {
   color: var(--c-text-2);
 }
 
+/* In-app "Hapus semua" confirmation — replaces a native window.confirm()
+   so the one bulk-destructive action stays inside the app's own focus-
+   managed, custom-styled interaction language instead of dropping to OS
+   chrome. */
+.history-clear-confirm {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.history-clear-confirm__text {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--c-error);
+}
+
+.history-clear-confirm__yes {
+  color: var(--c-error);
+  border-color: var(--c-error);
+}
+.history-clear-confirm__yes:hover { background: var(--c-error-bg); }
+
 .history-list { list-style: none; display: flex; flex-direction: column; gap: var(--sp-3); }
 
 .history-entry {

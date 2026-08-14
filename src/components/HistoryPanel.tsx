@@ -78,6 +78,16 @@ export function HistoryPanel({ entries, onUpdated }: HistoryPanelProps) {
   const listRef = useRef<HTMLUListElement>(null)
   const clearRef = useRef<HTMLButtonElement>(null)
   const emptyRef = useRef<HTMLParagraphElement>(null)
+  const confirmRef = useRef<HTMLButtonElement>(null)
+  // Every other destructive action in this panel (single-entry delete,
+  // Puyer's per-drug reset) is a custom, focus-managed control — "Hapus
+  // semua" used to be the one exception that dropped to a native
+  // window.confirm(). This mirrors that same pattern instead.
+  const [confirmingClearAll, setConfirmingClearAll] = useState(false)
+
+  useEffect(() => {
+    if (confirmingClearAll) confirmRef.current?.focus()
+  }, [confirmingClearAll])
 
   // Deleting removes the <li> that holds the focused button. Move focus to the
   // entry that takes its place, or to the surrounding controls when the list
@@ -98,11 +108,19 @@ export function HistoryPanel({ entries, onUpdated }: HistoryPanelProps) {
   }
 
   function handleClearAll() {
-    if (window.confirm('Hapus semua riwayat kalkulasi?')) {
-      clearHistory()
-      onUpdated()
-      requestAnimationFrame(() => emptyRef.current?.focus())
-    }
+    clearHistory()
+    onUpdated()
+    setConfirmingClearAll(false)
+    requestAnimationFrame(() => emptyRef.current?.focus())
+  }
+
+  function handleCancelClearAll() {
+    setConfirmingClearAll(false)
+    requestAnimationFrame(() => clearRef.current?.focus())
+  }
+
+  function handleClearAllKeyDown(e: React.KeyboardEvent) {
+    if (e.key === 'Escape') handleCancelClearAll()
   }
 
   if (entries.length === 0) {
@@ -124,9 +142,21 @@ export function HistoryPanel({ entries, onUpdated }: HistoryPanelProps) {
     <div className="panel">
       <div className="history-header">
         <span className="history-count">{entries.length} tersimpan</span>
-        <button ref={clearRef} className="btn btn--ghost btn--sm" onClick={handleClearAll}>
-          Hapus semua
-        </button>
+        {confirmingClearAll ? (
+          <span className="history-clear-confirm" role="group" aria-label="Konfirmasi hapus semua riwayat" onKeyDown={handleClearAllKeyDown}>
+            <span className="history-clear-confirm__text">Yakin?</span>
+            <button ref={confirmRef} className="btn btn--ghost btn--sm history-clear-confirm__yes" onClick={handleClearAll}>
+              Ya, hapus semua
+            </button>
+            <button className="btn btn--ghost btn--sm" onClick={handleCancelClearAll}>
+              Batal
+            </button>
+          </span>
+        ) : (
+          <button ref={clearRef} className="btn btn--ghost btn--sm" onClick={() => setConfirmingClearAll(true)}>
+            Hapus semua
+          </button>
+        )}
       </div>
 
       <ul className="history-list" ref={listRef}>
