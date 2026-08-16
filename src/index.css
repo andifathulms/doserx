@@ -60,6 +60,13 @@ input  { font: inherit; }
   --c-primary-dim:  #123f5c;
   --c-primary-bg:   var(--pastel-blue-bg);
   --c-primary-bdr:  #b9e0f8;
+  /* Text/icon colour for a small solid --c-primary FILL (count badges, the
+     grid step number) — not the same thing as --c-primary itself, which is
+     used as text/icon color on the app's own bg/surface. White reads at
+     5.67:1 here; in dark mode --c-primary becomes a light pastel blue, where
+     white-on-white would be the failure, so this flips to near-black
+     (9.68:1) instead of following --c-primary's own light->dark swap. */
+  --c-on-primary:   #ffffff;
 
   /* Clay secondary — see --clay-* above for why this stays distinct from primary. */
   --c-accent:       var(--clay-text);
@@ -89,12 +96,15 @@ input  { font: inherit; }
   --sh-md: 0 6px 16px rgba(40,35,28,.045), 0 2px 6px rgba(40,35,28,.03);
   --sh-ring: 0 0 0 3px var(--c-focus);
 
-  /* Radii — crisp, capped. Pills reserved for tags/badges/segmented controls. */
+  /* Radii — crisp, capped. Pills reserved for tags/badges/segmented controls.
+     --r-lg (12px) is the roundest non-pill surface (the result card) — there
+     was also a --r-xl at the same 12px value with no distinct use, which
+     DESIGN-REWORK.md §9 flagged; removed rather than kept as a second name
+     for the same number. */
   --r-xs:  4px;
   --r-sm:  6px;
   --r:     8px;
   --r-lg:  12px;
-  --r-xl:  12px;
   --r-full: 9999px;
 
   /* Layout */
@@ -182,6 +192,7 @@ input  { font: inherit; }
   --c-primary-dim:  #cfe9fa;
   --c-primary-bg:   rgba(127,193,238,.14);
   --c-primary-bdr:  rgba(127,193,238,.34);
+  --c-on-primary:   var(--stone-900);   /* 9.68:1 on the light dark-mode primary */
 
   --c-accent:       #d9a876;   /* dark-mode clay, ~8:1 on bg */
   --c-accent-bg:    rgba(217,168,118,.14);
@@ -1057,7 +1068,7 @@ body::before {
     padding: 0 var(--sp-1);
     font-size: var(--fs-3xs);
     font-weight: 700;
-    color: #fff;
+    color: var(--c-on-primary);
     background: var(--c-primary);
     border-radius: var(--r-full);
   }
@@ -1101,7 +1112,7 @@ body::before {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
+  color: var(--c-on-primary);
   background: var(--c-primary);
   border-radius: var(--r-full);
 }
@@ -1446,7 +1457,7 @@ body::before {
   flex-shrink: 0;
   font-size: var(--fs-2xs);
   font-weight: 700;
-  color: #fff;
+  color: var(--c-on-primary);
   background: var(--c-primary);
   border-radius: var(--r-full);
 }
@@ -1863,7 +1874,10 @@ body::before {
 }
 
 /* Solid near-black, not the accent colour — the CTA is a UI convention here,
-   not a place to spend the app's one accent hue. */
+   not a place to spend the app's one accent hue. Left as a literal rather
+   than --c-on-primary: this fill is --stone-900, which never changes
+   between themes, so unlike the count badges below there is no light-mode-
+   only value drifting silently wrong in dark mode here to fix. */
 .btn--primary {
   background: var(--stone-900);
   color: #fff;
@@ -1918,7 +1932,7 @@ body::before {
   background: var(--c-primary-bg);
   color: var(--c-primary);
   border: 1px solid var(--c-primary-bdr);
-  border-radius: 4px;
+  border-radius: var(--r-xs);
   padding: 1px var(--sp-1);
   vertical-align: middle;
   text-transform: uppercase;
@@ -2991,7 +3005,7 @@ body::before {
   flex-shrink: 0;
   width: 10px;
   height: 10px;
-  border-radius: 50%;
+  border-radius: var(--r-full);
   background: var(--_cat, var(--c-border-mid));
 }
 
@@ -3587,7 +3601,7 @@ body::before {
 .infusion-drug-btn__unit {
   font-size: var(--fs-3xs);
   color: var(--c-text-3);
-  font-family: 'SF Mono', monospace;
+  font-family: var(--font-mono);
 }
 
 .infusion-result {
@@ -3694,7 +3708,7 @@ body::before {
   flex-shrink: 0;
   width: 8px;
   height: 8px;
-  border-radius: 50%;
+  border-radius: var(--r-full);
   background: var(--_cat, var(--c-border-mid));
 }
 

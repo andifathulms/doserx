@@ -11,8 +11,12 @@ export type FormType =
   | 'sachet'
 
 // ── Therapeutic categories ───────────────────────────────────────────────────
-// NOTE: every value here MUST have a matching `[data-cat="…"]` rule in index.css,
-// or its cards render without an accent colour.
+// Every value here needs a matching entry in categoryColors.ts's
+// CATEGORY_COLORS (a Record<DrugCategory, …> — TypeScript won't compile
+// without one) and a matching `[data-cat="…"]` rule in index.css, in both
+// themes (categoryColors.test.ts fails if index.css drifts from
+// CATEGORY_COLORS). A category added here without both no longer fails
+// silently with an uncoloured card — DESIGN-REWORK.md §9.
 export type DrugCategory =
   | 'Gawat Darurat'
   | 'Analgesik/NSAID'

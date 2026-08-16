@@ -1,9 +1,29 @@
-import { copyFileSync, existsSync } from 'node:fs'
+import { copyFileSync, existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 import { SITE } from './src/site'
+
+/**
+ * The browser-chrome tint (theme-color meta tag, PWA manifest/splash) has to
+ * agree with the app's own warm-monochrome palette, but used to live as a
+ * literal copy of --stone-900/--stone-50 in site.ts — the exact "duplicated
+ * literal that quietly drifts" this project has a standing rule against
+ * (DESIGN-REWORK.md §9). Reading them straight out of index.css's token
+ * block means a palette change here can't leave the chrome behind.
+ */
+function readStoneTokens() {
+  const css = readFileSync(resolve(__dirname, 'src/index.css'), 'utf8')
+  const find = (name: string) => {
+    const m = new RegExp(`--${name}:\\s*(#[0-9a-fA-F]{6})`).exec(css)
+    if (!m) throw new Error(`vite.config.ts: --${name} not found in src/index.css`)
+    return m[1]
+  }
+  return { themeColor: find('stone-900'), backgroundColor: find('stone-50') }
+}
+
+const { themeColor, backgroundColor } = readStoneTokens()
 
 /**
  * Injects the metadata tags from SITE at build time. A hand-maintained copy in
@@ -28,7 +48,7 @@ function metaTags() {
     ['twitter:title', SITE.title],
     ['twitter:description', SITE.description],
     ['twitter:image', abs(SITE.ogImage)],
-    ['theme-color', SITE.themeColor],
+    ['theme-color', themeColor],
   ]
   return {
     name: 'doserx-meta',
@@ -136,8 +156,8 @@ export default defineConfig({
         short_name: SITE.name,
         description: SITE.description,
         lang: SITE.lang,
-        theme_color: SITE.themeColor,
-        background_color: SITE.backgroundColor,
+        theme_color: themeColor,
+        background_color: backgroundColor,
         display: 'standalone',
         icons: [
           // PNG rather than SVG: Android's launcher support for SVG icons is

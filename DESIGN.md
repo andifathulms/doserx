@@ -151,12 +151,14 @@ The palette reads as warm paper and ink first, color second — chosen so the on
 - **Muted Green** (text `#346538`, bg `#edf3ec`): success/confirmation states.
 
 ### Category accent map (catalog only)
-A 17-entry `data-cat` → color map is the single source of truth for every element that needs to signal a drug's therapeutic category (drug cards, category chips, swatches). Each value is a desaturated, darkened pass over a vivid base hue (~55% of original saturation, lightness clamped 28–40%), individually WCAG-checked at 4.5:1 on white. Brick red (`#953737`) is reserved exclusively for "Gawat Darurat" (emergency) so its alarm meaning is never diluted by reuse elsewhere. Indigo, not blue, represents "Antibiotik" — blue is already the app's primary accent, so reusing it for a category would blur that meaning.
+A 17-entry `data-cat` → color map is the single source of truth for every element that needs to signal a drug's therapeutic category (drug cards, category chips, swatches). Each value is a desaturated, darkened pass over a vivid base hue (~55% of original saturation, lightness clamped 28–40%). Computed via `scripts/contrast-check.mjs`: on white (`--c-surface`, light theme) every value clears at least 4.64:1, most well above it — one exception, `Antiparasit` (`#368352`), reads 4.48:1 against the app's own `--c-bg` canvas (still ≥4.5:1 on white; a known, not-yet-closed gap on the warmer background, tracked rather than silently accepted). A separate dark-theme pass (`:root[data-theme="dark"] [data-cat="…"]` overrides, same hues lightened and desaturated further) clears at least 4.58:1 on the dark surface and 5.01:1 on the dark background — checked independently, since the light-theme values alone read as low as ~2:1 against a dark surface and cannot be reused as-is. `src/data/categoryColors.ts` is the type-checked source of truth behind both passes: it's a `Record<DrugCategory, …>`, so TypeScript won't compile if a category is missing an entry, and `categoryColors.test.ts` fails the suite if `index.css`'s rules drift from it. Brick red (`#953737`) is reserved exclusively for "Gawat Darurat" (emergency) so its alarm meaning is never diluted by reuse elsewhere. Indigo, not blue, represents "Antibiotik" — blue is already the app's primary accent, so reusing it for a category would blur that meaning.
 
 ### Named Rules
 **The Four Pastels Rule.** Outside the category-accent map, the palette carries exactly four semantic hues (primary, warn, error, success) plus one documented clay secondary. A new UI state does not get a new color; it's expressed with an existing semantic hue, weight, or icon.
 
 **The Tint-Not-Fill Rule.** Category and semantic colors are applied as a tinted background + colored text/border, never as a solid saturated fill with white text. Large saturated fills read as generic SaaS; this system reads as a reference book.
+
+**The Colour-Only-Encoding Rule.** No meaning is carried by colour alone; every coloured state also carries a label, an icon, or a position. The category map pairs every accent with a name, never a bare swatch; `DosePositionBand`'s zones each carry a text label so the band reads fully with colour removed; semantic states (warn/error/success) pair a tint with an icon or wording, never the tint alone.
 
 ## Typography
 
@@ -173,6 +175,7 @@ A 17-entry `data-cat` → color map is the single source of truth for every elem
 - **Body** (400, 1rem/16px, 1.55 line-height, sans): all prose, form labels, buttons, inputs — the type-scale floor for anything a person reads as language.
 - **Label** (700, 0.75rem/12px, 1.15 line-height, 0.09em letter-spacing, uppercase, sans): eyebrow labels, tabs-group headers.
 - **Numeral (hero)** (800, 2.375rem/38px, 1.1 line-height, -0.045em letter-spacing, monospace, tabular-nums): the calculated dose — the single largest, boldest element on the result screen, deliberately bigger and bolder than the brand name.
+- **Derivation line** (400, `--fs-sm`/14px floor — never shrinks smaller, wraps instead, monospace, tabular-nums): the always-visible one-line chain (`18 kg × 10 mg/kg = 180 mg/hari ÷ 3 = 60 mg/kali`) beneath the hero number in every calculator mode. Every operand traces back to a step the engine already computed; the full multi-line "Cara hitung" trail stays as a `<details>` beneath it.
 
 ### Named Rules
 **The Read-vs-Non-Read Rule.** Anything a person *reads* (prose, values, form controls, buttons, drug names) sits at `--fs-base` (16px) or larger. Sub-16px sizes are reserved for non-prose only: uppercase eyebrows, unit suffixes, count badges, chips.
@@ -190,6 +193,8 @@ Primary navigation collapses from a top site-nav (desktop) to a fixed bottom tab
 ## Elevation & Depth
 
 Shadows are ultra-diffuse and warm-tinted (never a cool slate/blue-black), used sparingly to lift only the result card and interactive hover states off the page — most surfaces (drug cards, inputs, chips) are flat with a 1–1.5px border doing the separation work instead of a shadow. Dark mode redefines the same shadow roles at higher opacity against true black rather than inventing a new vocabulary.
+
+Dark mode ships behind a manual, persisted toggle in the header — not OS-following, and not on by default even when the system preference is dark. A doctor who wants it chooses it; an inline boot script applies it before first paint so there is no light-theme flash on a night-shift load. The token layer's dark values were WCAG-verified when they were written, but they are not a costless palette swap: the 17-entry category accent map is a plain hex per category with no relationship to the `--c-*` semantic tokens, so shipping the toggle required its own separate dark-theme verification and its own dark override rules — see the Category accent map section above. Any future colour surface that isn't built from `--c-*` tokens needs the same treatment before dark mode can be trusted on it.
 
 ### Shadow Vocabulary
 - **xs** (`0 1px 2px rgba(40,35,28,.03)`): resting state of interactive cards (drug card, active tab).
@@ -219,6 +224,11 @@ Radii are crisp and capped, never pill-shaped by default: `4px` (xs, tight eleme
 - **Drug card** (the picker's core unit): white surface, `1.5px` border, a `3px` left-edge border in the drug's category color (falling back to the mid-gray border tone when uncategorized), `6px` radius, `xs` shadow at rest. Hover lifts 1px with a category-tinted background (`color-mix` at 9% of the category hue over the surface color) and a category-colored border — the same tint mechanism works unmodified in dark mode. Selected state uses a `2px` category-colored border plus a soft `35%`-opacity color-mix ring rather than a filled background, so "selected" stays visually distinct from "hovered."
 - **Result card:** white surface, `1.5px` border, `12px` radius (the roundest surface in the system), `md` shadow — the one card allowed to look physically lifted, since it holds the calculated answer. The drug-name heading inside it is the app's one working-screen use of the serif family.
 
+### DosePositionBand
+A horizontal readout of where a computed dose falls, in mg/kg/day, against the drug's published range and fixed ceiling — Preset and Puyer only (the two modes with a published range to plot against). Four zones, left to right: no fill below the typical range (under-dosing is not an error state, never tinted as one), a success-tinted "rentang lazim" band, a warn-tinted band above it, and — only when the drug has a fixed daily ceiling — an error-tinted band past a `2.5px` warn-colored wall. The marker is a `2px` primary-colored line ending in a dot, labelled with the exact value in the mono/tabular family; an out-of-domain value pins to the edge and turns error-colored rather than clamping silently. Puyer's per-row variant drops to `12px` with no inline labels (a shared legend states the four zones once above the list) and adds a hairline at each row's own range-minimum as a scan landmark, not a claim that positions compare across rows with differing scales.
+
+**The never-invent-a-range rule.** The band renders only when the drug has a published `dosePerKgMin`/`dosePerKgMax` in the catalog — never with an inferred, estimated, or single-point range. Absence of a published range is itself clinical information; a band drawn around invented bounds would be the most dangerous thing in this app. This rule is load-bearing enough to live here, not only in the component's own source.
+
 ### Chips
 - **Category filter chip:** pill radius (`9999px`), `1.5px` border, secondary-gray text at rest. Active state uses a category-tinted background (12% color-mix) and a category-colored border and text — never a solid fill, per the Tint-Not-Fill rule.
 
@@ -234,6 +244,9 @@ Radii are crisp and capped, never pill-shaped by default: `4px` (xs, tight eleme
 
 ### Safety disclaimer / banner (signature component)
 A recurring bordered notice block (white surface, `1px` border, `3px` warn-colored left accent, `6px` radius) used for both the landing-page legal disclaimer and the in-app safety banner shown near every dose decision. This is the one component the product treats as non-negotiable per PRODUCT.md — it is never collapsed into a tooltip, modal, or dismissible toast; it renders inline, at body-text size, wherever a dose is about to be acted on.
+
+### Print / generated documents
+The Puyer recipe's printed and copied output is a surface of this design system, not an implementation detail of `PuyerPanel` — it is the one output that leaves the screen and reaches a pharmacy. It is a standalone document (opened via `document.write()` into a popup, with no link to `index.css`), so it is built on literal values matching the stone/mono token block rather than `var()` against the app's stylesheet, kept in sync by hand with a comment saying so. Black text on white, hairline dividers in `stone-400` (not the near-invisible-on-paper `stone-200`), no background fills, no colour beyond ink — it never follows the app's theme, since it defines no dark-mode rule at all. Carries drug names, per-dose amounts, a signa line, tablet-fraction delivered-vs-target deltas (from `suggest.ts`'s `describeForms`), total counts per drug, the optional patient label, the date, and its own copy of the safety disclaimer as a bordered block — a printed sheet outlives the app session and cannot rely on framing that only exists on screen.
 
 ## Do's and Don'ts
 
