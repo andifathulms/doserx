@@ -2741,34 +2741,76 @@ body::before {
 }
 .history-clear-confirm__yes:hover { background: var(--c-error-bg); }
 
-.history-list { list-style: none; display: flex; flex-direction: column; gap: var(--sp-3); }
-
-.history-entry {
-  background: var(--c-surface);
-  border: 1.5px solid var(--c-border);
-  border-radius: var(--r);
-  padding: var(--sp-4) var(--sp-4);
-  position: relative;
-  box-shadow: var(--sh-xs);
-  transition: box-shadow .15s;
+/* ── History table ────────────────────────────────────────────────────────────
+   DESIGN-REWORK.md §6. Seven comparable numeric fields per entry read as a
+   table, not a paragraph per row — hairline separators, no zebra striping,
+   numeric columns right-aligned in the mono/tabular family. Reflows to
+   stacked, labelled rows below 560px (the app's existing mobile threshold),
+   and an overflow-x scroller stands in as a safety net for the awkward
+   561-700px range where nine columns still don't quite fit. ─────────────── */
+.history-table-scroll {
+  overflow-x: auto;
 }
 
-.history-entry:hover { box-shadow: var(--sh-sm); }
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-sm);
+}
 
-/* Right padding reserves the absolutely-positioned delete button's lane.
-   Without it a long drug name plus a patient label plus a timestamp wraps
-   underneath "Hapus" — which only shows up with real catalog names. */
-.history-entry__top {
+.history-table th,
+.history-table td {
+  padding: var(--sp-2) var(--sp-3);
+  /* DESIGN-REWORK.md §6 names --stone-200 directly; --c-border is that same
+     value aliased (see index.css's token block) plus its own correct dark-
+     mode redefinition, so the hairline stays a hairline in both themes
+     instead of the light-only literal going invisible-then-wrong in dark. */
+  border-bottom: 1px solid var(--c-border);
+  text-align: left;
+  vertical-align: top;
+}
+
+.history-table thead th {
+  font-size: var(--fs-2xs);
+  font-weight: 700;
+  color: var(--c-text-3);
+  white-space: nowrap;
+}
+
+.history-table__sort-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-weight: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+.history-table__sort-btn:hover { color: var(--c-text); }
+
+.history-table__sort-icon { width: 12px; height: 12px; color: var(--c-text-faint); }
+.history-table__sort-icon--active { color: var(--c-primary); }
+
+.history-table__num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.history-table__num .badge { margin-left: var(--sp-1); }
+
+.history-table__name {
   display: flex;
   align-items: baseline;
   gap: var(--sp-2);
   flex-wrap: wrap;
-  margin-bottom: var(--sp-1);
-  padding-right: 72px;
 }
 
-.history-entry__drug {
-  font-size: var(--fs-base);
+.history-table__drug {
   font-weight: 700;
   color: var(--c-text);
   letter-spacing: -.01em;
@@ -2784,33 +2826,47 @@ body::before {
   font-weight: 600;
 }
 
-.history-entry__time {
-  font-size: var(--fs-2xs);
+.history-table__time {
   color: var(--c-text-3);
-  margin-left: auto;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
-.history-entry__inputs {
-  font-size: var(--fs-sm);
-  color: var(--c-text-2);
-  margin-bottom: var(--sp-2);
-}
+.history-table__notes { min-width: 200px; }
+.history-table__notes .history-note-row,
+.history-table__notes .history-note-editor { margin-bottom: var(--sp-2); }
+.history-table__delete { display: block; }
 
-.history-entry__outputs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--sp-3);
-  font-size: var(--fs-base);
-  color: var(--c-text-2);
-  margin-bottom: var(--sp-3);
-}
+@media (max-width: 559px) {
+  .history-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); }
 
-.history-entry__outputs strong { color: var(--c-text); font-weight: 700; }
+  .history-table, .history-table tbody, .history-table__row, .history-table td {
+    display: block;
+    width: 100%;
+  }
 
-.history-entry__delete {
-  position: absolute;
-  top: 10px;
-  right: 12px;
+  .history-table__row {
+    margin-bottom: var(--sp-4);
+    border: 1.5px solid var(--c-border);
+    border-radius: var(--r);
+    padding: var(--sp-3);
+    box-shadow: var(--sh-xs);
+  }
+
+  .history-table td { border-bottom: none; padding: 2px 0; }
+
+  .history-table__name { padding: 0 0 var(--sp-2); margin-bottom: var(--sp-2); border-bottom: 1px solid var(--c-border); }
+
+  /* Every other cell gets its column header inline, since <thead> is hidden. */
+  .history-table td[data-label]:not(.history-table__name)::before {
+    content: attr(data-label) ': ';
+    font-weight: 600;
+    color: var(--c-text-3);
+  }
+
+  .history-table__num, .history-table__time { text-align: left; }
+  .history-table__notes { min-width: 0; padding-top: var(--sp-2) !important; }
 }
 
 .history-note-row {

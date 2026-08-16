@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { CaretUpIcon, CaretDownIcon, CaretSortIcon } from '@radix-ui/react-icons'
 import { HistoryEntry, deleteEntry, clearHistory, updateEntryNote } from '../lib/storage'
 
 interface HistoryPanelProps {
@@ -74,8 +75,48 @@ function NoteEditor({ entry, onSaved }: { entry: HistoryEntry; onSaved: () => vo
   )
 }
 
+type SortKey = 'timestamp' | 'drug'
+type SortDir = 'asc' | 'desc'
+
+/** Default direction on first click of a column — newest-first for time
+ *  (matching the app's long-standing default) and A→Z for the drug name. */
+const DEFAULT_DIR: Record<SortKey, SortDir> = { timestamp: 'desc', drug: 'asc' }
+
+function SortIndicator({ active, dir }: { active: boolean; dir: SortDir }) {
+  if (!active) return <CaretSortIcon className="history-table__sort-icon" aria-hidden="true" />
+  return dir === 'asc' ? (
+    <CaretUpIcon className="history-table__sort-icon history-table__sort-icon--active" aria-hidden="true" />
+  ) : (
+    <CaretDownIcon className="history-table__sort-icon history-table__sort-icon--active" aria-hidden="true" />
+  )
+}
+
+function SortableHeader({
+  label,
+  sortKey,
+  activeKey,
+  dir,
+  onSort,
+}: {
+  label: string
+  sortKey: SortKey
+  activeKey: SortKey
+  dir: SortDir
+  onSort: (key: SortKey) => void
+}) {
+  const active = activeKey === sortKey
+  return (
+    <th scope="col" aria-sort={active ? (dir === 'asc' ? 'ascending' : 'descending') : 'none'}>
+      <button type="button" className="history-table__sort-btn" onClick={() => onSort(sortKey)}>
+        {label}
+        <SortIndicator active={active} dir={dir} />
+      </button>
+    </th>
+  )
+}
+
 export function HistoryPanel({ entries, onUpdated }: HistoryPanelProps) {
-  const listRef = useRef<HTMLUListElement>(null)
+  const bodyRef = useRef<HTMLTableSectionElement>(null)
   const clearRef = useRef<HTMLButtonElement>(null)
   const emptyRef = useRef<HTMLParagraphElement>(null)
   const confirmRef = useRef<HTMLButtonElement>(null)
@@ -84,20 +125,46 @@ export function HistoryPanel({ entries, onUpdated }: HistoryPanelProps) {
   // semua" used to be the one exception that dropped to a native
   // window.confirm(). This mirrors that same pattern instead.
   const [confirmingClearAll, setConfirmingClearAll] = useState(false)
+  const [sortKey, setSortKey] = useState<SortKey>('timestamp')
+  const [sortDir, setSortDir] = useState<SortDir>('desc')
 
   useEffect(() => {
     if (confirmingClearAll) confirmRef.current?.focus()
   }, [confirmingClearAll])
 
-  // Deleting removes the <li> that holds the focused button. Move focus to the
-  // entry that takes its place, or to the surrounding controls when the list
-  // shortens or empties — never to <body>.
+  function handleSort(key: SortKey) {
+    if (key === sortKey) {
+      setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'))
+    } else {
+      setSortKey(key)
+      setSortDir(DEFAULT_DIR[key])
+    }
+  }
+
+  // "Did I give this child a different dose last week?" is hard to answer
+  // from a reverse-chronological list of prose rows — sorting by drug groups
+  // every past calculation for the same medicine together.
+  const sorted = useMemo(() => {
+    const list = [...entries]
+    list.sort((a, b) => {
+      const cmp =
+        sortKey === 'timestamp'
+          ? a.timestamp - b.timestamp
+          : a.drugName.localeCompare(b.drugName, 'id')
+      return sortDir === 'asc' ? cmp : -cmp
+    })
+    return list
+  }, [entries, sortKey, sortDir])
+
+  // Deleting removes the <tr> that holds the focused button. Move focus to
+  // the entry that takes its place, or to the surrounding controls when the
+  // table shortens or empties — never to <body>.
   function handleDelete(id: string, index: number) {
     deleteEntry(id)
     onUpdated()
     requestAnimationFrame(() => {
-      const buttons = listRef.current?.querySelectorAll<HTMLButtonElement>(
-        '.history-entry__delete',
+      const buttons = bodyRef.current?.querySelectorAll<HTMLButtonElement>(
+        '.history-table__delete',
       )
       if (buttons && buttons.length > 0) {
         buttons[Math.min(index, buttons.length - 1)].focus()
@@ -159,43 +226,72 @@ export function HistoryPanel({ entries, onUpdated }: HistoryPanelProps) {
         )}
       </div>
 
-      <ul className="history-list" ref={listRef}>
-        {entries.map((entry, index) => (
-          <li key={entry.id} className="history-entry">
-            <div className="history-entry__top">
-              <h3 className="history-entry__drug">{entry.drugName}</h3>
-              {entry.patientLabel && (
-                <span className="history-entry__label">{entry.patientLabel}</span>
-              )}
-              <span className="history-entry__time">{formatTime(entry.timestamp)}</span>
-            </div>
-            {/* The stored dosePerKg is per DAY (panels convert via modeToDay
-                before saving), and the per-kali/per-hari toggle makes exactly
-                this the thing to get wrong. History is read later without the
-                form's context, so the period is stated. */}
-            <div className="history-entry__inputs">
-              {entry.weight} kg · {entry.dosePerKg} mg/kg/hari · {entry.freq}×/hari
-            </div>
-            <div className="history-entry__outputs">
-              <span>Harian: <strong>{entry.dailyDose} mg</strong></span>
-              <span>Per dosis: <strong>{entry.perDose} mg</strong></span>
-              {entry.volume != null && (
-                <span>Volume: <strong>{entry.volume} mL</strong></span>
-              )}
-              {entry.cappedByMaxDay && <span className="badge badge--warn">Cap harian</span>}
-              {entry.cappedByMaxSingle && <span className="badge badge--warn">Cap dosis</span>}
-            </div>
-            <NoteEditor entry={entry} onSaved={onUpdated} />
-            <button
-              className="btn btn--ghost btn--sm history-entry__delete"
-              onClick={() => handleDelete(entry.id, index)}
-              aria-label={`Hapus entri ${entry.drugName}`}
-            >
-              Hapus
-            </button>
-          </li>
-        ))}
-      </ul>
+      <div className="history-table-scroll">
+        <table className="history-table">
+          <caption className="sr-only">
+            Riwayat {entries.length} perhitungan dosis tersimpan di perangkat ini
+          </caption>
+          <thead>
+            <tr>
+              <SortableHeader label="Obat" sortKey="drug" activeKey={sortKey} dir={sortDir} onSort={handleSort} />
+              <SortableHeader label="Waktu" sortKey="timestamp" activeKey={sortKey} dir={sortDir} onSort={handleSort} />
+              <th scope="col" className="history-table__num">BB (kg)</th>
+              <th scope="col" className="history-table__num">Dosis/kg</th>
+              <th scope="col" className="history-table__num">Freq</th>
+              <th scope="col" className="history-table__num">Harian (mg)</th>
+              <th scope="col" className="history-table__num">Per dosis (mg)</th>
+              <th scope="col" className="history-table__num">Volume (mL)</th>
+              <th scope="col">Catatan</th>
+            </tr>
+          </thead>
+          <tbody ref={bodyRef}>
+            {sorted.map((entry, index) => (
+              <tr key={entry.id} className="history-table__row">
+                <td data-label="Obat" className="history-table__name">
+                  <span className="history-table__drug">{entry.drugName}</span>
+                  {entry.patientLabel && (
+                    <span className="history-entry__label">{entry.patientLabel}</span>
+                  )}
+                </td>
+                <td data-label="Waktu" className="history-table__time">
+                  {formatTime(entry.timestamp)}
+                </td>
+                <td data-label="BB (kg)" className="history-table__num">{entry.weight}</td>
+                {/* The stored dosePerKg is per DAY (panels convert via
+                    modeToDay before saving), and the per-kali/per-hari toggle
+                    makes exactly this the thing to get wrong. History is read
+                    later without the form's context, so the period is
+                    stated, same as the old prose row did. */}
+                <td data-label="Dosis/kg" className="history-table__num">
+                  {entry.dosePerKg} mg/kg/hari
+                </td>
+                <td data-label="Freq" className="history-table__num">{entry.freq}×/hari</td>
+                <td data-label="Harian (mg)" className="history-table__num">
+                  {entry.dailyDose}
+                  {entry.cappedByMaxDay && <span className="badge badge--warn">cap</span>}
+                </td>
+                <td data-label="Per dosis (mg)" className="history-table__num">
+                  {entry.perDose}
+                  {entry.cappedByMaxSingle && <span className="badge badge--warn">cap</span>}
+                </td>
+                <td data-label="Volume (mL)" className="history-table__num">
+                  {entry.volume ?? '—'}
+                </td>
+                <td data-label="Catatan" className="history-table__notes">
+                  <NoteEditor entry={entry} onSaved={onUpdated} />
+                  <button
+                    className="btn btn--ghost btn--sm history-table__delete"
+                    onClick={() => handleDelete(entry.id, index)}
+                    aria-label={`Hapus entri ${entry.drugName}`}
+                  >
+                    Hapus
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   )
 }
