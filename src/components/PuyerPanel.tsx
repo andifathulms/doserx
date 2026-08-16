@@ -2,6 +2,7 @@ import { useState, useRef } from 'react'
 import { CheckIcon, ExclamationTriangleIcon } from '@radix-ui/react-icons'
 import { ALL_DRUGS, DrugPreset } from '../data/drugs'
 import { DrugGrid } from './DrugGrid'
+import { DerivationChain } from './DerivationChain'
 import { calculate, CalcResult } from '../lib/calculate'
 import { suggestForms, FormSuggestion } from '../lib/suggest'
 import { DoseMode, loadDoseMode, saveDoseMode } from '../lib/storage'
@@ -565,6 +566,9 @@ export function PuyerPanel({ onHistoryUpdated: _onHistoryUpdated }: PuyerPanelPr
                           <span className="badge badge--warn">cap</span>
                         )}
                       </div>
+
+                      <DerivationChain steps={entry.result.steps} />
+
                       {/* Where the bungkus count comes from — it drives every
                           total below and appeared as a bare number. */}
                       <div className="puyer-recipe__working">

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { CheckIcon } from '@radix-ui/react-icons'
 import { Tabs } from './Tabs'
 import { WeightInput } from './WeightInput'
+import { DerivationChain } from './DerivationChain'
 import { calculateFluidRate, FluidRateResult } from '../lib/calculateFluidRate'
 import { calculateDextrose, DextroseConcentration, DextroseResult } from '../lib/calculateDextrose'
 import { isInvalidPositiveNumber } from '../lib/validateNumber'
@@ -83,6 +84,8 @@ function FluidRateResultCard({ result, fluidType }: { result: FluidRateResult; f
         </div>
       </div>
 
+      <DerivationChain steps={result.steps} />
+
       <details className="derivation">
         <summary className="derivation__summary">Cara hitung</summary>
         <div className="derivation__body">
@@ -149,6 +152,8 @@ function DextroseResultCard({ result, concentration }: { result: DextroseResult;
           <span className="result-value__unit">g</span>
         </div>
       </div>
+
+      <DerivationChain steps={result.steps} />
 
       <details className="derivation">
         <summary className="derivation__summary">Cara hitung</summary>

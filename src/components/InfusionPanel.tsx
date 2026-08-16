@@ -3,6 +3,7 @@ import { CheckIcon } from '@radix-ui/react-icons'
 import { INFUSION_PRESETS, InfusionPreset } from '../data/infusionDrugs'
 import { calculateInfusion, InfusionResult } from '../lib/calculateInfusion'
 import { WeightInput } from './WeightInput'
+import { DerivationChain } from './DerivationChain'
 import { isInvalidPositiveNumber } from '../lib/validateNumber'
 
 function InfusionResultCard({ result, drug, weight }: { result: InfusionResult; drug: InfusionPreset; weight: string }) {
@@ -48,6 +49,8 @@ function InfusionResultCard({ result, drug, weight }: { result: InfusionResult; 
           <span className="result-value__unit">tpm</span>
         </div>
       </div>
+
+      <DerivationChain steps={result.steps} />
 
       <div className="infusion-result__dose-summary">
         Total dosis: <strong>{result.dosePerHr} {result.dosePerHrUnit}</strong>

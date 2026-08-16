@@ -4,6 +4,7 @@ import { CalcResult } from '../lib/calculate'
 import { HistoryEntry, generateId, saveEntry } from '../lib/storage'
 import { DrugForm } from '../data/drugs'
 import { describeForms, FormDoseLine } from '../lib/suggest'
+import { DerivationChain } from './DerivationChain'
 
 function freqText(freq: number, freqMax?: number): string {
   return freqMax && freqMax !== freq ? `${freq}–${freqMax}×/hari` : `${freq}×/hari`
@@ -232,6 +233,11 @@ export function ResultCard({
           </div>
         )}
       </div>
+
+      <DerivationChain
+        steps={result.steps}
+        pendingNote={needsConcentration ? 'volume belum bisa dihitung' : undefined}
+      />
 
       {/* The app cannot know this number: concentration is a property of the
           vial in her hand, not of the drug. Saying so is the difference

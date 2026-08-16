@@ -2211,6 +2211,25 @@ body::before {
 
 .result-card__pending-hint strong { font-weight: 600; color: var(--c-text); }
 
+/* ── Derivation line — the working, always visible ─────────────────────────
+   DESIGN-REWORK.md §4: one line, directly beneath the hero number, in every
+   calculator mode. If the weight field receives 180 instead of 18, this is
+   what puts the wrong input at the same glance as the result — the full
+   step-by-step trail below (.derivation) stays a tap away for when that is
+   not enough. Never shrinks below --fs-sm; a long chain (infusion's unit
+   conversions) wraps onto more than one line instead. */
+.derivation-line {
+  margin: 0 0 var(--sp-4);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-snug);
+  color: var(--c-text-2);
+  text-wrap: pretty;
+}
+
+.derivation-line__pending { color: var(--c-text-faint); }
+
 /* ── Derivation — the app's working, shown on demand ──────────────────────── */
 /* Already lives inside .result-card — a second bordered box here read as a
    card-in-a-card. A top rule is enough separation. */
@@ -3063,6 +3082,14 @@ body::before {
 .puyer-grid-section { margin-bottom: var(--sp-5); }
 
 .puyer-recipe__cite { font-size: var(--fs-sm); font-weight: 400; color: var(--c-text-3); }
+
+/* One row per drug in a multi-drug batch, so the line drops to the same
+   muted tone and tight margin as .puyer-recipe__working right below it
+   rather than the full-size spacing it uses standing alone in a result card. */
+.puyer-recipe__item .derivation-line {
+  margin: var(--sp-1) 0 0;
+  color: var(--c-text-3);
+}
 
 .puyer-recipe__working {
   margin-top: var(--sp-1);
