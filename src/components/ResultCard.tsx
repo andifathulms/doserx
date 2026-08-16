@@ -5,6 +5,7 @@ import { HistoryEntry, generateId, saveEntry } from '../lib/storage'
 import { DrugForm } from '../data/drugs'
 import { describeForms, FormDoseLine } from '../lib/suggest'
 import { DerivationChain } from './DerivationChain'
+import { DosePositionBand } from './DosePositionBand'
 
 function freqText(freq: number, freqMax?: number): string {
   return freqMax && freqMax !== freq ? `${freq}–${freqMax}×/hari` : `${freq}×/hari`
@@ -50,6 +51,10 @@ interface ResultCardProps {
   /** Dosing reference for this drug (IDAI, BNFc, Fornas, …). Absent for
    *  user-authored presets, where there is nothing to cite. */
   source?: string
+  /** The drug's fixed mg/day ceiling (DrugPreset.maxDay), for
+   *  DosePositionBand — never passed by CustomPanel, since a hand-entered
+   *  drug has no published ceiling to plot. */
+  maxDailyCap?: number
   onSaved: () => void
 }
 
@@ -67,6 +72,7 @@ export function ResultCard({
   concentration,
   availableForms,
   source,
+  maxDailyCap,
   onSaved,
 }: ResultCardProps) {
   const [label, setLabel] = useState('')
@@ -237,6 +243,18 @@ export function ResultCard({
       <DerivationChain
         steps={result.steps}
         pendingNote={needsConcentration ? 'volume belum bisa dihitung' : undefined}
+      />
+
+      {/* Renders nothing when the drug has no published dosePerKgMin/Max —
+          true for every custom drug, and true for some catalog entries too.
+          No inferred range is ever substituted. */}
+      <DosePositionBand
+        dosePerKgPerDay={dosePerKg}
+        rangeMin={dosePerKgMin}
+        rangeMax={dosePerKgMax}
+        maxDailyCap={maxDailyCap}
+        capFromWeightKg={result.capFromWeightKg}
+        weightKg={weight}
       />
 
       {/* The app cannot know this number: concentration is a property of the

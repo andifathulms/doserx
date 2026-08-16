@@ -333,6 +333,7 @@ export function DrugCalculator({
           concentration={concentration ? parseFloat(concentration) : undefined}
           availableForms={drug.availableForms}
           source={drug.source}
+          maxDailyCap={drug.maxDay}
           onSaved={onHistoryUpdated}
         />
       )}

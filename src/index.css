@@ -2230,6 +2230,135 @@ body::before {
 
 .derivation-line__pending { color: var(--c-text-faint); }
 
+/* ── Dose position band ───────────────────────────────────────────────────────
+   DESIGN-REWORK.md §3. Positional readout, never a verdict — see the
+   component doc comment in DosePositionBand.tsx. Zones are tinted
+   backgrounds (Tint-Not-Fill), never a solid fill; "below" gets no fill at
+   all since under-dosing is not an error state. Not interactive: no hover,
+   no focus-visible rule needed. ─────────────────────────────────────────── */
+.dose-band {
+  margin: 0 0 var(--sp-4);
+}
+
+.dose-band__track {
+  position: relative;
+  display: flex;
+  height: 40px;
+  border: 1.5px solid var(--c-border-mid);
+  border-radius: var(--r-sm);
+  overflow: hidden;
+}
+
+.dose-band__zone { height: 100%; }
+.dose-band__zone--below { background: transparent; }
+.dose-band__zone--typical { background: color-mix(in srgb, var(--c-success) 18%, var(--c-surface)); }
+.dose-band__zone--above { background: color-mix(in srgb, var(--c-warn) 12%, var(--c-surface)); }
+.dose-band__zone--over-cap { background: color-mix(in srgb, var(--c-error) 14%, var(--c-surface)); }
+
+/* A hard limit reads as a wall, not a colour change. */
+.dose-band__wall {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2.5px;
+  background: var(--c-warn);
+  transform: translateX(-50%);
+}
+
+.dose-band__wall-note {
+  position: absolute;
+  top: -1.35em;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-size: var(--fs-3xs);
+  font-weight: 600;
+  color: var(--c-warn-strong);
+}
+
+.dose-band__marker {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--c-primary);
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.dose-band__marker-value {
+  position: absolute;
+  top: -1.5em;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  color: var(--c-primary-dark);
+}
+
+.dose-band__marker-dot {
+  position: absolute;
+  bottom: -3px;
+  left: 50%;
+  width: 9px;
+  height: 9px;
+  transform: translateX(-50%);
+  background: var(--c-primary);
+  border: 2px solid var(--c-surface);
+  border-radius: var(--r-full);
+}
+
+/* Off-scale: the marker pins to the edge and reads as an alarm, never as an
+   ordinary in-range dose that happens to sit at the boundary. */
+.dose-band__marker--offscale-high,
+.dose-band__marker--offscale-low {
+  background: var(--c-error);
+  transform: none;
+}
+.dose-band__marker--offscale-high { left: auto !important; right: 0; }
+.dose-band__marker--offscale-low { left: 0 !important; }
+.dose-band__marker--offscale-high .dose-band__marker-value,
+.dose-band__marker--offscale-low .dose-band__marker-value {
+  left: auto;
+  right: 0;
+  transform: none;
+  color: var(--c-error);
+}
+.dose-band__marker--offscale-high .dose-band__marker-dot,
+.dose-band__marker--offscale-low .dose-band__marker-dot {
+  left: auto;
+  right: -3px;
+  transform: none;
+  background: var(--c-error);
+}
+
+.dose-band__labels {
+  display: flex;
+  margin-top: var(--sp-1);
+}
+
+.dose-band__label {
+  font-size: var(--fs-3xs);
+  color: var(--c-text-3);
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 0 2px;
+}
+
+.dose-band__caption {
+  margin-top: var(--sp-1);
+  font-size: var(--fs-xs);
+  color: var(--c-text-faint);
+  text-wrap: pretty;
+}
+
 /* ── Derivation — the app's working, shown on demand ──────────────────────── */
 /* Already lives inside .result-card — a second bordered box here read as a
    card-in-a-card. A top rule is enough separation. */
