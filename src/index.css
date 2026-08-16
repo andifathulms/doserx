@@ -3069,6 +3069,8 @@ body::before {
   margin-bottom: var(--sp-5);
 }
 
+.puyer-patient-field { margin-bottom: var(--sp-5); }
+
 .puyer-weight {
   display: flex;
   flex-direction: column;

@@ -5,7 +5,7 @@ import { DrugGrid } from './DrugGrid'
 import { DerivationChain } from './DerivationChain'
 import { DosePositionBandCompact, DosePositionBandLegend } from './DosePositionBandCompact'
 import { calculate, CalcResult } from '../lib/calculate'
-import { suggestForms, FormSuggestion } from '../lib/suggest'
+import { suggestForms, describeForms, FormSuggestion } from '../lib/suggest'
 import { DoseMode, loadDoseMode, saveDoseMode } from '../lib/storage'
 import { scrollBehavior } from '../lib/motion'
 import { errorCopy } from '../lib/errorCopy'
@@ -68,23 +68,46 @@ function formatQty(n: number, unit: string): string {
   return `${n} ${unit}`
 }
 
+/** Delivered-dose note for a solid form — the fraction a tablet/capsule can
+ *  actually be split into, vs. the exact target, already computed by
+ *  suggest.ts's describeForms (deliveredMg/deltaMg). Undefined for liquids,
+ *  which are measured continuously and carry no meaningful gap. */
+function deltaNote(perDose: number, forms: DrugPreset['availableForms']): Map<string, string> {
+  const notes = new Map<string, string>()
+  if (!forms) return notes
+  for (const line of describeForms(forms, perDose)) {
+    if (line.deliveredMg == null || line.deltaMg == null || Math.abs(line.deltaMg) < 0.01) continue
+    const sign = line.deltaMg > 0 ? '+' : ''
+    notes.set(line.key, `≈${line.deliveredMg} mg/dosis, target ${perDose} mg (selisih ${sign}${line.deltaMg} mg)`)
+  }
+  return notes
+}
+
 function buildRecipeText(
   orderedEntries: PuyerEntry[],
   weight: string,
   numDays: number,
+  patientLabel: string,
 ): string {
-  const lines: string[] = [`RESEP PUYER — ${weight} kg, ${numDays} hari`, '─'.repeat(36)]
+  const lines: string[] = [
+    `RESEP PUYER${patientLabel ? ` — ${patientLabel}` : ''}`,
+    `${weight} kg, ${numDays} hari`,
+    '─'.repeat(36),
+  ]
   for (const entry of orderedEntries) {
     if (!entry.result) continue
     const freq = parseFloat(entry.freq)
     const totalBungkus = freq * numDays
+    const notes = deltaNote(entry.result.perDose, entry.drug.availableForms)
     lines.push(entry.drug.name)
-    lines.push(`  ${entry.result.perDose} mg/dosis · ${freqLabel(freq)} · ${totalBungkus} bungkus`)
+    lines.push(`  ${entry.result.perDose} mg/dosis · Signa: ${freq}× sehari, 1 bungkus`)
     const solidS = entry.suggestions.filter((s) => s.form === 'tablet' || s.form === 'capsule')
     for (const s of solidS) {
       const totalUnits = round2((entry.result.perDose * totalBungkus) / s.strength)
       const unit = s.form === 'capsule' ? 'kap' : 'tab'
       lines.push(`  → ${s.display} × ${totalBungkus} bungkus = ${formatQty(totalUnits, unit)}`)
+      const note = notes.get(`${s.form}-${s.strength}-${s.label ?? ''}`)
+      if (note) lines.push(`     (${note})`)
     }
     const liquidS = entry.suggestions.filter((s) => s.form === 'syrup' || s.form === 'drop')
     for (const s of liquidS) {
@@ -93,37 +116,60 @@ function buildRecipeText(
     }
   }
   lines.push('─'.repeat(36))
-  lines.push('Dibuat dengan DoseRx — hanya untuk referensi.')
+  lines.push(
+    'Dibuat dengan DoseRx — kalkulator dosis, bukan sistem penunjang keputusan klinis. ' +
+      'Verifikasi terhadap panduan klinis terkini sebelum digunakan.',
+  )
   return lines.join('\n')
 }
 
+/**
+ * DESIGN-REWORK.md §7: the one output that leaves the screen and goes to a
+ * pharmacy, so it should be the best-designed surface in the app, not the
+ * only one outside it. Rebuilt on the same stone/mono values index.css's
+ * token block defines — literal values, not var() against the app's
+ * stylesheet, since this is a standalone document written into a popup via
+ * document.write() with no link to index.css. Black on white, hairlines, no
+ * background fills (it is going through a clinic printer), and never dark:
+ * this document defines no dark-mode rule at all, so the popup can't follow
+ * the app's theme even if the browser's own colour scheme is dark.
+ */
 function buildRecipePrintHtml(
   orderedEntries: PuyerEntry[],
   weight: string,
   numDays: number,
+  patientLabel: string,
 ): string {
   const date = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+  const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;')
+
   const drugsHtml = orderedEntries.map((entry) => {
     if (!entry.result) return ''
     const freq = parseFloat(entry.freq)
     const totalBungkus = freq * numDays
+    const notes = deltaNote(entry.result.perDose, entry.drug.availableForms)
     const solidS = entry.suggestions.filter((s) => s.form === 'tablet' || s.form === 'capsule')
     const liquidS = entry.suggestions.filter((s) => s.form === 'syrup' || s.form === 'drop')
     const formsHtml = [
       ...solidS.map((s) => {
         const total = round2((entry.result!.perDose * totalBungkus) / s.strength)
         const unit = s.form === 'capsule' ? 'kap' : 'tab'
-        return `<div class="form-line">→ ${s.display} × ${totalBungkus} bungkus = <strong>${formatQty(total, unit)}</strong></div>`
+        const note = notes.get(`${s.form}-${s.strength}-${s.label ?? ''}`)
+        return (
+          `<div class="form-line">→ ${esc(s.display)} × ${totalBungkus} bungkus = <strong>${formatQty(total, unit)}</strong></div>` +
+          (note ? `<div class="form-note">(${esc(note)})</div>` : '')
+        )
       }),
       ...liquidS.map((s) => {
         const total = round2((entry.result!.perDose * totalBungkus) / s.strength)
-        return `<div class="form-line">→ ${s.display} × ${totalBungkus} bungkus = <strong>${total} mL</strong></div>`
+        return `<div class="form-line">→ ${esc(s.display)} × ${totalBungkus} bungkus = <strong>${total} mL</strong></div>`
       }),
     ].join('')
     return `
       <div class="drug">
-        <div class="drug-name">${entry.drug.name}</div>
-        <div class="dose-line">${entry.result.perDose} mg/dosis · ${freqLabel(freq)} · ${totalBungkus} bungkus</div>
+        <div class="drug-name">${esc(entry.drug.name)}</div>
+        <div class="dose-line">${entry.result.perDose} mg/dosis</div>
+        <div class="signa">Signa: ${freq}&times; sehari, 1 bungkus &middot; ${totalBungkus} bungkus untuk ${numDays} hari</div>
         ${formsHtml}
       </div>`
   }).join('')
@@ -131,20 +177,70 @@ function buildRecipePrintHtml(
   return `<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8">
 <title>Resep Puyer — DoseRx</title>
 <style>
-  body{font-family:system-ui,sans-serif;padding:24px;color:#1e293b;max-width:520px}
-  h1{font-size:1.1rem;font-weight:700;margin-bottom:2px}
-  .meta{color:#64748b;font-size:.85rem;margin-bottom:16px}
-  .drug{margin-bottom:10px;border-top:1px solid #e2e8f0;padding-top:10px}
-  .drug-name{font-weight:600}
-  .dose-line{color:#475569;font-size:.875rem;margin:2px 0}
-  .form-line{font-size:.85rem;color:#334155;margin:2px 0 2px 10px}
-  .footer{margin-top:16px;padding-top:10px;border-top:1px solid #e2e8f0;font-size:.75rem;color:#94a3b8}
+  /* Literal values matching index.css's stone/mono token block — kept in
+     sync by hand, since this document has no link to that stylesheet. */
+  :root {
+    --stone-900: #111111;
+    --stone-600: #57534e;
+    --stone-500: #75716b;
+    --stone-400: #948e81;
+    --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    --font-mono: ui-monospace, 'SF Mono', 'Cascadia Code', 'Roboto Mono', monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: var(--font-sans);
+    color: var(--stone-900);
+    background: #ffffff;
+    padding: 28px;
+    max-width: 560px;
+    line-height: 1.5;
+  }
+  h1 { font-size: 1.25rem; font-weight: 700; margin: 0 0 2px; letter-spacing: -.01em; }
+  .meta { color: var(--stone-600); font-size: .875rem; margin-bottom: 4px; }
+  .patient { color: var(--stone-900); font-size: .875rem; font-weight: 600; margin-bottom: 20px; }
+  .drug { margin-bottom: 14px; border-top: 1px solid var(--stone-400); padding-top: 12px; }
+  .drug-name { font-weight: 700; }
+  .dose-line {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    font-size: .95rem;
+    margin: 3px 0 1px;
+  }
+  .signa { color: var(--stone-600); font-size: .8rem; margin-bottom: 4px; }
+  .form-line {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-size: .875rem;
+    color: var(--stone-900);
+    margin: 3px 0 0 12px;
+  }
+  .form-note { font-size: .75rem; color: var(--stone-500); margin: 0 0 0 24px; }
+  .disclaimer {
+    margin-top: 20px;
+    padding-top: 12px;
+    border-top: 1px solid var(--stone-400);
+    font-size: .75rem;
+    color: var(--stone-600);
+    line-height: 1.5;
+  }
+  .disclaimer strong { color: var(--stone-900); }
+  .footer { margin-top: 10px; font-size: .7rem; color: var(--stone-500); }
+  @media print { body { padding: 0; max-width: none; } }
 </style>
 </head><body>
 <h1>Resep Puyer</h1>
 <div class="meta">${weight} kg &middot; ${numDays} hari &middot; ${date}</div>
+${patientLabel ? `<div class="patient">Pasien: ${esc(patientLabel)}</div>` : ''}
 ${drugsHtml}
-<div class="footer">Dibuat dengan DoseRx &mdash; Hanya untuk referensi kalkulasi. Verifikasi terhadap panduan klinis sebelum digunakan.</div>
+<div class="disclaimer">
+  <strong>Bukan sistem penunjang keputusan klinis.</strong> DoseRx adalah kalkulator dosis —
+  nilai di atas dihitung dari data yang dimasukkan dan referensi dosis umum, bukan rekomendasi
+  klinis untuk pasien tertentu. Verifikasi terhadap panduan klinis terkini dan penilaian klinis
+  langsung sebelum diberikan.
+</div>
+<div class="footer">Dibuat dengan DoseRx</div>
 </body></html>`
 }
 
@@ -155,6 +251,7 @@ interface PuyerPanelProps {
 export function PuyerPanel({ onHistoryUpdated: _onHistoryUpdated }: PuyerPanelProps) {
   const [weight, setWeight] = useState('')
   const [days, setDays] = useState('3')
+  const [patientLabel, setPatientLabel] = useState('')
   const [doseMode, setDoseMode] = useState<DoseMode>(() => loadDoseMode())
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [entries, setEntries] = useState<Record<string, PuyerEntry>>({})
@@ -286,14 +383,14 @@ export function PuyerPanel({ onHistoryUpdated: _onHistoryUpdated }: PuyerPanelPr
   const numDays = Math.max(1, parseInt(days) || 1)
 
   function handleCopyRecipe() {
-    navigator.clipboard.writeText(buildRecipeText(orderedEntries, weight, numDays))
+    navigator.clipboard.writeText(buildRecipeText(orderedEntries, weight, numDays, patientLabel.trim()))
       .then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000) })
   }
 
   function handlePrintRecipe() {
     const popup = window.open('', '_blank', 'width=600,height=700')
     if (!popup) return
-    popup.document.write(buildRecipePrintHtml(orderedEntries, weight, numDays))
+    popup.document.write(buildRecipePrintHtml(orderedEntries, weight, numDays, patientLabel.trim()))
     popup.document.close()
     popup.focus()
     popup.print()
@@ -376,6 +473,23 @@ export function PuyerPanel({ onHistoryUpdated: _onHistoryUpdated }: PuyerPanelPr
                 onChange={(e) => { setDays(e.target.value); setCalculated(false) }}
               />
             </div>
+          </div>
+
+          {/* Optional — only carried on the printed/copied recipe, never sent
+              anywhere. Same "initials only" nudge as history's patient field. */}
+          <div className="field puyer-patient-field">
+            <label className="label" htmlFor="puyer-patient">
+              Inisial pasien <span className="label--optional">opsional</span>
+            </label>
+            <input
+              id="puyer-patient"
+              className="input"
+              type="text"
+              maxLength={20}
+              placeholder="misal AB"
+              value={patientLabel}
+              onChange={(e) => setPatientLabel(e.target.value)}
+            />
           </div>
 
           {/* Dose entry mode — puyer content per bungkus = per kali */}
