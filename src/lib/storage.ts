@@ -5,6 +5,30 @@ const FAVORITES_KEY = 'doserx_favorites'
 const RECENTS_MAX = 8
 const DOSE_MODE_KEY = 'doserx_dose_mode'
 const LAST_MODE_KEY = 'doserx_last_mode'
+const THEME_KEY = 'doserx_theme'
+
+// ── Theme: manual, persisted, never OS-following ───────────────────────────────
+// index.html reads this same key in an inline script that runs before first
+// paint, so <html data-theme> is already correct by the time CSS applies —
+// this module is only consulted again once React hydrates.
+
+export type Theme = 'light' | 'dark'
+
+export function loadTheme(): Theme {
+  try {
+    return localStorage.getItem(THEME_KEY) === 'dark' ? 'dark' : 'light'
+  } catch {
+    return 'light'
+  }
+}
+
+export function saveTheme(theme: Theme): void {
+  try {
+    localStorage.setItem(THEME_KEY, theme)
+  } catch {
+    /* ignore */
+  }
+}
 
 // ── Dose-entry preference: per single dose (per kali) vs per day (per hari) ────
 

@@ -1,6 +1,21 @@
 <!doctype html>
 <html lang="id">
   <head>
+    <!-- Dark mode is a manual, persisted choice (never OS-following — see
+         index.css's dark-mode comment). This has to run synchronously, before
+         any CSS paints, or a doctor who chose dark sees a flash of the light
+         theme on every load. It reads the same localStorage key
+         src/lib/storage.ts's loadTheme()/saveTheme() use, so the two can never
+         disagree about which key holds the preference. -->
+    <script>
+      (function () {
+        try {
+          if (localStorage.getItem('doserx_theme') === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark')
+          }
+        } catch (e) {}
+      })()
+    </script>
     <!-- title, description, canonical, OG and Twitter tags are generated
          from src/site.ts at build time — see metaTags() in vite.config.ts.
          Do not add copies here; that is what let them drift. -->

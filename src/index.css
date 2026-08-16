@@ -387,6 +387,13 @@ body::before {
   background: var(--c-primary-bg);
 }
 
+.site-header__actions {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
 /* ── Landing ──────────────────────────────────────────────────────────────────
    The front door for someone who has never seen this. Restrained on purpose:
    this is a clinical tool that disclaims being decision support, so it gets a
@@ -1098,6 +1105,29 @@ body::before {
   background: var(--c-primary);
   border-radius: var(--r-full);
 }
+
+/* ── Theme toggle ─────────────────────────────────────────────────────────────
+   Both icons always render (server and client alike — see the component
+   comment in SiteNav.tsx for why); which one is visible is decided here, by
+   the same [data-theme="dark"] attribute every other dark-mode rule reads. */
+.theme-toggle {
+  flex-shrink: 0;
+  width: var(--target-min);
+  height: var(--target-min);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--c-text-2);
+  background: transparent;
+  border: 1.5px solid transparent;
+  border-radius: var(--r-full);
+}
+.theme-toggle:hover { color: var(--c-text); background: var(--c-surface-2); }
+
+.theme-toggle__icon { display: block; }
+.theme-toggle__icon--dark { display: none; }
+:root[data-theme="dark"] .theme-toggle__icon--light { display: none; }
+:root[data-theme="dark"] .theme-toggle__icon--dark { display: block; }
 
 /* ── Safety disclaimer — kept visible near where the dose decision happens ──── */
 .safety-banner {
