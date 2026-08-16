@@ -150,3 +150,58 @@ export function computeDosePositionBand(
     marker: { value: dosePerKgPerDay, position, offScale },
   }
 }
+
+// ── Shared display text ──────────────────────────────────────────────────────
+// One source for the zone wording, used by the full band, the Puyer compact
+// band, and the Puyer legend alike — so the three surfaces can never drift
+// to different words for the same zone.
+
+/** Short chip/label wording — visible under a zone in the full-size band. */
+export const ZONE_LABEL: Record<BandZoneKind, string> = {
+  below: 'di bawah',
+  typical: 'rentang lazim',
+  above: 'di atas',
+  'over-cap': 'batas maks',
+}
+
+/** Same zones, phrased for the one-sentence description below. Positional,
+ *  never a verdict (DESIGN-REWORK.md §3.5): nouns describing where the dose
+ *  sits, never "aman"/"sesuai"/a checkmark. */
+const ZONE_SENTENCE: Record<BandZoneKind, string> = {
+  below: 'di bawah rentang lazim',
+  typical: 'dalam rentang lazim',
+  above: 'di atas rentang lazim',
+  'over-cap': 'melewati batas maksimum',
+}
+
+function trimNum(n: number): string {
+  return String(Math.round(n * 100) / 100)
+}
+
+/**
+ * The one-sentence dose/range/cap/zone summary that stands in for
+ * DESIGN-REWORK.md §3.6's `<desc>` (HTML has no equivalent element — see the
+ * component doc comments). Shared so the full and compact bands can never
+ * describe the same geometry two different ways.
+ */
+export function describeDosePositionBand(
+  geometry: DosePositionBandGeometry,
+  input: DosePositionBandInput,
+): string {
+  const { zones, capAt, marker } = geometry
+  const zoneKind =
+    zones.find((z) => marker.value >= z.from && marker.value <= z.to)?.kind ??
+    (marker.offScale === 'low' ? 'below' : 'over-cap')
+
+  const capSentence =
+    input.maxDailyCap != null && capAt != null
+      ? `, batas maksimum setara ${trimNum(capAt)} mg/kg/hari`
+      : ''
+
+  return (
+    `Dosis ${trimNum(marker.value)} mg/kg/hari, ${ZONE_SENTENCE[zoneKind]} ` +
+    `${trimNum(input.rangeMin!)}–${trimNum(input.rangeMax!)} mg/kg/hari${capSentence}.`
+  )
+}
+
+export { trimNum }

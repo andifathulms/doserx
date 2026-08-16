@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { computeDosePositionBand } from './dosePositionBand'
+import { computeDosePositionBand, describeDosePositionBand } from './dosePositionBand'
 
 describe('computeDosePositionBand — no published range', () => {
   it('returns null when rangeMin/rangeMax are missing — no inferred band', () => {
@@ -180,5 +180,42 @@ describe('computeDosePositionBand — off-scale', () => {
     })
     if (!band) throw new Error('expected a band')
     expect(band.marker.offScale).toBeNull()
+  })
+})
+
+describe('describeDosePositionBand', () => {
+  it('states dose, zone, range and cap in one sentence, never a verdict', () => {
+    const input = {
+      dosePerKgPerDay: 12,
+      rangeMin: 10,
+      rangeMax: 15,
+      maxDailyCap: 500,
+      weightKg: 20,
+    }
+    const band = computeDosePositionBand(input)
+    if (!band) throw new Error('expected a band')
+    const desc = describeDosePositionBand(band, input)
+    expect(desc).toBe('Dosis 12 mg/kg/hari, dalam rentang lazim 10–15 mg/kg/hari, batas maksimum setara 25 mg/kg/hari.')
+    for (const word of ['aman', 'sesuai', 'benar']) {
+      expect(desc.toLowerCase()).not.toContain(word)
+    }
+  })
+
+  it('omits the cap clause entirely when the drug has no ceiling', () => {
+    const input = { dosePerKgPerDay: 12, rangeMin: 10, rangeMax: 15, weightKg: 20 }
+    const band = computeDosePositionBand(input)
+    if (!band) throw new Error('expected a band')
+    expect(describeDosePositionBand(band, input)).toBe(
+      'Dosis 12 mg/kg/hari, dalam rentang lazim 10–15 mg/kg/hari.',
+    )
+  })
+
+  it('describes an off-scale dose by its real value, not the clamped edge', () => {
+    const input = { dosePerKgPerDay: 180, rangeMin: 10, rangeMax: 15, weightKg: 20 }
+    const band = computeDosePositionBand(input)
+    if (!band) throw new Error('expected a band')
+    const desc = describeDosePositionBand(band, input)
+    expect(desc).toContain('180 mg/kg/hari')
+    expect(desc).toContain('melewati batas maksimum')
   })
 })

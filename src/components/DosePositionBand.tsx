@@ -1,28 +1,10 @@
 import {
-  BandZoneKind,
   DosePositionBandInput,
+  ZONE_LABEL,
   computeDosePositionBand,
+  describeDosePositionBand,
+  trimNum,
 } from '../lib/dosePositionBand'
-
-const ZONE_LABEL: Record<BandZoneKind, string> = {
-  below: 'di bawah',
-  typical: 'rentang lazim',
-  above: 'di atas',
-  'over-cap': 'batas maks',
-}
-
-/** Same wording as ZONE_LABEL, phrased for the one-sentence <desc> instead
- *  of a chip. Positional, never a verdict — see the component doc comment. */
-const ZONE_SENTENCE: Record<BandZoneKind, string> = {
-  below: 'di bawah rentang lazim',
-  typical: 'dalam rentang lazim',
-  above: 'di atas rentang lazim',
-  'over-cap': 'melewati batas maksimum',
-}
-
-function trimNum(n: number): string {
-  return String(Math.round(n * 100) / 100)
-}
 
 interface DosePositionBandProps extends DosePositionBandInput {}
 
@@ -56,18 +38,7 @@ export function DosePositionBand(props: DosePositionBandProps) {
   const { domainMin, domainMax, zones, capAt, showCapAnnotation, marker } = band
   const span = domainMax - domainMin
   const pct = (v: number) => `${((v - domainMin) / span) * 100}%`
-
-  const markerZoneKind =
-    zones.find((z) => marker.value >= z.from && marker.value <= z.to)?.kind ??
-    (marker.offScale === 'high' ? 'over-cap' : 'below')
-
-  const capSentence =
-    props.maxDailyCap != null && capAt != null
-      ? `, batas maksimum setara ${trimNum(capAt)} mg/kg/hari`
-      : ''
-  const desc =
-    `Dosis ${trimNum(marker.value)} mg/kg/hari, ${ZONE_SENTENCE[markerZoneKind]} ` +
-    `${trimNum(props.rangeMin!)}–${trimNum(props.rangeMax!)} mg/kg/hari${capSentence}.`
+  const desc = describeDosePositionBand(band, props)
 
   return (
     <div className="dose-band" role="img" aria-label={desc}>

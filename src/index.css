@@ -2359,6 +2359,99 @@ body::before {
   text-wrap: pretty;
 }
 
+/* ── Dose position band — Puyer's compact row variant ────────────────────────
+   DESIGN-REWORK.md §3.8. Same geometry/zones as .dose-band, no per-row text —
+   the legend below states the four zones once for the whole recipe list. */
+.dose-band-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1) var(--sp-3);
+  margin: 0 0 var(--sp-3);
+  font-size: var(--fs-3xs);
+  color: var(--c-text-3);
+}
+
+.dose-band-legend__label { font-weight: 600; color: var(--c-text-2); }
+
+.dose-band-legend__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.dose-band-legend__swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: var(--r-xs);
+  border: 1px solid var(--c-border-mid);
+  flex-shrink: 0;
+}
+.dose-band-legend__swatch--below { background: transparent; }
+.dose-band-legend__swatch--typical { background: color-mix(in srgb, var(--c-success) 30%, var(--c-surface)); border-color: var(--c-success); }
+.dose-band-legend__swatch--above { background: color-mix(in srgb, var(--c-warn) 24%, var(--c-surface)); border-color: var(--c-warn); }
+.dose-band-legend__swatch--over-cap { background: color-mix(in srgb, var(--c-error) 26%, var(--c-surface)); border-color: var(--c-error); }
+
+.dose-band-compact {
+  position: relative;
+  display: flex;
+  height: 12px;
+  margin: var(--sp-1) 0 0;
+  border: 1px solid var(--c-border-mid);
+  border-radius: var(--r-xs);
+  overflow: hidden;
+}
+
+.dose-band-compact__zone { height: 100%; }
+.dose-band-compact__zone--below { background: transparent; }
+.dose-band-compact__zone--typical { background: color-mix(in srgb, var(--c-success) 18%, var(--c-surface)); }
+.dose-band-compact__zone--above { background: color-mix(in srgb, var(--c-warn) 12%, var(--c-surface)); }
+.dose-band-compact__zone--over-cap { background: color-mix(in srgb, var(--c-error) 14%, var(--c-surface)); }
+
+/* A landmark for the eye scanning down a column of differently-scaled bars —
+   not a claim that this position is comparable between rows. */
+.dose-band-compact__hairline {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--c-border-mid);
+}
+
+.dose-band-compact__wall {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1.5px;
+  background: var(--c-warn);
+  transform: translateX(-50%);
+}
+
+.dose-band-compact__marker {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  width: 2px;
+  background: var(--c-primary);
+  border-radius: var(--r-full);
+  transform: translateX(-50%);
+}
+
+.dose-band-compact__marker--offscale-high,
+.dose-band-compact__marker--offscale-low {
+  background: var(--c-error);
+  transform: none;
+}
+.dose-band-compact__marker--offscale-high { left: auto !important; right: 0; }
+.dose-band-compact__marker--offscale-low { left: 0 !important; }
+
+.dose-band-compact-missing {
+  display: inline-block;
+  margin: var(--sp-1) 0 0;
+  font-size: var(--fs-sm);
+  color: var(--c-text-faint);
+}
+
 /* ── Derivation — the app's working, shown on demand ──────────────────────── */
 /* Already lives inside .result-card — a second bordered box here read as a
    card-in-a-card. A top rule is enough separation. */

@@ -3,6 +3,7 @@ import { CheckIcon, ExclamationTriangleIcon } from '@radix-ui/react-icons'
 import { ALL_DRUGS, DrugPreset } from '../data/drugs'
 import { DrugGrid } from './DrugGrid'
 import { DerivationChain } from './DerivationChain'
+import { DosePositionBandCompact, DosePositionBandLegend } from './DosePositionBandCompact'
 import { calculate, CalcResult } from '../lib/calculate'
 import { suggestForms, FormSuggestion } from '../lib/suggest'
 import { DoseMode, loadDoseMode, saveDoseMode } from '../lib/storage'
@@ -538,6 +539,12 @@ export function PuyerPanel({ onHistoryUpdated: _onHistoryUpdated }: PuyerPanelPr
                 </div>
               </div>
 
+              {/* Pointless above a batch where every drug lacks a published
+                  range — every row would show only the "—" placeholder. */}
+              {orderedEntries.some(
+                (e) => e.result && e.drug.dosePerKgMin != null && e.drug.dosePerKgMax != null,
+              ) && <DosePositionBandLegend />}
+
               <ul className="puyer-recipe__list">
                 {orderedEntries.map((entry) => {
                   if (!entry.result) return null
@@ -568,6 +575,16 @@ export function PuyerPanel({ onHistoryUpdated: _onHistoryUpdated }: PuyerPanelPr
                       </div>
 
                       <DerivationChain steps={entry.result.steps} />
+
+                      <DosePositionBandCompact
+                        drugName={entry.drug.name}
+                        dosePerKgPerDay={modeToDay(parseFloat(entry.dosePerKg), freq, doseMode)}
+                        rangeMin={entry.drug.dosePerKgMin}
+                        rangeMax={entry.drug.dosePerKgMax}
+                        maxDailyCap={entry.drug.maxDay}
+                        capFromWeightKg={entry.result.capFromWeightKg}
+                        weightKg={parseFloat(weight)}
+                      />
 
                       {/* Where the bungkus count comes from — it drives every
                           total below and appeared as a bare number. */}
