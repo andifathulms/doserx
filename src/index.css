@@ -208,6 +208,20 @@ input  { font: inherit; }
   --sh-md: 0 6px 16px rgba(0,0,0,.45), 0 2px 6px rgba(0,0,0,.35);
 }
 
+/* ── Focus-visible — one rule, applied everywhere ─────────────────────────────
+   Every focusable element gets the same ring by default: native outline
+   suppressed, shared ring token applied. This used to be copied into 15+
+   individual selectors, which meant a newly added interactive element
+   silently fell back to the browser's default outline unless someone
+   remembered to add its own rule here. A component that needs something
+   extra on top of the ring (a border-radius clip, a category-colored border
+   swap) layers ONE additional declaration on its own :focus-visible rule —
+   never outline or box-shadow again, since this rule already sets both. ───── */
+:focus-visible {
+  outline: none;
+  box-shadow: var(--sh-ring);
+}
+
 /* Holds vertical space while a split panel chunk resolves. Only visible if a
    tab is opened before the idle prefetch completes. */
 /* ── Route-chunk loading skeleton ─────────────────────────────────────────────
@@ -345,7 +359,7 @@ body::before {
 }
 
 .site-brand span { color: var(--c-primary); }
-.site-brand:focus-visible { outline: none; box-shadow: var(--sh-ring); border-radius: var(--r-xs); }
+.site-brand:focus-visible { border-radius: var(--r-xs); }
 
 .site-nav {
   display: flex;
@@ -367,7 +381,6 @@ body::before {
 }
 
 .site-nav__link:hover { background: var(--c-surface); color: var(--c-text); }
-.site-nav__link:focus-visible { outline: none; box-shadow: var(--sh-ring); }
 
 .site-nav__link--active {
   color: var(--c-primary-dark);
@@ -413,7 +426,6 @@ body::before {
 }
 
 .lang-toggle:hover { border-color: var(--c-border-mid); color: var(--c-text); }
-.lang-toggle:focus-visible { outline: none; box-shadow: var(--sh-ring); }
 
 .landing-title {
   font-family: var(--font-serif);
@@ -534,7 +546,7 @@ body::before {
   color: inherit;
 }
 
-.facts__link:focus-visible { outline: none; box-shadow: var(--sh-ring); border-radius: var(--r-xs); }
+.facts__link:focus-visible { border-radius: var(--r-xs); }
 
 .facts__value {
   display: block;
@@ -843,7 +855,6 @@ body::before {
 }
 
 .demo__step-btn:disabled { opacity: .4; cursor: not-allowed; }
-.demo__step-btn:focus-visible { outline: none; box-shadow: var(--sh-ring); }
 
 .demo__weight {
   min-width: 3.5em;
@@ -901,7 +912,6 @@ body::before {
 
 .demo__working[open] .demo__working-summary::before { content: '\2212'; }
 .demo__working-summary:hover { color: var(--c-text); }
-.demo__working-summary:focus-visible { outline: none; box-shadow: var(--sh-ring); }
 
 .demo__steps {
   display: flex;
@@ -1034,7 +1044,6 @@ body::before {
   }
 
   .bottom-nav__link--active { color: var(--c-primary-dark); background: var(--c-primary-bg); }
-  .bottom-nav__link:focus-visible { outline: none; box-shadow: var(--sh-ring); }
 
   .bottom-nav__count {
     min-width: 18px;
@@ -1075,7 +1084,6 @@ body::before {
   background: var(--c-primary-bg);
   border-color: var(--c-primary-bdr);
 }
-.history-toggle:focus-visible { outline: none; box-shadow: var(--sh-ring); }
 
 .history-toggle__count {
   font-size: var(--fs-3xs);
@@ -1478,18 +1486,7 @@ body::before {
 /* The app's primary control had no visible keyboard focus at all — the ring
    token already existed, the 92-card grid just never used it. */
 .drug-card:focus-visible {
-  outline: none;
   border-color: var(--_cat, var(--c-primary));
-  box-shadow: var(--sh-ring);
-}
-
-.cat-chip:focus-visible,
-.selected-drug-bar:focus-visible,
-.tab-btn:focus-visible,
-.history-toggle:focus-visible,
-.monograph__summary:focus-visible {
-  outline: none;
-  box-shadow: var(--sh-ring);
 }
 
 /* Selected ≠ hover: 2px border + accent ring make it unmistakable at a glance */
@@ -1555,7 +1552,6 @@ body::before {
 }
 .drug-card__star:hover { color: var(--c-warn); background: var(--c-surface-2); }
 .drug-card__star--on { color: var(--c-warn); }
-.drug-card__star:focus-visible { outline: none; box-shadow: var(--sh-ring); }
 
 /* ── Card safety affordances ──────────────────────────────────────────────── */
 .drug-card__flag {
@@ -1605,7 +1601,6 @@ body::before {
   background: color-mix(in srgb, var(--_cat, var(--c-primary)) 12%, var(--c-surface));
   border-color: color-mix(in srgb, var(--_cat, var(--c-primary)) 45%, var(--c-surface));
 }
-.cat-chip:focus-visible { outline: none; box-shadow: var(--sh-ring); }
 
 /* ── Pinned "Sering dipakai" ──────────────────────────────────────────────── */
 .drug-pinned-section .drug-category-label {
@@ -1838,7 +1833,6 @@ body::before {
 .btn--sm { font-size: var(--fs-sm); padding: var(--sp-1) var(--sp-3); }
 
 .btn:disabled { opacity: .5; cursor: not-allowed; }
-.btn:focus-visible { outline: none; box-shadow: var(--sh-ring); }
 
 /* ── Weight-from-age estimator ────────────────────────────────────────────── */
 .weight-input-block { grid-column: 1 / -1; }
@@ -2131,7 +2125,6 @@ body::before {
 }
 
 .dose-picker__btn:hover { border-color: var(--c-border-mid); color: var(--c-text); }
-.dose-picker__btn:focus-visible { outline: none; box-shadow: var(--sh-ring); }
 
 .dose-picker__btn--active {
   color: var(--c-primary-dark);
@@ -2192,7 +2185,6 @@ body::before {
 
 .derivation[open] .derivation__summary::before { content: '\2212'; }
 .derivation__summary:hover { color: var(--c-text); }
-.derivation__summary:focus-visible { outline: none; box-shadow: var(--sh-ring); }
 
 .derivation__body {
   padding: 0 var(--sp-4) var(--sp-4);
@@ -2393,7 +2385,6 @@ body::before {
 }
 .monograph[open] .monograph__summary::before { content: '\2212'; }
 .monograph__summary:hover { background: var(--c-surface-2); }
-.monograph__summary:focus-visible { outline: none; box-shadow: var(--sh-ring); }
 
 .monograph__body { padding: 2px var(--sp-4) var(--sp-4); }
 
@@ -2782,7 +2773,7 @@ body::before {
 .puyer-drug-row[open] .puyer-drug-row__summary::before { content: '\2212'; }
 
 .puyer-drug-row__summary:hover { background: var(--c-surface-2); }
-.puyer-drug-row__summary:focus-visible { outline: none; box-shadow: var(--sh-ring); border-radius: var(--r); }
+.puyer-drug-row__summary:focus-visible { border-radius: var(--r); }
 
 .puyer-drug-row__name {
   font-size: var(--fs-base);
@@ -3332,8 +3323,6 @@ body::before {
   border-color: var(--_cat, var(--c-border-mid));
   background: color-mix(in srgb, var(--_cat, var(--c-primary)) 8%, var(--c-surface));
 }
-
-.cat-swatch:focus-visible { outline: none; box-shadow: var(--sh-ring); }
 
 .cat-swatch__dot {
   flex-shrink: 0;
