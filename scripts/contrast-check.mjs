@@ -64,18 +64,28 @@ const lightVars = parseVars(lightBlock)
 // data-theme="dark" is set on <html> (a single :root still applies).
 const darkVars = { ...lightVars, ...parseVars(darkBlock) }
 
-// 17-entry category accent map — same hex in both themes (never redefined
-// under the dark block), which is precisely what DESIGN-REWORK §5 flags as
-// unverified.
+// 17-entry category accent map, plus its dark-mode override block (added
+// after this script first flagged the light values failing on a dark
+// surface — see DESIGN-REWORK.md §5, §8). The two selector shapes are
+// anchored to line-start so a light rule (`[data-cat="X"] {`) is never
+// mistaken for a dark override (`:root[data-theme="dark"] [data-cat="X"] {`),
+// which is a substring match away from the light pattern.
 const CATEGORIES = []
 {
-  const re = /\[data-cat="([^"]+)"\]\s*\{\s*--_cat:\s*(#[0-9a-fA-F]{3,6});/g
+  const lightRe = /^\[data-cat="([^"]+)"\]\s*\{\s*--_cat:\s*(#[0-9a-fA-F]{3,6});/gm
+  const darkRe =
+    /^:root\[data-theme="dark"\]\s*\[data-cat="([^"]+)"\]\s*\{\s*--_cat:\s*(#[0-9a-fA-F]{3,6});/gm
+  const darkHex = new Map()
   let m
-  while ((m = re.exec(css))) CATEGORIES.push({ name: m[1], hex: m[2] })
+  while ((m = darkRe.exec(css))) darkHex.set(m[1], m[2])
+  while ((m = lightRe.exec(css))) {
+    CATEGORIES.push({ name: m[1], lightHex: m[2], darkHex: darkHex.get(m[1]) ?? null })
+  }
 }
 if (CATEGORIES.length !== 17) {
   throw new Error(`Expected 17 category accents, found ${CATEGORIES.length}`)
 }
+const missingDarkOverride = CATEGORIES.filter((c) => c.darkHex == null)
 
 // ── Colour math ───────────────────────────────────────────────────────────────
 
@@ -251,19 +261,30 @@ for (const pair of PAIRS) {
   rows.push(cell)
 }
 
-// Category accents — same hex both themes, checked against both surfaces of
-// both themes since the dark surface is new, unverified territory.
+// Category accents — each theme checked against the hex that theme's cascade
+// actually renders: the plain [data-cat] rule in light, the higher-specificity
+// :root[data-theme="dark"] [data-cat] override in dark (falling back to the
+// light hex, and flagging it below, if a category has no override yet).
 const categoryRows = []
 for (const cat of CATEGORIES) {
-  const cell = { group: 'Category accent', label: cat.name, hex: cat.hex, min: TEXT_MIN, kind: 'text', byTheme: {} }
+  const cell = {
+    group: 'Category accent',
+    label: cat.name,
+    hex: cat.lightHex,
+    darkHex: cat.darkHex,
+    min: TEXT_MIN,
+    kind: 'text',
+    byTheme: {},
+  }
   for (const theme of THEMES) {
     const { bg, surface } = themeSurfaces(theme.vars)
+    const activeHex = theme.key === 'dark' ? (cat.darkHex ?? cat.lightHex) : cat.lightHex
     const results = {}
     for (const [surfaceName, surfaceColor] of [['bg', bg], ['surface', surface]]) {
-      const fgColor = parseColor(cat.hex)
+      const fgColor = parseColor(activeHex)
       results[surfaceName] = {
         ratio: contrastRatio(fgColor, surfaceColor),
-        fgHex: cat.hex,
+        fgHex: activeHex,
         bgHex: toHex(surfaceColor),
       }
     }
@@ -344,8 +365,15 @@ for (const cell of rows) {
   }
 }
 
-console.log('\n## Category accents (17) — light claims 4.5:1 on white; dark surfaces unverified until now\n')
-console.log('| Category | Hex | Theme | Against | Ratio | Min | Status |')
+console.log('\n## Category accents (17) — light hex vs. dark hex, each checked against its own theme\n')
+if (missingDarkOverride.length > 0) {
+  console.log(
+    `**${missingDarkOverride.length} categor${missingDarkOverride.length === 1 ? 'y has' : 'ies have'} no dark override — falling back to the light hex for the dark-theme rows below:** ` +
+      missingDarkOverride.map((c) => c.name).join(', ') +
+      '\n',
+  )
+}
+console.log('| Category | Hex used | Theme | Against | Ratio | Min | Status |')
 console.log('|---|---|---|---|---|---|---|')
 for (const cell of categoryRows) {
   for (const theme of THEMES) {
@@ -353,7 +381,7 @@ for (const cell of categoryRows) {
       const r = cell.byTheme[theme.key][surfaceName]
       const st = status(r.ratio, cell.min)
       console.log(
-        `| ${cell.label} | ${cell.hex} | ${theme.label} | ${label} | ${fmt(r.ratio)} | ${cell.min}:1 | ${st} |`,
+        `| ${cell.label} | ${r.fgHex} | ${theme.label} | ${label} | ${fmt(r.ratio)} | ${cell.min}:1 | ${st} |`,
       )
     }
   }

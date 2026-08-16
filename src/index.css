@@ -1346,6 +1346,35 @@ body::before {
 [data-cat="Antimalarial"]        { --_cat: #2b766f; }  /* muted teal */
 [data-cat="Lain-lain"]           { --_cat: #5d646f; }  /* stone-slate */
 
+/* Dark-mode pass over the map above. --_cat is a plain hex, not a --c-*
+   semantic token, so it is never redefined by the dark block up in :root —
+   scripts/contrast-check.mjs caught exactly this: all 17 light values read
+   2–3.7:1 against the dark surface, well under the 4.5:1 these are supposed
+   to clear (DESIGN-REWORK.md §5, §8). Same hue as its light counterpart in
+   every case, saturation eased and lightness raised until each cleared
+   4.5:1 against --c-surface(dark) (#242320, the harder of the app's two dark
+   backgrounds) with a small margin; every one lands at 4.60:1 there and
+   5.04:1 against --c-bg(dark). Higher specificity than the plain
+   [data-cat] rule above (an extra :root[data-theme="dark"] ancestor), so
+   this wins over it without touching selector order. */
+:root[data-theme="dark"] [data-cat="Gawat Darurat"]       { --_cat: #c67474; }
+:root[data-theme="dark"] [data-cat="Analgesik/NSAID"]     { --_cat: #be7b4d; }
+:root[data-theme="dark"] [data-cat="Antibiotik"]          { --_cat: #8787b6; }
+:root[data-theme="dark"] [data-cat="Antivirus"]           { --_cat: #4096aa; }
+:root[data-theme="dark"] [data-cat="Antijamur"]           { --_cat: #a88639; }
+:root[data-theme="dark"] [data-cat="Anti-TB (OAT)"]       { --_cat: #c47386; }
+:root[data-theme="dark"] [data-cat="Antiparasit"]         { --_cat: #479b65; }
+:root[data-theme="dark"] [data-cat="Antikonvulsan"]       { --_cat: #a27ac7; }
+:root[data-theme="dark"] [data-cat="Kardiovaskular"]      { --_cat: #bd7595; }
+:root[data-theme="dark"] [data-cat="Pulmologi"]           { --_cat: #4193bd; }
+:root[data-theme="dark"] [data-cat="Gastrointestinal"]    { --_cat: #b68042; }
+:root[data-theme="dark"] [data-cat="Kortikosteroid"]      { --_cat: #997dc9; }
+:root[data-theme="dark"] [data-cat="Antihistamin/Alergi"] { --_cat: #b374bb; }
+:root[data-theme="dark"] [data-cat="Vitamin/Mineral"]     { --_cat: #75953d; }
+:root[data-theme="dark"] [data-cat="Cairan & Elektrolit"] { --_cat: #4593bc; }
+:root[data-theme="dark"] [data-cat="Antimalarial"]        { --_cat: #3e9990; }
+:root[data-theme="dark"] [data-cat="Lain-lain"]           { --_cat: #848b96; }
+
 /* ── Catalog page ─────────────────────────────────────────────────────────────
    The catalog is made of links, not buttons: every drug is a destination with
    its own URL. Shares the card look with the picker so the library reads the
