@@ -67,14 +67,14 @@ const darkVars = { ...lightVars, ...parseVars(darkBlock) }
 // 17-entry category accent map, plus its dark-mode override block (added
 // after this script first flagged the light values failing on a dark
 // surface — see DESIGN-REWORK.md §5, §8). The two selector shapes are
-// anchored to line-start so a light rule (`[data-cat="X"] {`) is never
-// mistaken for a dark override (`:root[data-theme="dark"] [data-cat="X"] {`),
+// anchored to line-start so a light rule (`[data-group="X"] {`) is never
+// mistaken for a dark override (`:root[data-theme="dark"] [data-group="X"] {`),
 // which is a substring match away from the light pattern.
 const CATEGORIES = []
 {
-  const lightRe = /^\[data-cat="([^"]+)"\]\s*\{\s*--_cat:\s*(#[0-9a-fA-F]{3,6});/gm
+  const lightRe = /^\[data-group="([^"]+)"\]\s*\{\s*--_grp:\s*(#[0-9a-fA-F]{3,6});/gm
   const darkRe =
-    /^:root\[data-theme="dark"\]\s*\[data-cat="([^"]+)"\]\s*\{\s*--_cat:\s*(#[0-9a-fA-F]{3,6});/gm
+    /^:root\[data-theme="dark"\]\s*\[data-group="([^"]+)"\]\s*\{\s*--_grp:\s*(#[0-9a-fA-F]{3,6});/gm
   const darkHex = new Map()
   let m
   while ((m = darkRe.exec(css))) darkHex.set(m[1], m[2])
@@ -82,8 +82,8 @@ const CATEGORIES = []
     CATEGORIES.push({ name: m[1], lightHex: m[2], darkHex: darkHex.get(m[1]) ?? null })
   }
 }
-if (CATEGORIES.length !== 17) {
-  throw new Error(`Expected 17 category accents, found ${CATEGORIES.length}`)
+if (CATEGORIES.length !== 9) {
+  throw new Error(`Expected 9 group accents, found ${CATEGORIES.length}`)
 }
 const missingDarkOverride = CATEGORIES.filter((c) => c.darkHex == null)
 
@@ -223,6 +223,15 @@ const PAIRS = [
   // ── Success ──
   { group: 'Success', label: 'Success text (--c-success)', fg: '--c-success', mode: 'plain', min: TEXT_MIN, kind: 'text' },
   { group: 'Success', label: 'Success text on its own tint (--c-success-bg)', fg: '--c-success', bg: '--c-success-bg', mode: 'tint', min: TEXT_MIN, kind: 'text' },
+
+  // ── Ink (primary button) — now themed: --c-ink flips to near-white in dark
+  //    mode and --c-on-ink follows it, so it is checked in both themes. ──
+  { group: 'Ink', label: 'Primary button text (--c-on-ink on --c-ink)', fg: '--c-on-ink', bg: '--c-ink', mode: 'tint', min: TEXT_MIN, kind: 'text' },
+
+  // ── The answer panel — the one dark object on screen, in both themes ──
+  { group: 'Answer', label: 'Dose digits (--c-answer-num on --c-answer-bg)', fg: '--c-answer-num', bg: '--c-answer-bg', mode: 'tint', min: TEXT_MIN, kind: 'text' },
+  { group: 'Answer', label: 'Panel text (--c-answer-text on --c-answer-bg)', fg: '--c-answer-text', bg: '--c-answer-bg', mode: 'tint', min: TEXT_MIN, kind: 'text' },
+  { group: 'Answer', label: 'Panel secondary (--c-answer-sub on --c-answer-bg)', fg: '--c-answer-sub', bg: '--c-answer-bg', mode: 'tint', min: TEXT_MIN, kind: 'text' },
 ]
 
 // ── Run ───────────────────────────────────────────────────────────────────────
@@ -293,12 +302,6 @@ for (const cat of CATEGORIES) {
   categoryRows.push(cell)
 }
 
-// One-off: the primary button's fixed #fff-on-stone-900 fill. Not a --c-*
-// semantic token (index.css uses var(--stone-900) directly, unchanged by
-// dark mode), so it sits outside the theme loop above by construction.
-const btnFg = parseColor('#ffffff')
-const btnBg = parseColor(resolveVar('stone-900', lightVars))
-const btnRatio = contrastRatio(btnFg, btnBg)
 
 // ── Report ────────────────────────────────────────────────────────────────────
 
@@ -314,7 +317,7 @@ function fmt(ratio) {
 const asJson = process.argv.includes('--json')
 
 if (asJson) {
-  console.log(JSON.stringify({ rows, categoryRows, button: { ratio: btnRatio } }, null, 2))
+  console.log(JSON.stringify({ rows, categoryRows }, null, 2))
   process.exit(0)
 }
 
@@ -365,7 +368,7 @@ for (const cell of rows) {
   }
 }
 
-console.log('\n## Category accents (17) — light hex vs. dark hex, each checked against its own theme\n')
+console.log('\n## Group accents (9) — light hex vs. dark hex, each checked against its own theme\n')
 if (missingDarkOverride.length > 0) {
   console.log(
     `**${missingDarkOverride.length} categor${missingDarkOverride.length === 1 ? 'y has' : 'ies have'} no dark override — falling back to the light hex for the dark-theme rows below:** ` +
@@ -387,10 +390,6 @@ for (const cell of categoryRows) {
   }
 }
 
-console.log('\n## Fixed pair (not theme-dependent)\n')
-console.log('| Pair | Ratio | Min | Status |')
-console.log('|---|---|---|---|')
-console.log(`| Primary button — #ffffff on var(--stone-900) | ${fmt(btnRatio)} | ${TEXT_MIN}:1 | ${status(btnRatio, TEXT_MIN)} |`)
 
 console.log(`\n## Summary\n`)
 console.log(`- ${evaluated.length + failures.length} pairs evaluated against a minimum ratio (${TEXT_MIN}:1 text / ${UI_MIN}:1 UI-boundary), plus ${infoRows.length} informational (decorative, no AA floor).`)

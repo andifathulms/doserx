@@ -8,7 +8,7 @@ web
 
 ## Users
 
-Primary user: a practicing doctor in Indonesia, calculating weight-based medication doses at the bedside (phone) and at a desk (desktop), often under time pressure — for pediatric and general patients. Originally built as a single-user personal tool; the doctor is now considering it as a real product/portfolio piece, potentially shared with other clinicians informally (still no accounts or multi-tenancy).
+Primary user: a practicing doctor in Indonesia, calculating medication doses at the bedside (phone), on the ward and in emergencies, and at a desk (desktop), often under time pressure — for paediatric and adult patients. Originally built as a single-user personal tool; the doctor is now considering it as a real product/portfolio piece, potentially shared with other clinicians informally (still no accounts or multi-tenancy).
 
 ## Product Purpose
 
@@ -22,8 +22,8 @@ Indonesian clinical context is the core differentiator — a generic mg/kg calcu
 
 - Used at the bedside on a phone under time pressure, and at a desk on larger screens — one-handed mobile usability matters as much as desktop comfort.
 - Deployed as an installable, offline-capable PWA (GitHub Pages via CI) — must work fully offline once loaded, no required network calls for core calculation.
-- Four calculator tabs (Preset, Kustom/Custom, Puyer, Infus) plus a History drawer accessed from the header rather than a separate page.
-- Drug catalog organized into 16 therapeutic categories (Gawat Darurat, Analgesik/NSAID, Antibiotik, Antikonvulsan, Kardiovaskular, Kortikosteroid, etc.), searchable by name, brand/alias, and indication; recents and favorites surface at the top for fast one-handed navigation.
+- Navigation by clinical task: Obat (one drug list with doses inline, drug pages with per-route regimens), Darurat (RSI, resusitasi, kejang, anafilaksis packs), Puyer, Cairan (rumatan, dekstrosa, and Na/K correction), Riwayat. A patient bar holds the weight and Anak/Dewasa for every tool.
+- Drug catalog organized into nine clinical groups (Kardiovaskular, Respirasi & Alergi, Neurologi, Analgetik, Cairan & Elektrolit, Gastrointestinal, Anti-infeksi, Anestesi & Intubasi, Lain-lain & Nutrisi), each drug holding one or more regimens (route, indication, population); searchable by name, brand/alias, indication and route; recents and favorites surface at the top.
 
 ## Capabilities and Constraints
 
@@ -33,12 +33,14 @@ Indonesian clinical context is the core differentiator — a generic mg/kg calcu
 - Patient labels in history are nudged toward short labels/initials only — no collection of full patient names (privacy constraint from the original PRD, still binding).
 - **Confirmed in-scope exception:** the Puyer panel's print/copy-to-clipboard output for compounded recipe cards is intentional and stays in scope, despite the original PRD's blanket "no prescribing/export" language.
 - **Still out of scope:** drug-interaction checking, multi-user auth/accounts, a full prescribing workflow or general PDF export beyond the Puyer recipe card, regulatory/clinical certification. This remains a calculation aid, not a clinical decision support system.
+- **Adult dosing is in scope** (decided Sept 2026): regimens carry a population (anak/dewasa/semua); adult regimens that are not weight-based use fixed doses (`calculateFixed`).
+- **Clinical review workflow**: new drugs, routes and rules enter as drafts with a cited source and are invisible to users until a clinician signs them off in review mode (/tinjau); publishing is a code change setting `status: 'verified'` and `reviewedBy`.
 - Custom drug presets: the doctor can define and save their own presets (dose/kg, frequency, caps, concentration) to localStorage and reuse them like built-in presets.
 
 ## Brand Commitments
 
 - Name: DoseRx.
-- A medical-teal palette and a dark-mode/accessibility pass are already implemented in the codebase (see current CSS/tokens) and are the incumbent visual authority — not to be treated as an open aesthetic decision.
+- The "Ward Day / Ward Night" system (clinic teal, ink answer panel, Plus Jakarta Sans + JetBrains Mono, manual dark mode) is the incumbent visual authority — see DESIGN.md.
 - Indonesian-language UI copy for drug/category names and clinical terminology (e.g. "Puyer", "Kustom", "Infus", "Sediaan", "Detail Obat") is an established convention, not a translation gap.
 
 ## Evidence on Hand

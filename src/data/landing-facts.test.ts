@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { CATALOG_STATS, DEMO_DRUG } from './landing-facts'
 import { DRUG_PRESETS } from './drugs'
+import { groupOf } from './categories'
 
 /**
  * The guard that makes hand-written landing facts safe. If these fail, the
@@ -12,8 +13,8 @@ describe('landing facts match the catalog', () => {
     expect(CATALOG_STATS.drugs).toBe(DRUG_PRESETS.length)
   })
 
-  it('states the real category count', () => {
-    expect(CATALOG_STATS.categories).toBe(new Set(DRUG_PRESETS.map((d) => d.category)).size)
+  it('states the real clinical-group count', () => {
+    expect(CATALOG_STATS.groups).toBe(new Set(DRUG_PRESETS.map(groupOf)).size)
   })
 
   it('lists every dosing source actually used', () => {

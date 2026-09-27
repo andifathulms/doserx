@@ -7,23 +7,23 @@ import { SITE } from './src/site'
 
 /**
  * The browser-chrome tint (theme-color meta tag, PWA manifest/splash) has to
- * agree with the app's own warm-monochrome palette, but used to live as a
- * literal copy of --stone-900/--stone-50 in site.ts — the exact "duplicated
+ * agree with the app's own ward palette, but used to live as a
+ * literal copy of the ink/canvas tokens in site.ts — the exact "duplicated
  * literal that quietly drifts" this project has a standing rule against
  * (DESIGN-REWORK.md §9). Reading them straight out of index.css's token
  * block means a palette change here can't leave the chrome behind.
  */
-function readStoneTokens() {
+function readWardTokens() {
   const css = readFileSync(resolve(__dirname, 'src/index.css'), 'utf8')
   const find = (name: string) => {
     const m = new RegExp(`--${name}:\\s*(#[0-9a-fA-F]{6})`).exec(css)
     if (!m) throw new Error(`vite.config.ts: --${name} not found in src/index.css`)
     return m[1]
   }
-  return { themeColor: find('stone-900'), backgroundColor: find('stone-50') }
+  return { themeColor: find('ward-900'), backgroundColor: find('ward-50') }
 }
 
-const { themeColor, backgroundColor } = readStoneTokens()
+const { themeColor, backgroundColor } = readWardTokens()
 
 /**
  * Injects the metadata tags from SITE at build time. A hand-maintained copy in
@@ -131,6 +131,9 @@ export default defineConfig({
           }
           // The drug catalog: needed by the calculator, the catalog index and
           // every drug page, but NOT by the methodology page.
+          // categories.ts and groupColors.ts are small lookup tables the
+          // landing page needs without the 92 drugs behind them.
+          if (/\/src\/data\/(categories|groupColors)\.ts/.test(id)) return undefined
           if (id.includes('/src/data/')) return 'catalog'
           // Landing and about copy, shared by the two bilingual routes only.
           if (id.includes('/src/content/')) return 'content'
@@ -150,8 +153,8 @@ export default defineConfig({
       includeAssets: ['icons/icon.svg', 'icons/icon-32.png', 'icons/apple-touch-icon.png'],
       manifest: {
         // The installed app is the doctor's tool: it opens straight into the
-        // calculator and never shows the marketing landing page.
-        start_url: '/doserx/hitung/preset',
+        // drug list and never shows the marketing landing page.
+        start_url: '/doserx/obat',
         name: SITE.title,
         short_name: SITE.name,
         description: SITE.description,

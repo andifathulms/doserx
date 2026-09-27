@@ -1,9 +1,10 @@
 import { useState, useMemo } from 'react'
 import { ExclamationTriangleIcon, CheckIcon, StarIcon, StarFilledIcon } from '@radix-ui/react-icons'
-import { DRUG_PRESETS, DrugPreset, DrugCategory } from '../data/drugs'
+import { DRUG_PRESETS, DrugPreset } from '../data/drugs'
 import { loadRecents, loadFavorites, recordRecent, toggleFavorite } from '../lib/storage'
 import { scoreDrug } from '../lib/search'
-import { CATEGORY_ORDER, COMMON_DRUG_IDS } from '../data/categories'
+import { COMMON_DRUG_IDS, groupOf } from '../data/categories'
+import { GroupFilter, GroupSelection, NO_GROUP, filterByGroup, groupDrugs } from './GroupFilter'
 
 // ── Single-select mode (Preset tab) ──────────────────────────────────────────
 
@@ -34,7 +35,8 @@ const PINNED_MAX = 6
 
 export function DrugGrid(props: DrugGridProps) {
   const [search, setSearch] = useState('')
-  const [activeCat, setActiveCat] = useState<DrugCategory | null>(null)
+  const [sel, setSel] = useState<GroupSelection>(NO_GROUP)
+  const activeCat = sel.group
   const [favorites, setFavorites] = useState<string[]>(() => loadFavorites())
   const [recents] = useState<string[]>(() => loadRecents())
 
@@ -43,16 +45,7 @@ export function DrugGrid(props: DrugGridProps) {
   const q = search.trim().toLowerCase()
   const searching = q.length > 0
 
-  // Categories actually present in this drug set, in canonical order.
-  const presentCategories = useMemo(() => {
-    const set = new Set(drugs.map((d) => d.category))
-    return CATEGORY_ORDER.filter((c) => set.has(c))
-  }, [drugs])
-
-  const scoped = useMemo(
-    () => (activeCat ? drugs.filter((d) => d.category === activeCat) : drugs),
-    [drugs, activeCat],
-  )
+  const scoped = useMemo(() => filterByGroup(drugs, sel), [drugs, sel])
 
   // When searching: flat, relevance-ranked. Otherwise: keep the original order.
   const ranked = useMemo(() => {
@@ -64,12 +57,7 @@ export function DrugGrid(props: DrugGridProps) {
       .map((x) => x.d)
   }, [scoped, searching, q])
 
-  const grouped = useMemo(() => {
-    const map = new Map<DrugCategory, DrugPreset[]>()
-    for (const cat of CATEGORY_ORDER) map.set(cat, [])
-    for (const d of scoped) map.get(d.category)?.push(d)
-    return [...map.entries()].filter(([, list]) => list.length > 0)
-  }, [scoped])
+  const grouped = useMemo(() => groupDrugs(scoped), [scoped])
 
   // "Sering dipakai" — favorites first, then recents not already favorited.
   // Falls back to a curated common-drugs shelf when there's no personal
@@ -119,12 +107,12 @@ export function DrugGrid(props: DrugGridProps) {
     const fav = favorites.includes(drug.id)
     const flagged = !!(drug.warning || drug.contraindication)
     return (
-      <div key={drug.id} className="drug-card-wrap" data-cat={drug.category}>
+      <div key={drug.id} className="drug-card-wrap" data-group={groupOf(drug)}>
         {/* aria-pressed describes a toggle. In multi-select (Puyer) that is
             exactly right; in single-select it is a choice among 92, which is
             what aria-current states. */}
         <button
-          data-cat={drug.category}
+          data-group={groupOf(drug)}
           className={`drug-card${selected ? ' drug-card--selected' : ''}`}
           onClick={() => handleClick(drug)}
           aria-pressed={props.mode === 'multi' ? selected : undefined}
@@ -204,32 +192,7 @@ export function DrugGrid(props: DrugGridProps) {
         )}
       </div>
 
-      {/* Category filter chips. These are filter toggles, not tabs — the
-          role="tablist" that used to be here was simply the wrong widget, and
-          the chips carried no pressed state at all, so which filter was
-          active was unavailable to a screen reader. */}
-      <div className="cat-chip-row">
-        <button
-          type="button"
-          aria-pressed={activeCat === null}
-          className={`cat-chip${activeCat === null ? ' cat-chip--active' : ''}`}
-          onClick={() => setActiveCat(null)}
-        >
-          Semua
-        </button>
-        {presentCategories.map((cat) => (
-          <button
-            key={cat}
-            type="button"
-            data-cat={cat}
-            aria-pressed={activeCat === cat}
-            className={`cat-chip${activeCat === cat ? ' cat-chip--active' : ''}`}
-            onClick={() => setActiveCat(activeCat === cat ? null : cat)}
-          >
-            {cat}
-          </button>
-        ))}
-      </div>
+      <GroupFilter drugs={drugs} value={sel} onChange={setSel} />
 
       {/* Pinned recents/favorites, or — before any exist — a curated common-
           drugs shelf. The label and icon are honest about which one this is:

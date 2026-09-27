@@ -114,6 +114,7 @@ export const VITAMINS: DrugPreset[] = [
     name: 'Zinc',
     route: 'Oral',
     category: 'Vitamin/Mineral',
+    group: 'Gastrointestinal',
     dosePerKg: 0.5,
     dosePerKgMin: 0.5,
     dosePerKgMax: 1,

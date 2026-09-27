@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { SunIcon, MoonIcon } from '@radix-ui/react-icons'
 import { Link, isActive } from '../lib/router'
-import { NAV_ITEMS, routeTitle } from '../routes'
+import { NavIcon } from './NavIcons'
+import { NAV_ITEMS, NavItem, routeTitle } from '../routes'
 import { Theme, loadTheme, saveTheme } from '../lib/storage'
+import { PatientBar } from './PatientBar'
 
 /**
  * Site chrome for a multi-page app.
@@ -70,13 +72,19 @@ export function ThemeToggle() {
   )
 }
 
-interface SiteHeaderProps {
-  historyCount: number
-  historyActive: boolean
-  path: string
+function itemActive(path: string, item: NavItem): boolean {
+  return item.match.some((m) => isActive(path, m))
 }
 
-export function SiteHeader({ historyCount, historyActive, path }: SiteHeaderProps) {
+interface SiteHeaderProps {
+  historyCount: number
+  path: string
+  /** Tool screens pin the patient bar under the header, inside the same
+   *  sticky element, so the weight stays in reach while scrolling results. */
+  showPatient?: boolean
+}
+
+export function SiteHeader({ historyCount, path, showPatient = false }: SiteHeaderProps) {
   return (
     <header className="site-header">
       <div className="site-header__inner">
@@ -87,58 +95,59 @@ export function SiteHeader({ historyCount, historyActive, path }: SiteHeaderProp
         </Link>
 
         <nav className="site-nav" aria-label="Navigasi utama">
-          {NAV_ITEMS.map((item) => (
-            <Link
-              key={item.id}
-              to={item.href}
-              className={`site-nav__link${isActive(path, item.match) ? ' site-nav__link--active' : ''}`}
-              aria-current={isActive(path, item.match) ? 'page' : undefined}
-            >
-              {item.label}
-            </Link>
-          ))}
+          {NAV_ITEMS.map((item) => {
+            const active = itemActive(path, item)
+            return (
+              <Link
+                key={item.id}
+                to={item.href}
+                className={`site-nav__link${active ? ' site-nav__link--active' : ''}`}
+                aria-current={active ? 'page' : undefined}
+              >
+                {item.label}
+                {item.id === 'history' && historyCount > 0 && (
+                  <span className="site-nav__count">{historyCount}</span>
+                )}
+              </Link>
+            )
+          })}
         </nav>
 
-        {/* Grouped so the header stays a clean two-item space-between row on
-            mobile (brand ↔ actions) once .site-nav hides at ≤560px, rather
-            than spreading three separate flex children across the bar. */}
         <div className="site-header__actions">
-          <ThemeToggle />
           <Link
-            to="/riwayat"
-            className={`history-toggle${historyActive ? ' history-toggle--active' : ''}`}
-            aria-current={historyActive ? 'page' : undefined}
+            to="/tentang"
+            className={`site-header__about${isActive(path, '/tentang') ? ' site-header__about--active' : ''}`}
+            aria-current={isActive(path, '/tentang') ? 'page' : undefined}
           >
-            Riwayat
-            {historyCount > 0 && <span className="history-toggle__count">{historyCount}</span>}
+            Tentang
           </Link>
+          <ThemeToggle />
         </div>
       </div>
+      {showPatient && <PatientBar />}
     </header>
   )
 }
 
 export function BottomNav({ path, historyCount }: { path: string; historyCount: number }) {
-  const items = [
-    ...NAV_ITEMS,
-    { id: 'history', href: '/riwayat', match: '/riwayat', label: 'Riwayat' },
-  ]
-
   return (
     <nav className="bottom-nav" aria-label="Navigasi utama (bawah)">
-      {items.map((item) => {
-        const active = isActive(path, item.match)
+      {NAV_ITEMS.map((item) => {
+        const active = itemActive(path, item)
         return (
           <Link
             key={item.id}
             to={item.href}
-            className={`bottom-nav__link${active ? ' bottom-nav__link--active' : ''}`}
+            className={`bottom-nav__link bottom-nav__link--${item.icon}${active ? ' bottom-nav__link--active' : ''}`}
             aria-current={active ? 'page' : undefined}
           >
-            {item.label}
-            {item.id === 'history' && historyCount > 0 && (
-              <span className="bottom-nav__count">{historyCount}</span>
-            )}
+            <span className="bottom-nav__icon">
+              <NavIcon name={item.icon} />
+              {item.id === 'history' && historyCount > 0 && (
+                <span className="bottom-nav__count">{historyCount}</span>
+              )}
+            </span>
+            <span className="bottom-nav__label">{item.label}</span>
           </Link>
         )
       })}

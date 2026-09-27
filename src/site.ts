@@ -24,6 +24,6 @@ export const SITE = {
 
 // themeColor/backgroundColor used to be duplicated here as literals — DESIGN-
 // REWORK.md §9 flagged that a theme change would leave the browser chrome
-// behind. vite.config.ts now reads --stone-900/--stone-50 straight out of
+// behind. vite.config.ts now reads --ward-900/--ward-50 straight out of
 // index.css instead (see readStoneTokens() there), so there is exactly one
 // place those values live.

@@ -1,4 +1,4 @@
-import { InfusionDoseUnit } from '../data/infusionDrugs'
+import { InfusionDoseUnit, isWeightFreeUnit } from '../data/infusionDrugs'
 
 export interface InfusionInput {
   weight: number          // kg
@@ -20,8 +20,10 @@ export interface InfusionResult {
   ratePerHr: number       // mL/hr
   dropsMacro: number      // drops/min (macro: 20 drops/mL)
   dropsMicro: number      // drops/min (micro: 60 drops/min)
-  dosePerHr: number       // normalised to per-hour in same unit magnitude
-  dosePerHrUnit: string
+  /** Dose × weight, in the dose's own time base — mcg/kg/min × kg = mcg/min. */
+  totalDose: number
+  /** e.g. 'mcg/mnt', 'mg/jam' — the dose unit with /kg removed. */
+  totalDoseUnit: string
   /**
    * The working. This mode hides the app's most error-prone arithmetic — a
    * mg->mcg factor of 1000 and an hr->min factor of 60 — inside a single
@@ -39,10 +41,13 @@ export interface InfusionError {
 export function calculateInfusion(input: InfusionInput): InfusionResult | InfusionError {
   const { weight, dose, doseUnit, stockConcentration, diluentVolume } = input
 
-  if (!isFinite(weight) || weight <= 0) return { valid: false, error: 'Masukkan berat badan yang valid.' }
+  const weightFree = isWeightFreeUnit(doseUnit)
+  if (!weightFree && (!isFinite(weight) || weight <= 0)) return { valid: false, error: 'Masukkan berat badan yang valid.' }
   if (!isFinite(dose) || dose <= 0) return { valid: false, error: 'Masukkan dosis yang valid.' }
   if (!isFinite(stockConcentration) || stockConcentration <= 0) return { valid: false, error: 'Masukkan konsentrasi stok yang valid.' }
   if (!isFinite(diluentVolume) || diluentVolume <= 0) return { valid: false, error: 'Masukkan volume pelarut yang valid.' }
+
+  if (weightFree) return calculateWeightFree(input)
 
   const steps: InfusionStep[] = []
   // Base unit after normalisation — mcg for mass drugs, unit for the rest.
@@ -76,6 +81,8 @@ export function calculateInfusion(input: InfusionInput): InfusionResult | Infusi
         result: `${round4(dosePerMin_perKg)} unit/kg/mnt`,
       })
       break
+    default:
+      return { valid: false, error: 'Satuan dosis tidak dikenal.' }
   }
 
   // Total dose per minute in same unit as stockConcentration
@@ -114,10 +121,63 @@ export function calculateInfusion(input: InfusionInput): InfusionResult | Infusi
     result: `${dropsMicro} tpm`,
   })
 
-  const dosePerHr = round2(dose * weight)
-  const dosePerHrUnit = doseUnit.replace('/min', '/hr').replace('kg/', 'total ')
+  // Dose × weight stays in the dose's own time base. This used to relabel
+  // mcg/kg/min as "mcg/total hr" while keeping the per-minute number — a
+  // 60× mislabel on the total shown beside the drip rate and in the copied
+  // text. The total is now per minute for per-minute units, per hour for
+  // per-hour ones, and says so.
+  const totalDose = round2(dose * weight)
+  const totalDoseUnit = doseUnit.replace('/kg', '').replace('/min', '/mnt').replace('/hr', '/jam')
 
-  return { valid: true, ratePerHr, dropsMacro, dropsMicro, dosePerHr, dosePerHrUnit, steps }
+  return { valid: true, ratePerHr, dropsMacro, dropsMicro, totalDose, totalDoseUnit, steps }
+}
+
+/**
+ * Whole-patient drips (mcg/min, mg/hr) — the adult way of writing a titrated
+ * vasodilator. Same output shape and the same visible working as the
+ * weight-based path, minus the × kg step; the working says the weight is not
+ * used, so a missing or wrong weight can't be mistaken as having mattered.
+ */
+function calculateWeightFree(input: InfusionInput): InfusionResult {
+  const { dose, doseUnit, stockConcentration } = input
+  const steps: InfusionStep[] = []
+  let dosePerMin: number // mcg/min
+  if (doseUnit === 'mg/hr') {
+    dosePerMin = (dose * 1000) / 60
+    steps.push({
+      expression: `${dose} mg/jam × 1000 mcg/mg ÷ 60 mnt (tanpa berat badan)`,
+      result: `${round4(dosePerMin)} mcg/mnt`,
+    })
+  } else {
+    dosePerMin = dose
+    steps.push({ expression: `${dose} mcg/mnt (tanpa berat badan)`, result: `${dose} mcg/mnt` })
+  }
+  const stockIsMg = doseUnit === 'mg/hr'
+  const stockMcg = stockIsMg ? stockConcentration * 1000 : stockConcentration
+  if (stockIsMg) {
+    steps.push({
+      expression: `Stok ${stockConcentration} mg/mL × 1000 mcg/mg`,
+      result: `${round4(stockMcg)} mcg/mL`,
+    })
+  }
+  const ratePerHr = round2((dosePerMin / stockMcg) * 60)
+  steps.push({
+    expression: `${round4(dosePerMin)} mcg/mnt ÷ ${round4(stockMcg)} mcg/mL × 60 mnt`,
+    result: `${ratePerHr} mL/jam`,
+  })
+  const dropsMacro = round1((ratePerHr / 60) * 20)
+  const dropsMicro = round1((ratePerHr / 60) * 60)
+  steps.push({ expression: `${ratePerHr} mL/jam ÷ 60 mnt × 20 tetes/mL (makro)`, result: `${dropsMacro} tpm` })
+  steps.push({ expression: `${ratePerHr} mL/jam ÷ 60 mnt × 60 tetes/mL (mikro)`, result: `${dropsMicro} tpm` })
+  return {
+    valid: true,
+    ratePerHr,
+    dropsMacro,
+    dropsMicro,
+    totalDose: round2(dose),
+    totalDoseUnit: doseUnit === 'mg/hr' ? 'mg/jam' : 'mcg/mnt',
+    steps,
+  }
 }
 
 function round2(v: number): number { return Math.round(v * 100) / 100 }

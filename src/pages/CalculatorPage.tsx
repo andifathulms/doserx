@@ -1,14 +1,16 @@
 import { lazy, Suspense } from 'react'
-import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
-import { Tabs } from '../components/Tabs'
-import { PresetPanel } from '../components/PresetPanel'
 import { CustomPanel } from '../components/CustomPanel'
+import { SafetyBanner } from '../components/SafetyBanner'
 import { CALCULATOR_MODES } from '../routes'
-import { navigate } from '../lib/router'
+import { Link } from '../lib/router'
 import { CustomDrugPreset } from '../lib/storage'
 
 /**
- * /hitung/:mode — the calculator route, as one chunk.
+ * /hitung/:mode — the tools that are not "one catalog drug": a custom drug,
+ * a puyer recipe, the drip list, and fluids. Each is reached from the
+ * navigation (Puyer, Cairan) or from the Obat list (Kustom, drips), so the
+ * mode tabs that used to sit here are gone — each mode is its own page with
+ * its own heading.
  *
  * Pulled out of App so the shell carries no calculator code: a visitor reading
  * the landing page or a drug monograph never downloads the four panels, and
@@ -36,44 +38,28 @@ interface CalculatorPageProps {
 
 export function CalculatorPage({
   mode,
-  customDrugs,
+  customDrugs: _customDrugs,
   onHistoryUpdated,
   onCustomDrugsChanged,
 }: CalculatorPageProps) {
+  const m = CALCULATOR_MODES.find((x) => x.id === mode) ?? CALCULATOR_MODES[0]
+
   return (
     <>
-      {/* The demo lives on the landing page, not here. On the tool it sat
-          between the heading and the tabs, delaying the thing the doctor came
-          for — and it duplicated what the form below does for real. */}
-      <div className="page-head">
-        <h1 className="page-title" tabIndex={-1}>Kalkulator dosis</h1>
-        <p className="page-lede">
-          Masukkan berat badan pasien, dapatkan dosis mg dan volume mL siap pakai.
-        </p>
-      </div>
-
-      <Tabs
-        tabs={CALCULATOR_MODES.map((m) => ({ ...m }))}
-        active={mode}
-        onChange={(id) => navigate(`/hitung/${id}`)}
-        label="Mode hitung"
-      />
-
-      <div className="safety-banner" role="note">
-        <ExclamationTriangleIcon className="safety-banner__icon" aria-hidden="true" />
-        <span>
-          <strong>Alat bantu hitung saja</strong> — bukan sistem pendukung keputusan klinis atau resep.
-          Verifikasi setiap dosis dengan panduan institusi/klinis terkini sebelum digunakan.
-        </span>
-      </div>
-
-      {mode === 'preset' && (
-        <PresetPanel
-          onHistoryUpdated={onHistoryUpdated}
-          customDrugs={customDrugs}
-          onCustomDrugDeleted={onCustomDrugsChanged}
-        />
+      {(mode === 'custom' || mode === 'infus') && (
+        <nav className="breadcrumb" aria-label="Remah roti">
+          <Link to="/obat">Obat</Link>
+          <span aria-hidden="true"> › </span>
+          <span className="breadcrumb__current">{m.label}</span>
+        </nav>
       )}
+      <div className="page-head">
+        <h1 className="page-title" tabIndex={-1}>{m.title}</h1>
+        <p className="page-lede">{m.hint}</p>
+      </div>
+
+      <SafetyBanner />
+
       {mode === 'custom' && (
         <CustomPanel onHistoryUpdated={onHistoryUpdated} onPresetSaved={onCustomDrugsChanged} />
       )}

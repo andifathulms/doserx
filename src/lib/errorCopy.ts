@@ -13,6 +13,7 @@ const ERROR_COPY: Record<string, string> = {
   'Weight must be a positive number.': 'Berat badan harus berupa angka lebih dari 0.',
   'Dose/kg must be a positive number.': 'Dosis per kg harus berupa angka lebih dari 0.',
   'Frequency must be a positive number.': 'Frekuensi harus berupa angka lebih dari 0.',
+  'Dose must be a positive number.': 'Dosis harus berupa angka lebih dari 0.',
 }
 
 export function errorCopy(message: string): string {

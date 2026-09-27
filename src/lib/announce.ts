@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { CalcResult } from './calculate'
 
 /**
@@ -20,4 +21,20 @@ export function announceResult(
   if (result.cappedByMaxDay) parts.push('dosis harian dibatasi ke maksimum')
   if (result.cappedByMaxSingle) parts.push('dosis per kali dibatasi ke maksimum')
   return `${parts.join(', ')}.`
+}
+
+/**
+ * The value, once it has stopped changing for `ms`.
+ *
+ * Results are live now — they update on every keystroke — so a live region
+ * fed the raw result would read "1 miligram… 14 miligram… 140 miligram" as
+ * the weight is typed. Announcing the settled value says it once.
+ */
+export function useSettled<T>(value: T, ms = 700): T {
+  const [settled, setSettled] = useState(value)
+  useEffect(() => {
+    const id = setTimeout(() => setSettled(value), ms)
+    return () => clearTimeout(id)
+  }, [value, ms])
+  return settled
 }

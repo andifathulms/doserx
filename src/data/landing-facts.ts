@@ -14,7 +14,8 @@
  */
 export const CATALOG_STATS = {
   drugs: 92,
-  categories: 16,
+  /** Clinical groups that currently hold at least one drug. */
+  groups: 8,
   sources: ['IDAI', 'BNFc', 'Fornas', 'WHO', 'Kemenkes'],
 } as const
 

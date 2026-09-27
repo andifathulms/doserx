@@ -6,6 +6,7 @@ import { LandingPage } from './LandingPage'
 import { AboutPage } from './AboutPage'
 import { SOURCE_COUNTS, ABOUT_FACTS } from '../content/about'
 import { DRUG_PRESETS } from '../data/drugs'
+import { LIVE_CATALOG } from '../data/catalog'
 
 /**
  * Server-render smoke tests. They catch two classes of bug at once: a page that
@@ -14,12 +15,20 @@ import { DRUG_PRESETS } from '../data/drugs'
  * would break the prerender step in phase 6.
  */
 describe('CatalogPage', () => {
-  it('renders every drug as a link to its own page', () => {
+  it('renders every live catalog drug as a link to its own page', () => {
     const html = renderToString(<CatalogPage />)
-    expect(html).toContain('Katalog obat')
-    for (const drug of DRUG_PRESETS) {
+    expect(html).toContain('<h1')
+    for (const drug of LIVE_CATALOG) {
       expect(html).toContain(`/doserx/obat/${drug.id}`)
     }
+  })
+
+  it('offers the custom calculator from the list, and carries the disclaimer', () => {
+    const html = renderToString(<CatalogPage />)
+    expect(html).toContain('/doserx/hitung/custom')
+    // Compact wording on the list, but both halves of the requirement.
+    expect(html.toLowerCase()).toMatch(/bukan (sistem )?pendukung keputusan klinis/)
+    expect(html.toLowerCase()).toContain('verifikasi')
   })
 })
 
@@ -29,8 +38,11 @@ describe('DrugPage', () => {
       const html = renderToString(<DrugPage id={drug.id} onHistoryUpdated={() => {}} />)
       expect(html).toContain(drug.name)
       // The calculator travels with the page — landing from a search result
-      // and getting a dose must not require a detour.
-      expect(html).toContain('Hitung')
+      // and getting a dose must not require a detour. Results are live, so
+      // there is no button to look for: the dose field and the prompt that
+      // points at the patient bar are the calculator's footprint.
+      expect(html).toContain(`id="drug-${drug.id}-dose"`)
+      expect(html).toContain('weight-prompt')
     }
   })
 
@@ -38,6 +50,14 @@ describe('DrugPage', () => {
     const withSource = DRUG_PRESETS.find((d) => d.source)!
     const html = renderToString(<DrugPage id={withSource.id} onHistoryUpdated={() => {}} />)
     expect(html).toContain(withSource.source!)
+  })
+
+  it('renders the drip-only drugs (dopamin, norepinefrin) with their infusion calculator', () => {
+    for (const id of ['dopamine', 'norepinephrine']) {
+      const html = renderToString(<DrugPage id={id} onHistoryUpdated={() => {}} />)
+      expect(html).toContain('id="infusion-dose"')
+      expect(html).toContain('HIGH-ALERT')
+    }
   })
 
   it('handles an unknown id without throwing', () => {
@@ -73,7 +93,7 @@ describe('LandingPage', () => {
 
   it('always offers a route into the calculator', () => {
     const html = renderToString(<LandingPage lang="id" />)
-    expect(html).toContain('/doserx/hitung/preset')
+    expect(html).toContain('/doserx/obat')
   })
 })
 

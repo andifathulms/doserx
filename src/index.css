@@ -1,120 +1,138 @@
-/* ── Fonts — system stacks only ───────────────────────────────────────────────
-   No self-hosted or CDN font: PRD §6 requires the app to work fully offline
-   from a cold first load, and every platform already ships a competent sans,
-   serif and monospace face. Three families, three jobs — see the type-scale
-   comment below for which selectors use which. ──────────────────────────── */
+/* ── Fonts — self-hosted, precached ───────────────────────────────────────────
+   Plus Jakarta Sans (designed in Jakarta by Tokotype) for everything a person
+   reads or operates; JetBrains Mono for every number a clinician reads under
+   pressure — its 0/O, 1/l/I and 5/S are unmistakable at a glance, which is
+   the whole reason a dose calculator wants a mono face at all.
+
+   Both are bundled as latin-only variable woff2 (imported in main.tsx) and
+   precached by the service worker, so the app still renders fully offline
+   after its first load. On a cold first load with no network the system
+   stacks below stand in until the files arrive (font-display: swap) — a
+   deliberate change from the old system-fonts-only rule, see DESIGN.md. ──── */
 
 /* ── Reset ────────────────────────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 button { font: inherit; cursor: pointer; }
 input  { font: inherit; }
 
-/* ── Design tokens ────────────────────────────────────────────────────────── */
+/* ── Design tokens — "Ward Day" ───────────────────────────────────────────────
+   A clinical instrument rather than a reference book: cool, faintly green
+   greys for structure, one teal for everything you can operate, and one dark
+   "answer" panel that is the only dark object on a light screen. Ratios in
+   the comments are computed by scripts/contrast-check.mjs. ────────────────── */
 :root {
-  /* Palette — warm stone (canvas, text, structure) */
-  --stone-50:  #fbfbfa;
-  --stone-100: #f7f6f3;
-  --stone-200: #eaeaea;
-  --stone-400: #948e81;   /* ~3.2:1 on white/bg — the UI-component-boundary tier */
-  --stone-500: #75716b;   /* ~4.7:1 on white/bg */
-  --stone-600: #57534e;   /* ~7.4:1 on white/bg */
-  --stone-700: #333333;   /* CTA hover */
-  --stone-900: #111111;   /* near-black, never pure #000 */
-  --stone-faint: #a19c93; /* ~2.6:1 — decorative/placeholder only, never load-bearing copy */
+  /* Palette — ward neutrals (canvas, text, structure). Cool, green-leaning,
+     never a flat mid-grey, never pure #000/#fff for text. */
+  --ward-50:  #f2f5f4;   /* canvas */
+  --ward-100: #e9eeec;   /* secondary surface, tracks */
+  --ward-200: #dbe3e0;   /* decorative hairlines only */
+  --ward-400: #7f8f8b;   /* UI-component boundary tier — meets 3:1 */
+  --ward-500: #56655f;   /* tertiary text */
+  --ward-600: #3b4a47;   /* secondary text */
+  --ward-700: #1f3140;   /* ink hover */
+  --ward-900: #0f1e2a;   /* ink — text, primary buttons, the answer panel */
+  --ward-faint: #9aa8a4; /* decorative/placeholder only, never load-bearing */
 
-  /* Palette — pastels. Exactly four hues, one semantic job each: accent
-     (primary/links/focus), warn, error, success. Values below are the
-     WCAG-verified text/background pairs, not the raw suggestion swatches. */
-  --pastel-blue-bg:    #e1f3fe;
-  --pastel-blue-text:  #1f6c9f;   /* 5.5:1 on bg, 5.7:1 on surface */
-  --pastel-yellow-bg:  #fbf3db;
-  --pastel-yellow-text:#8a5a00;   /* 5.7:1 on bg, 5.9:1 on surface */
-  --pastel-red-bg:     #fdebec;
-  --pastel-red-text:   #9f2f2d;   /* 6.9:1 on bg, 7.2:1 on surface */
-  --pastel-green-bg:   #edf3ec;
-  --pastel-green-text: #346538;   /* 6.6:1 on bg, 6.8:1 on surface */
+  /* Palette — signal pairs. Four hues, one semantic job each: teal (operate:
+     links, focus, selection), amber (caution: caps, warnings), red (errors,
+     Darurat), green (inside a published range — the band only). */
+  --teal-bg:     #dcf1ed;
+  --teal-text:   #0a7066;
+  --amber-bg:    #fff1d9;
+  --amber-text:  #8a5500;
+  --red-bg:      #fde9e6;
+  --red-text:    #a92c22;
+  --green-bg:    #e3f3e8;
+  --green-text:  #256a3b;
 
-  /* Clay — the one documented second accent, distinct from the four pastels
-     above. Real semantic need, not decoration: it marks "solid preparation"
-     (tablet/powder) apart from the blue "liquid" chip elsewhere on the same
-     screen — collapsing them to one hue would erase a clinically real
-     distinction the app makes between how two different doses are given. */
-  --clay-bg:   #f5ebe0;
-  --clay-text: #8b5e34;   /* 5.4:1 on bg, 5.6:1 on surface, 4.8:1 on its own pale bg */
+  /* Clay — the one documented second accent: "solid preparation" (tablet,
+     powder) apart from a liquid dose on the same screen. A real clinical
+     distinction, not decoration. */
+  --clay-bg:   #f6ebdf;
+  --clay-text: #83562d;
 
-  /* Semantic — Warm Editorial (light) */
+  /* Readout mint — used ONLY for dose digits inside the answer panel. */
+  --mint:      #7fe8d2;
+
+  /* Semantic — light */
   color-scheme: light;
-  --c-bg:           var(--stone-50);
+  --c-bg:           var(--ward-50);
   --c-surface:      #ffffff;
-  --c-surface-2:    var(--stone-100);
-  --c-border:       var(--stone-200);   /* decorative hairlines only */
-  --c-border-mid:   var(--stone-400);   /* real UI-component boundaries — meets 3:1 */
+  --c-surface-2:    var(--ward-100);
+  --c-border:       var(--ward-200);   /* decorative hairlines only */
+  --c-border-mid:   var(--ward-400);   /* real UI-component boundaries — meets 3:1 */
 
-  --c-text:         var(--stone-900);
-  --c-text-2:       var(--stone-600);
-  --c-text-3:       var(--stone-500);
-  --c-text-faint:   var(--stone-faint);
+  --c-text:         var(--ward-900);
+  --c-text-2:       var(--ward-600);
+  --c-text-3:       var(--ward-500);
+  --c-text-faint:   var(--ward-faint);
 
-  --c-primary:      var(--pastel-blue-text);
-  --c-primary-dark: #185a84;           /* darker step for hover, 7.1:1 on white */
-  --c-primary-dim:  #123f5c;
-  --c-primary-bg:   var(--pastel-blue-bg);
-  --c-primary-bdr:  #b9e0f8;
-  /* Text/icon colour for a small solid --c-primary FILL (count badges, the
-     grid step number) — not the same thing as --c-primary itself, which is
-     used as text/icon color on the app's own bg/surface. White reads at
-     5.67:1 here; in dark mode --c-primary becomes a light pastel blue, where
-     white-on-white would be the failure, so this flips to near-black
-     (9.68:1) instead of following --c-primary's own light->dark swap. */
+  --c-ink:          var(--ward-900);   /* primary button fill */
+  --c-ink-hover:    var(--ward-700);
+  --c-on-ink:       #ffffff;
+
+  --c-primary:      var(--teal-text);
+  --c-primary-dark: #075a52;
+  --c-primary-dim:  #053f3a;
+  --c-primary-bg:   var(--teal-bg);
+  --c-primary-bdr:  #a3d9cf;
+  /* Text/icon colour on a small solid --c-primary FILL (count badges, step
+     numbers). White on light-mode teal; flips to ink in dark mode, where
+     --c-primary becomes a light mint. */
   --c-on-primary:   #ffffff;
 
-  /* Clay secondary — see --clay-* above for why this stays distinct from primary. */
   --c-accent:       var(--clay-text);
   --c-accent-bg:    var(--clay-bg);
-  --c-accent-bdr:   #e8d9c5;
+  --c-accent-bdr:   #e6d4bf;
 
-  --c-warn:         var(--pastel-yellow-text);
-  --c-warn-bg:      var(--pastel-yellow-bg);
-  --c-warn-bdr:     #f0e2b0;
+  --c-warn:         var(--amber-text);
+  --c-warn-bg:      var(--amber-bg);
+  --c-warn-bdr:     #f0dcae;
   --c-warn-text:    var(--c-text-2);
-  --c-warn-strong:  var(--pastel-yellow-text);
+  --c-warn-strong:  var(--amber-text);
 
-  --c-error:        var(--pastel-red-text);
-  --c-error-bg:     var(--pastel-red-bg);
+  --c-error:        var(--red-text);
+  --c-error-bg:     var(--red-bg);
 
-  --c-success:      var(--pastel-green-text);
-  --c-success-bg:   var(--pastel-green-bg);
+  --c-success:      var(--green-text);
+  --c-success-bg:   var(--green-bg);
 
-  /* Focus indicator — pastel-blue-text clears 3:1 (1.4.11) on both --c-bg
-     and --c-surface, same bar the previous teal ring was held to. */
+  /* The answer panel. Identical intent in both themes: the one dark,
+     high-contrast object on screen, with the dose in mint. */
+  --c-answer-bg:    var(--ward-900);
+  --c-answer-text:  #e8f0ee;
+  --c-answer-sub:   #a3c0ba;
+  --c-answer-num:   var(--mint);
+  --c-answer-line:  rgba(232,240,238,.14);
+  --c-answer-chip:  rgba(232,240,238,.09);
+
   --c-focus:        var(--c-primary);
 
-  /* Shadows — ultra-diffuse, warm-tinted (never slate/blue-tinted black). */
-  --sh-xs: 0 1px 2px rgba(40,35,28,.03);
-  --sh-sm: 0 1px 3px rgba(40,35,28,.04), 0 1px 2px rgba(40,35,28,.03);
-  --sh:    0 2px 6px rgba(40,35,28,.04), 0 1px 3px rgba(40,35,28,.03);
-  --sh-md: 0 6px 16px rgba(40,35,28,.045), 0 2px 6px rgba(40,35,28,.03);
+  /* Shadows — soft, ink-tinted. */
+  --sh-xs: 0 1px 2px rgba(15,30,42,.05);
+  --sh-sm: 0 1px 3px rgba(15,30,42,.07), 0 1px 2px rgba(15,30,42,.04);
+  --sh:    0 4px 12px rgba(15,30,42,.07), 0 1px 3px rgba(15,30,42,.05);
+  --sh-md: 0 12px 32px -8px rgba(15,30,42,.18), 0 2px 6px rgba(15,30,42,.06);
   --sh-ring: 0 0 0 3px var(--c-focus);
 
-  /* Radii — crisp, capped. Pills reserved for tags/badges/segmented controls.
-     --r-lg (12px) is the roundest non-pill surface (the result card) — there
-     was also a --r-xl at the same 12px value with no distinct use, which
-     DESIGN-REWORK.md §9 flagged; removed rather than kept as a second name
-     for the same number. */
-  --r-xs:  4px;
-  --r-sm:  6px;
-  --r:     8px;
-  --r-lg:  12px;
+  /* Radii — softer than the notebook era; pills for chips and segmented
+     controls. --r-xl is the answer panel, the roundest surface. */
+  --r-xs:  6px;
+  --r-sm:  10px;
+  --r:     12px;
+  --r-lg:  16px;
+  --r-xl:  20px;
   --r-full: 9999px;
 
   /* Layout */
-  --max-w: 820px;
+  --max-w: 880px;
   --pad:   20px;
 
-  /* Minimum interactive target. WCAG 2.5.8 (AA) asks for 24x24 CSS px; text
-     buttons that sit inline with other text are exempt, but these are the
-     controls a tired hand aims at, so they get the floor anyway. */
+  /* Interactive targets. --target-min is the WCAG floor for inline
+     controls; --target is what a primary control a tired hand aims at
+     one-handed gets (the patient-bar steppers, route chips, nav). */
   --target-min: 24px;
+  --target:     44px;
 
   /* ── Spacing scale — 4px base. Use these, not raw px. ─────────────────── */
   --sp-1:  4px;
@@ -127,21 +145,20 @@ input  { font: inherit; }
   --sp-10: 40px;
   --sp-12: 48px;
 
-  /* ── Type scale — one scale, anchored at 16px body ─────────────────────
-     Rule of use: anything a person READS (prose, values, form controls,
-     buttons, drug names) is --fs-base or larger. The sub-16px steps are for
-     non-prose only: uppercase eyebrows, unit suffixes, count badges, chips.
-     Never set a font-size outside this scale.
+  /* ── Type ──────────────────────────────────────────────────────────────
+     Anything a person READS (prose, values, controls, drug names) is
+     --fs-base or larger; sub-16px steps are for non-prose only (eyebrows,
+     unit suffixes, badges, chips).
 
-     Three font families, three jobs:
-       --font-sans   UI chrome, body copy, buttons, nav, labels (default).
-       --font-serif  Editorial moments only — hero/page titles, drug-name
-                     headings, pull quotes. Never body copy, never buttons.
-       --font-mono   Every number a clinician reads under pressure — doses,
-                     mL, weights, timestamps — paired with tabular-nums. ── */
-  --font-sans:  -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-  --font-serif: ui-serif, Georgia, 'Iowan Old Style', 'Times New Roman', serif;
-  --font-mono:  ui-monospace, 'SF Mono', 'Cascadia Code', 'Roboto Mono', monospace;
+     Two families, two jobs:
+       --font-sans  everything a person reads or operates. Titles and drug
+                    names use it at 800 with tight tracking (--font-display
+                    is the same face, named for that role).
+       --font-mono  every number a clinician reads mid-task — doses, mL,
+                    weights, timestamps — always with tabular-nums. ─────── */
+  --font-sans:    'Plus Jakarta Sans Variable', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --font-display: var(--font-sans);
+  --font-mono:    'JetBrains Mono Variable', ui-monospace, 'SF Mono', 'Cascadia Code', 'Roboto Mono', monospace;
 
   --fs-3xs:  0.6875rem;  /* 11px — count badges, unit suffixes */
   --fs-2xs:  0.75rem;    /* 12px — uppercase eyebrow labels */
@@ -150,18 +167,16 @@ input  { font: inherit; }
   --fs-base: 1rem;       /* 16px — body copy, inputs, buttons */
   --fs-md:   1.125rem;   /* 18px — lead paragraphs, card titles */
   --fs-lg:   1.25rem;    /* 20px — section headings */
-  --fs-xl:   1.5rem;     /* 24px — panel headings */
-  --fs-2xl:  1.75rem;    /* 28px — app title */
-  --fs-3xl:  2.375rem;   /* 38px — the result number (the app's hero) */
+  --fs-xl:   1.5rem;     /* 24px — panel headings, drug names */
+  --fs-2xl:  1.75rem;    /* 28px — secondary readouts */
+  --fs-3xl:  2.375rem;   /* 38px — page titles */
+  --fs-hero: 3rem;       /* 48px — the dose, inside the answer panel */
 
-  /* Line heights */
   --lh-tight: 1.15;
   --lh-snug:  1.35;
   --lh-body:  1.55;
 
-  /* Typography */
   font-family: var(--font-sans);
-  font-feature-settings: 'cv11', 'ss01', 'cv04';
   font-size: 16px;
   line-height: 1.5;
   color: var(--c-text);
@@ -170,53 +185,63 @@ input  { font: inherit; }
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ── Dark mode (opt-in only) ──────────────────────────────────────────────────
-   The GP-facing app is light by default and no longer follows the OS setting.
-   This palette stays dormant until something sets data-theme="dark" on <html>
-   (kept for a future in-app toggle). Warm-dark analogue of the light tokens
-   above, verified against the same WCAG bar. ─────────────────────────────── */
+/* ── Dark mode — "Ward Night" (manual, persisted, never OS-following) ─────────
+   Set by the header toggle and applied before first paint by index.html's
+   inline script. A designed night palette, not an inversion: deep blue-green
+   canvas, mint as the operating colour, and the answer panel shifts to a
+   teal-black so it still reads as the one distinct object. ─────────────── */
 :root[data-theme="dark"] {
-  --c-bg:           #1c1b19;
-  --c-surface:      #242320;
-  --c-surface-2:    #2b2925;
-  --c-border:       #38352f;
-  --c-border-mid:   #786f63;   /* ~3.5:1 on bg, ~3.2:1 on surface */
+  --c-bg:           #0a1216;
+  --c-surface:      #111c22;
+  --c-surface-2:    #18252c;
+  --c-border:       #243540;
+  --c-border-mid:   #5b707a;   /* ≥3:1 on bg and surface */
 
-  --c-text:         #f2f0ec;
-  --c-text-2:       #c9c4ba;
-  --c-text-3:       #a39d91;
-  --c-text-faint:   #7a756a;
+  --c-text:         #e8f0ee;
+  --c-text-2:       #b9c7c5;
+  --c-text-3:       #93a4a3;
+  --c-text-faint:   #62737a;
 
-  --c-primary:      #7fc1ee;   /* ~8.8:1 on bg, ~8.1:1 on surface */
-  --c-primary-dark: #a7d7f5;
-  --c-primary-dim:  #cfe9fa;
-  --c-primary-bg:   rgba(127,193,238,.14);
-  --c-primary-bdr:  rgba(127,193,238,.34);
-  --c-on-primary:   var(--stone-900);   /* 9.68:1 on the light dark-mode primary */
+  --c-ink:          #e8f0ee;
+  --c-ink-hover:    #ffffff;
+  --c-on-ink:       #0a1216;
 
-  --c-accent:       #d9a876;   /* dark-mode clay, ~8:1 on bg */
-  --c-accent-bg:    rgba(217,168,118,.14);
-  --c-accent-bdr:   rgba(217,168,118,.34);
+  --c-primary:      #4fd1bf;
+  --c-primary-dark: #7fe8d2;
+  --c-primary-dim:  #b6f3e6;
+  --c-primary-bg:   rgba(79,209,191,.13);
+  --c-primary-bdr:  rgba(79,209,191,.38);
+  --c-on-primary:   #0a1216;
 
-  --c-warn:         #e8b84b;
-  --c-warn-bg:      rgba(232,184,75,.14);
-  --c-warn-bdr:     rgba(232,184,75,.36);
+  --c-accent:       #dcab7a;
+  --c-accent-bg:    rgba(220,171,122,.14);
+  --c-accent-bdr:   rgba(220,171,122,.34);
+
+  --c-warn:         #f0b45a;
+  --c-warn-bg:      rgba(240,180,90,.13);
+  --c-warn-bdr:     rgba(240,180,90,.36);
   --c-warn-text:    var(--c-text-2);
-  --c-warn-strong:  #e8b84b;
+  --c-warn-strong:  #f0b45a;
 
   --c-focus:        var(--c-primary);
-  --c-error:        #f0908c;
-  --c-error-bg:     rgba(240,144,140,.14);
+  --c-error:        #f4887c;
+  --c-error-bg:     rgba(244,136,124,.13);
 
-  --c-success:      #8fcb93;
-  --c-success-bg:   rgba(143,203,147,.14);
+  --c-success:      #74d49e;
+  --c-success-bg:   rgba(116,212,158,.13);
+
+  --c-answer-bg:    #0f2b2c;
+  --c-answer-text:  #e8f0ee;
+  --c-answer-sub:   #95b9b2;
+  --c-answer-line:  rgba(127,232,210,.16);
+  --c-answer-chip:  rgba(127,232,210,.09);
 
   color-scheme: dark;
 
-  --sh-xs: 0 1px 2px rgba(0,0,0,.35);
-  --sh-sm: 0 1px 3px rgba(0,0,0,.4), 0 1px 2px rgba(0,0,0,.35);
-  --sh:    0 2px 6px rgba(0,0,0,.4), 0 1px 3px rgba(0,0,0,.35);
-  --sh-md: 0 6px 16px rgba(0,0,0,.45), 0 2px 6px rgba(0,0,0,.35);
+  --sh-xs: 0 1px 2px rgba(0,0,0,.4);
+  --sh-sm: 0 1px 3px rgba(0,0,0,.45), 0 1px 2px rgba(0,0,0,.35);
+  --sh:    0 4px 12px rgba(0,0,0,.45), 0 1px 3px rgba(0,0,0,.35);
+  --sh-md: 0 12px 32px -8px rgba(0,0,0,.6), 0 2px 6px rgba(0,0,0,.4);
 }
 
 /* ── Focus-visible — one rule, applied everywhere ─────────────────────────────
@@ -324,7 +349,7 @@ body::before {
   position: fixed;
   inset: 0 0 auto 0;
   height: 3px;
-  background: linear-gradient(90deg, var(--stone-900) 0%, var(--c-primary) 100%);
+  background: linear-gradient(90deg, var(--c-ink) 0%, var(--c-primary) 100%);
   z-index: 999;
 }
 
@@ -333,6 +358,11 @@ body::before {
   display: flex;
   flex-direction: column;
   flex: 1;
+  /* A column-flex child with auto side margins shrinks to its content, so
+     one non-wrapping row (the category chips) stretched the page to its
+     820px cap on a 390px phone. width + min-width pin it to the viewport. */
+  width: 100%;
+  min-width: 0;
   max-width: var(--max-w);
   margin: 0 auto;
   padding: 0 var(--pad);
@@ -384,6 +414,7 @@ body::before {
   min-height: var(--target-min);
   display: inline-flex;
   align-items: center;
+  gap: var(--sp-2);
   font-size: var(--fs-sm);
   font-weight: 600;
   color: var(--c-text-2);
@@ -404,6 +435,31 @@ body::before {
   align-items: center;
   gap: var(--sp-2);
 }
+
+.site-nav__count {
+  min-width: 18px;
+  padding: 0 var(--sp-1);
+  font-size: var(--fs-3xs);
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+  color: var(--c-on-primary);
+  background: var(--c-primary);
+  border-radius: var(--r-full);
+}
+
+/* Secondary destination: the methodology page, out of the thumb zone. */
+.site-header__about {
+  padding: var(--sp-2) var(--sp-3);
+  min-height: var(--target-min);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--c-text-3);
+  text-decoration: none;
+  border-radius: var(--r-sm);
+}
+.site-header__about:hover { color: var(--c-text); }
+.site-header__about--active { color: var(--c-primary-dark); }
 
 /* ── Landing ──────────────────────────────────────────────────────────────────
    The front door for someone who has never seen this. Restrained on purpose:
@@ -446,7 +502,7 @@ body::before {
 .lang-toggle:hover { border-color: var(--c-border-mid); color: var(--c-text); }
 
 .landing-title {
-  font-family: var(--font-serif);
+  font-family: var(--font-display);
   font-size: clamp(2rem, 6vw, 3rem);
   font-weight: 700;
   letter-spacing: -0.03em;
@@ -766,7 +822,7 @@ body::before {
 }
 
 .landing-close__title {
-  font-family: var(--font-serif);
+  font-family: var(--font-display);
   font-size: var(--fs-xl);
   font-weight: 700;
   letter-spacing: -0.02em;
@@ -978,7 +1034,7 @@ body::before {
 }
 
 /* ── App main ─────────────────────────────────────────────────────────────── */
-.app-main { flex: 1; padding-bottom: var(--sp-8); }
+.app-main { flex: 1; min-width: 0; padding-bottom: var(--sp-8); }
 
 /* ── Page head — every route owns its heading ─────────────────────────────── */
 .page-head {
@@ -986,10 +1042,10 @@ body::before {
 }
 
 .page-title {
-  font-family: var(--font-serif);
-  font-size: var(--fs-2xl);
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  font-family: var(--font-display);
+  font-size: var(--fs-3xl);
+  font-weight: 800;
+  letter-spacing: -0.035em;
   line-height: var(--lh-tight);
   color: var(--c-text);
 }
@@ -1038,36 +1094,46 @@ body::before {
     position: fixed;
     inset: auto 0 0 0;
     z-index: 30;
-    display: flex;
-    justify-content: space-around;
-    gap: var(--sp-1);
-    padding: var(--sp-2) var(--sp-2) calc(var(--sp-2) + env(safe-area-inset-bottom));
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+    padding: var(--sp-1) var(--sp-1) calc(var(--sp-1) + env(safe-area-inset-bottom));
     background: color-mix(in srgb, var(--c-surface) 94%, transparent);
     backdrop-filter: saturate(1.4) blur(10px);
     border-top: 1px solid var(--c-border);
   }
 
   .bottom-nav__link {
-    flex: 1;
-    display: inline-flex;
+    display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: var(--sp-1);
-    min-height: var(--sp-10);
-    font-size: var(--fs-xs);
+    gap: 2px;
+    min-height: 52px;
+    font-size: var(--fs-3xs);
     font-weight: 600;
     color: var(--c-text-3);
     text-decoration: none;
     border-radius: var(--r-sm);
   }
 
-  .bottom-nav__link--active { color: var(--c-primary-dark); background: var(--c-primary-bg); }
+  .bottom-nav__icon { position: relative; display: grid; place-items: center; }
+
+  .bottom-nav__label { font-size: var(--fs-2xs); }
+
+  .bottom-nav__link--active { color: var(--c-primary); }
+  .bottom-nav__link--active .bottom-nav__label { font-weight: 800; }
+  .bottom-nav__link--darurat .bottom-nav__icon { color: var(--c-error); }
 
   .bottom-nav__count {
-    min-width: 18px;
-    padding: 0 var(--sp-1);
-    font-size: var(--fs-3xs);
+    position: absolute;
+    top: -4px;
+    left: 14px;
+    min-width: 16px;
+    padding: 0 3px;
+    font-size: 0.625rem;
     font-weight: 700;
+    line-height: 16px;
+    text-align: center;
     color: var(--c-on-primary);
     background: var(--c-primary);
     border-radius: var(--r-full);
@@ -1078,6 +1144,191 @@ body::before {
 
   .site-nav { display: none; }
   .site-header__inner { justify-content: space-between; }
+}
+
+/* ── Patient bar — the one weight field, pinned under the header ─────────────
+   Lives inside the sticky header on tool screens so the weight stays in reach
+   while results scroll. 44px controls for one thumb; the weight itself in the
+   mono face, since it is the number every other number on screen derives
+   from. ────────────────────────────────────────────────────────────────── */
+.patient-bar { border-top: 1px solid var(--c-border); }
+
+.patient-bar__inner,
+.patient-bar__note,
+.patient-bar__estimate {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  padding-left: var(--pad);
+  padding-right: var(--pad);
+}
+
+.patient-bar__inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--sp-2);
+  padding-top: var(--sp-2);
+  padding-bottom: var(--sp-2);
+}
+
+/* Sized so field + steppers + Anak/Dewasa fit one row on a 390px phone;
+   below ~360px the switch wraps under the field rather than squeezing it. */
+.patient-bar__field { flex: 1 1 7rem; min-width: 0; max-width: 18rem; }
+
+.patient-bar__label-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-height: var(--target-min);
+}
+
+.patient-bar__label {
+  font-size: var(--fs-2xs);
+  font-weight: 800;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--c-text-3);
+}
+
+.patient-bar__link {
+  margin-left: auto;
+  min-height: var(--target-min);
+  padding: 0;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  white-space: nowrap;
+  color: var(--c-primary);
+  background: none;
+  border: none;
+}
+.patient-bar__link:hover { text-decoration: underline; }
+
+.patient-bar__input-wrap {
+  display: flex;
+  align-items: center;
+  height: var(--target);
+  padding: 0 var(--sp-2) 0 var(--sp-3);
+  background: var(--c-surface);
+  border: 1.5px solid var(--c-border-mid);
+  border-radius: var(--r-sm);
+  transition: border-color .12s;
+}
+.patient-bar__input-wrap:focus-within { border-color: var(--c-primary); box-shadow: var(--sh-ring); }
+.patient-bar__input-wrap--invalid { border-color: var(--c-error); }
+
+.patient-bar__input {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-xl);
+  font-weight: 800;
+  letter-spacing: -.02em;
+  color: var(--c-text);
+  background: transparent;
+  border: 0;
+  outline: none;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+.patient-bar__input::-webkit-outer-spin-button,
+.patient-bar__input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+/* The wrapper carries the ring; a second ring on the bare input would sit
+   inside it. */
+.patient-bar__input:focus-visible { box-shadow: none; }
+.patient-bar__input::placeholder { color: var(--c-text-faint); }
+
+.patient-bar__unit {
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  color: var(--c-text-3);
+}
+
+.patient-bar__clear {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  margin-left: var(--sp-2);
+  display: grid;
+  place-items: center;
+  color: var(--c-text-2);
+  background: var(--c-surface-2);
+  border: 0;
+  border-radius: var(--r-full);
+}
+.patient-bar__clear:hover { color: var(--c-text); }
+
+.patient-bar__steppers { display: flex; gap: var(--sp-1); }
+
+.patient-bar__step {
+  width: var(--target);
+  height: var(--target);
+  display: grid;
+  place-items: center;
+  color: var(--c-text);
+  background: var(--c-surface);
+  border: 1.5px solid var(--c-border);
+  border-radius: var(--r-sm);
+  transition: border-color .12s, transform .08s;
+}
+.patient-bar__step:hover:not(:disabled) { border-color: var(--c-primary); }
+.patient-bar__step:active:not(:disabled) { transform: scale(.96); }
+.patient-bar__step:disabled { opacity: .4; cursor: not-allowed; }
+
+.patient-bar__pop {
+  display: flex;
+  height: var(--target);
+  padding: 3px;
+  background: var(--c-surface-2);
+  border: 0;
+  border-radius: var(--r-sm);
+}
+
+.patient-bar__pop-opt { display: flex; }
+
+.patient-bar__pop-btn {
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  color: var(--c-text-3);
+  border-radius: 8px;
+  cursor: pointer;
+}
+.patient-bar__pop-input:checked + .patient-bar__pop-btn {
+  color: var(--c-text);
+  background: var(--c-surface);
+  box-shadow: var(--sh-xs);
+}
+.patient-bar__pop-input:focus-visible + .patient-bar__pop-btn { box-shadow: var(--sh-ring); }
+
+.patient-bar__note {
+  padding-bottom: var(--sp-2);
+  font-size: var(--fs-xs);
+  line-height: var(--lh-snug);
+  color: var(--c-warn);
+}
+
+.patient-bar__estimate { padding-bottom: var(--sp-3); }
+
+/* ── Weight prompt — where a result will appear once a weight is set ────── */
+.weight-prompt {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  margin: var(--sp-4) 0;
+  padding: var(--sp-4);
+  border: 1.5px dashed var(--c-border-mid);
+  border-radius: var(--r-lg);
+}
+
+.weight-prompt__text {
+  font-size: var(--fs-base);
+  color: var(--c-text-2);
 }
 
 /* ── Header history toggle ────────────────────────────────────────────────── */
@@ -1149,15 +1400,16 @@ body::before {
      disclaimer butting straight into the panel below it on all four tabs. */
   margin: var(--sp-3) 0 var(--sp-5);
   padding: var(--sp-3) var(--sp-4);
-  background: var(--c-surface);
-  border: 1px solid var(--c-border);
-  border-left: 3px solid var(--c-warn);
-  border-radius: var(--r-sm);
+  background: var(--c-warn-bg);
+  border: 1px solid var(--c-warn-bdr);
+  border-radius: var(--r);
   font-size: var(--fs-base);
-  line-height: var(--lh-body);
+  line-height: var(--lh-snug);
   color: var(--c-text-2);
   text-wrap: pretty;
 }
+
+.safety-banner--compact { margin: var(--sp-2) 0 var(--sp-4); padding: var(--sp-2) var(--sp-3); }
 
 .safety-banner__icon {
   flex-shrink: 0;
@@ -1328,63 +1580,33 @@ body::before {
   box-shadow: var(--sh-xs);
 }
 
-/* ── Category accent map — single source of truth for any element with data-cat
-   (drug cards, summary dots, …). Loudest red reserved for emergencies; the rest
-   are spaced apart in hue so they stay distinguishable under stress. ────────── */
-/* Every value below is a desaturated, darkened pass over the previous vivid
-   set (same hue, ~55% of the original saturation, lightness clamped to
-   28-40%) so the 92-card grid keeps its 17-way visual triage without reading
-   as a rainbow SaaS palette — the one deliberate exception to "four pastels
-   only" (see index.css token comment). "Antibiotik" was shifted from blue to
-   indigo since blue is now the app's single primary/accent hue and reusing
-   it for a category would blur that meaning. Each hex clears 4.5:1 on white,
-   the same bar these already meet as small text (.drug-card__check). */
-[data-cat="Gawat Darurat"]       { --_cat: #953737; }  /* brick red — emergency only */
-[data-cat="Analgesik/NSAID"]     { --_cat: #9b5c31; }  /* burnt orange */
-[data-cat="Antibiotik"]          { --_cat: #5a5a9e; }  /* indigo */
-[data-cat="Antivirus"]           { --_cat: #2e7a8c; }  /* muted cyan */
-[data-cat="Antijamur"]           { --_cat: #8a6c28; }  /* muted gold */
-[data-cat="Anti-TB (OAT)"]       { --_cat: #94384e; }  /* dark rose */
-[data-cat="Antiparasit"]         { --_cat: #368352; }  /* muted green */
-[data-cat="Antikonvulsan"]       { --_cat: #683894; }  /* muted violet */
-[data-cat="Kardiovaskular"]      { --_cat: #8e3e62; }  /* muted pink */
-[data-cat="Pulmologi"]           { --_cat: #2e769b; }  /* muted sky */
-[data-cat="Gastrointestinal"]    { --_cat: #9b6a31; }  /* muted amber */
-[data-cat="Kortikosteroid"]      { --_cat: #5a3795; }  /* muted purple */
-[data-cat="Antihistamin/Alergi"] { --_cat: #843f8d; }  /* muted fuchsia */
-[data-cat="Vitamin/Mineral"]     { --_cat: #546e28; }  /* muted olive */
-[data-cat="Cairan & Elektrolit"] { --_cat: #275f7d; }  /* muted deep blue */
-[data-cat="Antimalarial"]        { --_cat: #2b766f; }  /* muted teal */
-[data-cat="Lain-lain"]           { --_cat: #5d646f; }  /* stone-slate */
+/* ── Group accent map — single source of truth for any element with data-group
+   (drug rows, chips, dots, swatches). Nine hues spaced around the wheel so
+   they can be learned; teal is deliberately absent (it means "operate"), and
+   the bright signal red stays reserved for errors and Darurat. Values mirror
+   src/data/groupColors.ts (groupColors.test.ts keeps them in sync) and are
+   checked by npm run contrast against --c-bg and --c-surface. ──────────── */
+[data-group="Kardiovaskular"]       { --_grp: #a8304f; }  /* crimson */
+[data-group="Respirasi & Alergi"]   { --_grp: #246f9e; }  /* sky */
+[data-group="Neurologi"]            { --_grp: #6c43ad; }  /* violet */
+[data-group="Analgetik"]            { --_grp: #a3521b; }  /* orange */
+[data-group="Cairan & Elektrolit"]  { --_grp: #3a52bb; }  /* blue-indigo */
+[data-group="Gastrointestinal"]     { --_grp: #7a6200; }  /* mustard */
+[data-group="Anti-infeksi"]         { --_grp: #2b7431; }  /* green */
+[data-group="Anestesi & Intubasi"]  { --_grp: #8a3886; }  /* plum */
+[data-group="Lain-lain & Nutrisi"]  { --_grp: #566267; }  /* slate */
 
-/* Dark-mode pass over the map above. --_cat is a plain hex, not a --c-*
-   semantic token, so it is never redefined by the dark block up in :root —
-   scripts/contrast-check.mjs caught exactly this: all 17 light values read
-   2–3.7:1 against the dark surface, well under the 4.5:1 these are supposed
-   to clear (DESIGN-REWORK.md §5, §8). Same hue as its light counterpart in
-   every case, saturation eased and lightness raised until each cleared
-   4.5:1 against --c-surface(dark) (#242320, the harder of the app's two dark
-   backgrounds) with a small margin; every one lands at 4.60:1 there and
-   5.04:1 against --c-bg(dark). Higher specificity than the plain
-   [data-cat] rule above (an extra :root[data-theme="dark"] ancestor), so
-   this wins over it without touching selector order. */
-:root[data-theme="dark"] [data-cat="Gawat Darurat"]       { --_cat: #c67474; }
-:root[data-theme="dark"] [data-cat="Analgesik/NSAID"]     { --_cat: #be7b4d; }
-:root[data-theme="dark"] [data-cat="Antibiotik"]          { --_cat: #8787b6; }
-:root[data-theme="dark"] [data-cat="Antivirus"]           { --_cat: #4096aa; }
-:root[data-theme="dark"] [data-cat="Antijamur"]           { --_cat: #a88639; }
-:root[data-theme="dark"] [data-cat="Anti-TB (OAT)"]       { --_cat: #c47386; }
-:root[data-theme="dark"] [data-cat="Antiparasit"]         { --_cat: #479b65; }
-:root[data-theme="dark"] [data-cat="Antikonvulsan"]       { --_cat: #a27ac7; }
-:root[data-theme="dark"] [data-cat="Kardiovaskular"]      { --_cat: #bd7595; }
-:root[data-theme="dark"] [data-cat="Pulmologi"]           { --_cat: #4193bd; }
-:root[data-theme="dark"] [data-cat="Gastrointestinal"]    { --_cat: #b68042; }
-:root[data-theme="dark"] [data-cat="Kortikosteroid"]      { --_cat: #997dc9; }
-:root[data-theme="dark"] [data-cat="Antihistamin/Alergi"] { --_cat: #b374bb; }
-:root[data-theme="dark"] [data-cat="Vitamin/Mineral"]     { --_cat: #75953d; }
-:root[data-theme="dark"] [data-cat="Cairan & Elektrolit"] { --_cat: #4593bc; }
-:root[data-theme="dark"] [data-cat="Antimalarial"]        { --_cat: #3e9990; }
-:root[data-theme="dark"] [data-cat="Lain-lain"]           { --_cat: #848b96; }
+/* Night pass — same hues, lifted until each clears 4.5:1 on the dark
+   canvas and surface. Higher specificity than the plain rule above. */
+:root[data-theme="dark"] [data-group="Kardiovaskular"]       { --_grp: #f08aa4; }
+:root[data-theme="dark"] [data-group="Respirasi & Alergi"]   { --_grp: #6db5e6; }
+:root[data-theme="dark"] [data-group="Neurologi"]            { --_grp: #b096ec; }
+:root[data-theme="dark"] [data-group="Analgetik"]            { --_grp: #ee9a64; }
+:root[data-theme="dark"] [data-group="Cairan & Elektrolit"]  { --_grp: #94a6f4; }
+:root[data-theme="dark"] [data-group="Gastrointestinal"]     { --_grp: #d8bb4e; }
+:root[data-theme="dark"] [data-group="Anti-infeksi"]         { --_grp: #74c87b; }
+:root[data-theme="dark"] [data-group="Anestesi & Intubasi"]  { --_grp: #dc8ed6; }
+:root[data-theme="dark"] [data-group="Lain-lain & Nutrisi"]  { --_grp: #a8b3b8; }
 
 /* ── Catalog page ─────────────────────────────────────────────────────────────
    The catalog is made of links, not buttons: every drug is a destination with
@@ -1534,7 +1756,7 @@ body::before {
   padding: var(--sp-3) var(--sp-3);
   background: var(--c-surface);
   border: 1.5px solid var(--c-border);
-  border-left: 3px solid var(--_cat, var(--c-border-mid));
+  border-left: 3px solid var(--_grp, var(--c-border-mid));
   border-radius: var(--r-sm);
   text-align: left;
   transition: transform .12s, box-shadow .12s, border-color .12s, background .12s;
@@ -1542,13 +1764,13 @@ body::before {
 }
 
 /* Tint derived from the accent — one source, works in light & dark */
-.drug-card { --_cat-bg: color-mix(in srgb, var(--_cat, var(--c-primary)) 9%, var(--c-surface)); }
+.drug-card { --_grp-bg: color-mix(in srgb, var(--_grp, var(--c-primary)) 9%, var(--c-surface)); }
 
 @media (hover: hover) {
   .drug-card:hover {
     transform: translateY(-1px);
-    border-color: var(--_cat, var(--c-primary));
-    background: var(--_cat-bg);
+    border-color: var(--_grp, var(--c-primary));
+    background: var(--_grp-bg);
     box-shadow: var(--sh-sm);
   }
 }
@@ -1556,16 +1778,16 @@ body::before {
 /* The app's primary control had no visible keyboard focus at all — the ring
    token already existed, the 92-card grid just never used it. */
 .drug-card:focus-visible {
-  border-color: var(--_cat, var(--c-primary));
+  border-color: var(--_grp, var(--c-primary));
 }
 
 /* Selected ≠ hover: 2px border + accent ring make it unmistakable at a glance */
 .drug-card--selected {
-  background: var(--_cat-bg);
-  border-color: var(--_cat, var(--c-primary));
+  background: var(--_grp-bg);
+  border-color: var(--_grp, var(--c-primary));
   border-width: 2px;
   padding: var(--sp-2) var(--sp-3) var(--sp-2) var(--sp-2);            /* compensate for the +0.5px border */
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--_cat, var(--c-primary)) 35%, transparent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--_grp, var(--c-primary)) 35%, transparent);
 }
 
 /* At 320px the grid is two 140px columns; minus the card padding and the
@@ -1591,7 +1813,7 @@ body::before {
   gap: 2px;
   font-size: var(--fs-3xs);
   font-weight: 700;
-  color: var(--_cat, var(--c-primary));
+  color: var(--_grp, var(--c-primary));
   margin-top: 2px;
 }
 
@@ -1650,26 +1872,44 @@ body::before {
 .cat-chip-row::-webkit-scrollbar { height: 4px; }
 .cat-chip-row::-webkit-scrollbar-thumb { background: var(--c-border-mid); border-radius: var(--r-full); }
 
+.group-filter { min-width: 0; }
+
 .cat-chip {
   flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-height: 36px;
   font-size: var(--fs-sm);
   font-weight: 600;
   white-space: nowrap;
   padding: var(--sp-1) var(--sp-3);
   border-radius: var(--r-full);
-  border: 1.5px solid var(--c-border);
+  border: 1px solid var(--c-border);
   background: var(--c-surface);
   color: var(--c-text-2);
   transition: background .12s, border-color .12s, color .12s;
 }
+
+/* The group's colour as a small square — the chip still names the group, so
+   colour is never the only carrier (Colour-Only-Encoding rule). */
+.cat-chip__dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 3px;
+  background: var(--_grp, var(--c-border-mid));
+}
+
+.cat-chip-row--sub { margin-top: calc(-1 * var(--sp-2)); }
+.cat-chip--sub { min-height: 32px; font-size: var(--fs-xs); }
 .cat-chip:hover { border-color: var(--c-border-mid); color: var(--c-text); }
 /* A tinted background + coloured text/border, not a solid fill — large
    saturated fills read as generic SaaS and every category colour above is
    tuned to work as text, not as a background for white text. */
 .cat-chip--active {
-  color: var(--_cat, var(--c-primary));
-  background: color-mix(in srgb, var(--_cat, var(--c-primary)) 12%, var(--c-surface));
-  border-color: color-mix(in srgb, var(--_cat, var(--c-primary)) 45%, var(--c-surface));
+  color: var(--_grp, var(--c-primary));
+  background: color-mix(in srgb, var(--_grp, var(--c-primary)) 12%, var(--c-surface));
+  border-color: color-mix(in srgb, var(--_grp, var(--c-primary)) 45%, var(--c-surface));
 }
 
 /* ── Pinned "Sering dipakai" ──────────────────────────────────────────────── */
@@ -1873,21 +2113,22 @@ body::before {
   letter-spacing: -.01em;
 }
 
-/* Solid near-black, not the accent colour — the CTA is a UI convention here,
-   not a place to spend the app's one accent hue. Left as a literal rather
-   than --c-on-primary: this fill is --stone-900, which never changes
-   between themes, so unlike the count badges below there is no light-mode-
-   only value drifting silently wrong in dark mode here to fix. */
+/* Solid ink, not the accent colour — the CTA is a UI convention here, not a
+   place to spend teal, which means "you can operate this". --c-ink flips to
+   near-white in dark mode and --c-on-ink follows it, so the pair holds in
+   both themes. */
 .btn--primary {
-  background: var(--stone-900);
-  color: #fff;
-  border-color: var(--stone-900);
+  background: var(--c-ink);
+  color: var(--c-on-ink);
+  border-color: var(--c-ink);
   width: 100%;
+  min-height: var(--target);
   padding: var(--sp-3);
   font-size: var(--fs-base);
+  font-weight: 700;
   box-shadow: var(--sh-sm);
 }
-.btn--primary:hover { background: var(--stone-700); border-color: var(--stone-700); box-shadow: var(--sh); }
+.btn--primary:hover { background: var(--c-ink-hover); border-color: var(--c-ink-hover); box-shadow: var(--sh); }
 
 .btn--secondary {
   background: var(--c-surface);
@@ -2002,8 +2243,8 @@ body::before {
 .result-card {
   margin-top: var(--sp-5);
   background: var(--c-surface);
-  border: 1.5px solid var(--c-border);
-  border-radius: var(--r-lg);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-xl);
   padding: var(--sp-5) var(--sp-4) var(--sp-4);
   box-shadow: var(--sh-md);
 }
@@ -2016,17 +2257,151 @@ body::before {
 }
 
 .result-card__drug {
-  font-family: var(--font-serif);
-  font-size: var(--fs-md);
-  font-weight: 700;
+  font-family: var(--font-display);
+  font-size: var(--fs-xl);
+  font-weight: 800;
+  line-height: var(--lh-tight);
   color: var(--c-text);
-  letter-spacing: -.02em;
+  letter-spacing: -.03em;
+}
+
+.result-card__drug--quiet {
+  font-size: var(--fs-2xs);
+  font-weight: 800;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--c-text-3);
 }
 
 .result-card__weight {
-  font-size: var(--fs-base);
-  color: var(--c-text-3);
-  font-weight: 500;
+  flex-shrink: 0;
+  padding: 2px var(--sp-2);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  color: var(--c-text-2);
+  background: var(--c-surface-2);
+  border-radius: var(--r-xs);
+}
+
+/* ── Answer panel — the one dark object on the screen ───────────────────────
+   Same place, face and size in every mode, so the eye never hunts for the
+   answer. Dark ink with mint digits in both themes (see --c-answer-*). ──── */
+.answer {
+  margin: 0 0 var(--sp-4);
+  padding: var(--sp-4);
+  display: grid;
+  gap: var(--sp-3);
+  color: var(--c-answer-text);
+  background: var(--c-answer-bg);
+  border-radius: var(--r-xl);
+  box-shadow: var(--sh);
+}
+
+.answer__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--sp-3) var(--sp-5);
+}
+
+.answer__readout {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.answer__readout:not(.answer__readout--main) { text-align: right; margin-left: auto; }
+
+.answer__label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--fs-2xs);
+  font-weight: 800;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--c-answer-sub);
+}
+
+.answer__readout:not(.answer__readout--main) .answer__label { justify-content: flex-end; }
+
+/* A capped dose never looks identical to an uncapped one (PRODUCT.md
+   principle 4): the tag rides on the label, the full reason sits above. */
+.answer__cap {
+  padding: 1px 6px;
+  font-size: var(--fs-3xs);
+  letter-spacing: .06em;
+  color: var(--ward-900);
+  background: var(--c-warn-strong);
+  border-radius: var(--r-xs);
+}
+
+.answer__num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-2xl);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -.03em;
+  color: var(--c-answer-text);
+  overflow-wrap: anywhere;
+}
+
+.answer__readout--main .answer__num {
+  font-size: var(--fs-hero);
+  letter-spacing: -.045em;
+  color: var(--c-answer-num);
+}
+
+.answer__unit {
+  margin-left: .2em;
+  font-size: .42em;
+  font-weight: 600;
+  letter-spacing: 0;
+  color: var(--c-answer-text);
+}
+
+.answer__num--pending { color: var(--c-answer-sub); }
+
+.answer__sub {
+  font-size: var(--fs-sm);
+  color: var(--c-answer-sub);
+}
+
+.answer__facts {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+.answer__fact {
+  padding: 3px var(--sp-3);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--c-answer-text);
+  background: var(--c-answer-chip);
+  border-radius: var(--r-full);
+}
+
+.answer__working {
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--c-answer-line);
+}
+
+.answer__working .derivation-line {
+  margin: 0;
+  color: var(--c-answer-sub);
+}
+
+@media (max-width: 380px) {
+  .answer__readout--main .answer__num { font-size: 2.5rem; }
 }
 
 /* Citation sits with the number it justifies. Quiet by default — it is
@@ -2089,70 +2464,6 @@ body::before {
 
 .result-card__headroom strong { font-weight: 600; color: var(--c-text-2); }
 
-.result-card__values {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--sp-3);
-  margin-bottom: var(--sp-4);
-}
-
-.result-value {
-  background: var(--c-surface-2);
-  border: 1px solid var(--c-border);
-  border-radius: var(--r-sm);
-  padding: var(--sp-3);
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.result-value--highlight {
-  background: var(--c-primary-bg);
-  border-color: var(--c-primary-bdr);
-}
-
-.result-value__label {
-  font-size: var(--fs-3xs);
-  color: var(--c-text-3);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: .06em;
-}
-
-.result-value__num {
-  font-size: var(--fs-2xl);
-  font-weight: 700;
-  color: var(--c-text);
-  letter-spacing: -0.03em;
-  line-height: 1.1;
-  font-variant-numeric: tabular-nums;
-  font-family: var(--font-mono);
-}
-
-/* The dose answer is the visual peak of the screen — bigger and bolder than the brand */
-.result-value--highlight .result-value__num {
-  color: var(--c-primary);
-  font-size: var(--fs-3xl);
-  font-weight: 800;
-  letter-spacing: -0.045em;
-}
-
-.result-value__num--range {
-  font-size: var(--fs-lg);
-  letter-spacing: -0.03em;
-}
-
-.result-value--highlight .result-value__num--range {
-  font-size: var(--fs-2xl);
-  letter-spacing: -0.03em;
-}
-
-.result-value__unit {
-  font-size: var(--fs-3xs);
-  color: var(--c-text-3);
-  font-weight: 500;
-}
-
 /* ── Dose range caption ───────────────────────────────────────────────────────
    Was a pill with no content ever rendered into it. Now it explains where the
    range on screen comes from, so it needs to read as a sentence. ─────────── */
@@ -2207,14 +2518,7 @@ body::before {
 
 .dose-picker__num { font-weight: 700; }
 
-/* ── Pending volume — an honest gap, not a missing tile ───────────────────── */
-.result-value--pending {
-  border-style: dashed;
-  background: transparent;
-}
-
-.result-value__num--pending { color: var(--c-text-faint); }
-
+/* ── Pending volume hint ──────────────────────────────────────────────────── */
 .result-card__pending-hint {
   margin-bottom: var(--sp-4);
   font-size: var(--fs-base);
@@ -2351,20 +2655,7 @@ body::before {
   background: var(--c-error);
 }
 
-.dose-band__labels {
-  display: flex;
-  margin-top: var(--sp-1);
-}
-
-.dose-band__label {
-  font-size: var(--fs-3xs);
-  color: var(--c-text-3);
-  text-align: center;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  padding: 0 2px;
-}
+.dose-band__legend { margin: var(--sp-2) 0 0; }
 
 .dose-band__caption {
   margin-top: var(--sp-1);
@@ -2775,7 +3066,7 @@ body::before {
 .history-table th,
 .history-table td {
   padding: var(--sp-2) var(--sp-3);
-  /* DESIGN-REWORK.md §6 names --stone-200 directly; --c-border is that same
+  /* DESIGN-REWORK.md §6 names --stone-200 (now --ward-200) directly; --c-border is that same
      value aliased (see index.css's token block) plus its own correct dark-
      mode redefinition, so the hairline stays a hairline in both themes
      instead of the light-only literal going invisible-then-wrong in dark. */
@@ -3006,7 +3297,7 @@ body::before {
   width: 10px;
   height: 10px;
   border-radius: var(--r-full);
-  background: var(--_cat, var(--c-border-mid));
+  background: var(--_grp, var(--c-border-mid));
 }
 
 .selected-drug-bar__name {
@@ -3287,7 +3578,7 @@ body::before {
 }
 
 .puyer-recipe__title {
-  font-family: var(--font-serif);
+  font-family: var(--font-display);
   font-size: var(--fs-base);
   font-weight: 700;
   color: var(--c-primary);
@@ -3700,8 +3991,8 @@ body::before {
 }
 
 .cat-swatch:hover {
-  border-color: var(--_cat, var(--c-border-mid));
-  background: color-mix(in srgb, var(--_cat, var(--c-primary)) 8%, var(--c-surface));
+  border-color: var(--_grp, var(--c-border-mid));
+  background: color-mix(in srgb, var(--_grp, var(--c-primary)) 8%, var(--c-surface));
 }
 
 .cat-swatch__dot {
@@ -3709,7 +4000,7 @@ body::before {
   width: 8px;
   height: 8px;
   border-radius: var(--r-full);
-  background: var(--_cat, var(--c-border-mid));
+  background: var(--_grp, var(--c-border-mid));
 }
 
 /* ── Trust section — one lead item, two supporting ────────────────────────────
@@ -3730,21 +4021,738 @@ body::before {
   border-left: 3px solid var(--c-primary);
 }
 
+/* ── Obat list — one row per drug, dose inline ────────────────────────────────
+   Rows, not cards: a list is scanned top-to-bottom at arm's length, and a row
+   puts the drug name and its dose on one line the eye can follow. The group
+   colour is a 4px bar at the row's edge, always beside the group heading
+   that names it. ─────────────────────────────────────────────────────── */
+.page-head--compact { padding-bottom: var(--sp-3); }
+
+.drug-section { margin: var(--sp-5) 0 var(--sp-2); }
+
+.drug-section__title {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-2);
+  font-size: var(--fs-2xs);
+  font-weight: 800;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--c-text-3);
+}
+
+.drug-section__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  background: var(--_grp, var(--c-border-mid));
+}
+
+.drug-section__count {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  letter-spacing: 0;
+  color: var(--c-text-faint);
+}
+
+.drug-list {
+  list-style: none;
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+}
+
+.drug-list > li + li { border-top: 1px solid var(--c-border); }
+
+.drug-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  min-height: 60px;
+  padding: var(--sp-3) var(--sp-4) var(--sp-3) var(--sp-3);
+  color: var(--c-text);
+  text-decoration: none;
+  transition: background .12s;
+}
+
+.drug-row:hover { background: color-mix(in srgb, var(--_grp, var(--c-primary)) 6%, var(--c-surface)); }
+.drug-row:focus-visible { position: relative; z-index: 1; border-radius: var(--r-lg); }
+
+.drug-row__bar {
+  flex-shrink: 0;
+  width: 4px;
+  align-self: stretch;
+  border-radius: var(--r-full);
+  background: var(--_grp, var(--c-border-mid));
+}
+
+.drug-row__main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.drug-row__name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px var(--sp-2);
+  font-size: var(--fs-base);
+  font-weight: 700;
+  line-height: var(--lh-snug);
+}
+
+.drug-row__meta {
+  font-size: var(--fs-sm);
+  color: var(--c-text-3);
+}
+
+.drug-row__routes { display: flex; flex-wrap: wrap; gap: 4px; }
+
+.route-pill {
+  padding: 0 5px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-3xs);
+  font-weight: 700;
+  letter-spacing: .03em;
+  line-height: 1.6;
+  color: var(--c-text-2);
+  border: 1px solid var(--c-border-mid);
+  border-radius: var(--r-xs);
+}
+
+.drug-row__dose {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+  max-width: 45%;
+}
+
+.drug-row__value {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-md);
+  font-weight: 800;
+  letter-spacing: -.02em;
+  white-space: nowrap;
+}
+
+.drug-row__unit { font-size: var(--fs-xs); font-weight: 600; color: var(--c-text-3); }
+
+.drug-row__sub {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--c-primary);
+}
+
+.drug-row__summary {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-xs);
+  color: var(--c-text-3);
+}
+
+.drug-row--custom {
+  margin: var(--sp-5) 0 var(--sp-2);
+  border: 1.5px dashed var(--c-border-mid);
+  border-radius: var(--r-lg);
+}
+.drug-row--custom .drug-row__name { color: var(--c-primary); }
+
+/* ── Tags — short uppercase flags that ride next to a name ─────────────────── */
+.tag {
+  display: inline-block;
+  padding: 1px 5px;
+  font-size: 0.625rem;
+  font-weight: 800;
+  letter-spacing: .06em;
+  line-height: 1.4;
+  border-radius: 4px;
+  border: 1px solid currentColor;
+  white-space: nowrap;
+}
+.tag--alert { color: var(--c-error); }
+.tag--sos   { color: var(--c-error); background: var(--c-error-bg); border-color: transparent; }
+.tag--draft { color: var(--c-warn); background: var(--c-warn-bg); border-color: transparent; }
+.tag--cap   { color: var(--c-warn); background: var(--c-warn-bg); border-color: transparent; font-family: var(--font-sans); letter-spacing: .04em; }
+
+/* ── Drug page head ───────────────────────────────────────────────────────── */
+.page-head--drug { padding-bottom: var(--sp-3); }
+
+.page-head__row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sp-3);
+}
+
+.fav-btn {
+  flex-shrink: 0;
+  width: var(--target);
+  height: var(--target);
+  display: grid;
+  place-items: center;
+  color: var(--c-text-3);
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-full);
+}
+.fav-btn:hover { color: var(--c-text); border-color: var(--c-border-mid); }
+.fav-btn--on { color: var(--c-warn); }
+
+.drug-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2) var(--sp-3);
+  margin-top: var(--sp-2);
+  font-size: var(--fs-sm);
+  color: var(--c-text-2);
+}
+
+.group-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-weight: 700;
+  color: var(--_grp, var(--c-text-2));
+}
+
+.group-tag__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  background: var(--_grp, var(--c-border-mid));
+}
+
+.drug-meta__item { color: var(--c-text-3); }
+
+/* ── Route chips — one per regimen ────────────────────────────────────────── */
+.route-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin: 0 0 var(--sp-4);
+  padding: 0;
+  border: 0;
+}
+
+.route-chips__legend {
+  width: 100%;
+  margin-bottom: var(--sp-2);
+  font-size: var(--fs-2xs);
+  font-weight: 800;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--c-text-3);
+}
+
+.route-chip { display: flex; }
+
+.route-chip__btn {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: var(--target);
+  min-width: 4.5rem;
+  padding: var(--sp-1) var(--sp-4);
+  background: var(--c-surface);
+  border: 1.5px solid var(--c-border);
+  border-radius: var(--r);
+  cursor: pointer;
+  transition: border-color .12s, background .12s;
+}
+.route-chip__btn:hover { border-color: var(--c-border-mid); }
+
+.route-chip__input:checked + .route-chip__btn {
+  background: var(--c-primary-bg);
+  border-color: var(--c-primary);
+}
+.route-chip__input:focus-visible + .route-chip__btn { box-shadow: var(--sh-ring); }
+
+.route-chip__route {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  font-weight: 800;
+  color: var(--c-text);
+}
+.route-chip__input:checked + .route-chip__btn .route-chip__route { color: var(--c-primary-dark); }
+
+.route-chip__label { font-size: var(--fs-2xs); color: var(--c-text-3); }
+
+/* ── Regimen notices — draft, high-alert, population ──────────────────────── */
+.notices { display: grid; gap: var(--sp-2); margin: 0 0 var(--sp-4); }
+
+.notice {
+  padding: var(--sp-3) var(--sp-4);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-snug);
+  border-radius: var(--r);
+  color: var(--c-text-2);
+  text-wrap: pretty;
+}
+.notice strong { color: var(--c-text); }
+.notice--draft { background: var(--c-warn-bg); border: 1px solid var(--c-warn-bdr); }
+.notice--alert { background: var(--c-error-bg); }
+.notice--alert strong { color: var(--c-error); }
+.notice--pop   { background: var(--c-surface-2); }
+
+/* ── Preparation — how many mL to draw up, and how to give it ─────────────── */
+.prep {
+  margin: 0 0 var(--sp-4);
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--c-primary-bg);
+  border-radius: var(--r-lg);
+}
+
+.prep__title {
+  margin-bottom: var(--sp-2);
+  font-size: var(--fs-2xs);
+  font-weight: 800;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--c-primary-dark);
+}
+
+.prep__list {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--sp-1) var(--sp-3);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-snug);
+}
+.prep__list dt { font-weight: 700; color: var(--c-text); }
+.prep__list dd { color: var(--c-text-2); }
+.prep__conc { font-family: var(--font-mono); font-weight: 700; color: var(--c-primary-dark); }
+
+/* ── Warnings before the number ───────────────────────────────────────────── */
+.drug-alerts { display: grid; gap: var(--sp-2); margin: 0 0 var(--sp-3); }
+
+.drug-alerts__contra,
+.drug-alerts__warning {
+  display: flex;
+  gap: var(--sp-2);
+  align-items: baseline;
+  padding: var(--sp-2) var(--sp-3);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-snug);
+  border-radius: var(--r);
+}
+.drug-alerts__contra { color: var(--c-error); background: var(--c-error-bg); }
+.drug-alerts__warning { color: var(--c-warn); background: var(--c-warn-bg); }
+.drug-alerts__warning svg { flex-shrink: 0; transform: translateY(2px); }
+
+/* ── Sesuaikan — the catalog values, below the answer they produced ───────── */
+.adjust {
+  margin: var(--sp-4) 0;
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-lg);
+}
+
+.adjust__summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--sp-1) var(--sp-3);
+  min-height: var(--target);
+  padding: var(--sp-3) var(--sp-4);
+  cursor: pointer;
+  list-style: none;
+}
+.adjust__summary::-webkit-details-marker { display: none; }
+.adjust__summary::before {
+  content: '+';
+  font-weight: 800;
+  color: var(--c-primary);
+}
+.adjust[open] > .adjust__summary::before { content: '−'; }
+.adjust__summary:focus-visible { border-radius: var(--r-lg); }
+
+.adjust__title {
+  font-size: var(--fs-base);
+  font-weight: 700;
+  color: var(--c-text);
+}
+
+h3.adjust__title { margin: var(--sp-5) 0 var(--sp-3); }
+
+.adjust__values {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-xs);
+  color: var(--c-text-3);
+}
+
+.adjust__body { padding: 0 var(--sp-4) var(--sp-4); }
+.adjust__body .form { margin-bottom: 0; }
+
+/* ── Misc ─────────────────────────────────────────────────────────────────── */
+.reviewed-by {
+  margin-top: var(--sp-4);
+  font-size: var(--fs-xs);
+  color: var(--c-text-3);
+}
+
+.custom-delete {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+  margin: var(--sp-4) 0;
+  font-size: var(--fs-sm);
+  color: var(--c-text-2);
+}
+
+.btn--danger {
+  color: #ffffff;
+  background: var(--red-text);
+  border-color: var(--red-text);
+}
+.btn--danger:hover { filter: brightness(1.08); }
+
+/* ── Review mode (/tinjau) ────────────────────────────────────────────────── */
+.review-switch {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3) var(--sp-4);
+  margin: 0 0 var(--sp-4);
+  padding: var(--sp-4);
+  background: var(--c-surface);
+  border: 1.5px solid var(--c-border);
+  border-radius: var(--r-lg);
+}
+.review-switch--on { background: var(--c-warn-bg); border-color: var(--c-warn-bdr); }
+
+.review-switch__title { font-weight: 800; color: var(--c-text); }
+.review-switch__body { max-width: 52ch; font-size: var(--fs-sm); color: var(--c-text-2); }
+.review-switch__btn { width: auto; }
+
+.review-how,
+.review-intro {
+  max-width: 65ch;
+  margin-bottom: var(--sp-4);
+  font-size: var(--fs-base);
+  color: var(--c-text-2);
+  text-wrap: pretty;
+}
+
+.review-list {
+  list-style: none;
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+}
+.review-list > li + li { border-top: 1px solid var(--c-border); }
+
+.review-item { display: grid; gap: var(--sp-1); padding: var(--sp-3) var(--sp-4); }
+
+.review-item__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1) var(--sp-2);
+}
+
+.review-item__name { font-weight: 800; color: var(--c-text); }
+a.review-item__name { color: var(--c-primary); }
+.review-item__name--plain { font-weight: 700; }
+
+.review-item__label,
+.review-item__pop { font-size: var(--fs-xs); color: var(--c-text-3); }
+
+.review-item__dose {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  color: var(--c-text);
+}
+
+.review-item__note { font-size: var(--fs-sm); line-height: var(--lh-snug); color: var(--c-text-2); }
+.review-item__source { font-size: var(--fs-xs); color: var(--c-text-3); }
+
+.review-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  margin: 0 0 var(--sp-4);
+  padding: var(--sp-2) var(--sp-3);
+  font-size: var(--fs-sm);
+  color: var(--c-text-2);
+  background: var(--c-warn-bg);
+  border: 1px solid var(--c-warn-bdr);
+  border-radius: var(--r);
+}
+.review-banner strong { color: var(--c-warn); }
+
+/* ── Darurat packs ─────────────────────────────────────────────────────────
+   One sheet per situation. Red is this section's colour (the only place a
+   screen uses it outside errors); the volume to draw up is the big number,
+   the mg beside it, the rule it came from under the name. ────────────── */
+.pack-tabs {
+  display: flex;
+  gap: var(--sp-2);
+  overflow-x: auto;
+  margin: 0 0 var(--sp-4);
+  padding-bottom: 2px;
+  scrollbar-width: none;
+}
+.pack-tabs::-webkit-scrollbar { display: none; }
+
+.pack-tab {
+  flex-shrink: 0;
+  min-height: var(--target);
+  padding: 0 var(--sp-4);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  white-space: nowrap;
+  color: var(--c-text-2);
+  background: var(--c-surface);
+  border: 1.5px solid var(--c-border);
+  border-radius: var(--r-full);
+}
+.pack-tab:hover { border-color: var(--c-border-mid); }
+.pack-tab--on {
+  color: var(--c-error);
+  background: var(--c-error-bg);
+  border-color: color-mix(in srgb, var(--c-error) 45%, transparent);
+}
+
+.pack-pending-note {
+  margin: 0 0 var(--sp-4);
+  padding: var(--sp-2) var(--sp-3);
+  font-size: var(--fs-sm);
+  color: var(--c-text-2);
+  background: var(--c-surface-2);
+  border-radius: var(--r);
+}
+
+.pack-section { margin: var(--sp-5) 0; }
+
+.pack-section__title {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-1);
+  font-size: var(--fs-base);
+  font-weight: 800;
+  color: var(--c-text);
+}
+
+.pack-section__time {
+  padding: 1px var(--sp-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  color: var(--c-error);
+  background: var(--c-error-bg);
+  border-radius: var(--r-xs);
+}
+
+.pack-section__note {
+  margin-bottom: var(--sp-2);
+  font-size: var(--fs-sm);
+  color: var(--c-text-2);
+}
+
+.pack-list {
+  list-style: none;
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+}
+
+.pack-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+}
+.pack-row + .pack-row { border-top: 1px solid var(--c-border); }
+.pack-row--pending { background: var(--c-surface-2); }
+
+.pack-row__main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.pack-row__link { color: inherit; text-decoration: none; }
+.pack-row__link:hover .pack-row__name { text-decoration: underline; }
+
+.pack-row__name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px var(--sp-2);
+  font-weight: 700;
+  color: var(--c-text);
+}
+
+.pack-row__rule {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--c-text-3);
+}
+
+.pack-row__pending {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  color: var(--c-warn);
+}
+
+.pack-row__note { font-size: var(--fs-xs); line-height: var(--lh-snug); color: var(--c-text-3); }
+
+.pack-row__dose {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+}
+
+.pack-row__value {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-xl);
+  font-weight: 800;
+  letter-spacing: -.02em;
+  white-space: nowrap;
+}
+
+.pack-row__unit { font-size: var(--fs-xs); font-weight: 600; color: var(--c-text-3); }
+
+.pack-row__sub {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  color: var(--c-primary);
+}
+
+/* ── Stopwatch (Kejang) ───────────────────────────────────────────────────── */
+.stopwatch {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  margin: 0 0 var(--sp-4);
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--c-surface);
+  border: 1.5px solid var(--c-border);
+  border-radius: var(--r-lg);
+}
+.stopwatch--on { background: var(--c-answer-bg); border-color: transparent; }
+
+.stopwatch__label {
+  display: block;
+  font-size: var(--fs-2xs);
+  font-weight: 800;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--c-text-3);
+}
+.stopwatch--on .stopwatch__label { color: var(--c-answer-sub); }
+
+.stopwatch__time {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-2xl);
+  font-weight: 800;
+  color: var(--c-text);
+}
+.stopwatch--on .stopwatch__time { color: var(--c-answer-num); }
+
+.stopwatch__btn { width: auto; min-width: 7rem; }
+.stopwatch--on .stopwatch__btn { color: var(--c-answer-text); border-color: var(--c-answer-line); }
+
+/* ── Titration table — the pump chart ─────────────────────────────────────── */
+.titration { margin: 0 0 var(--sp-4); overflow-x: auto; }
+
+.titration__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-sm);
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+}
+
+.titration__caption {
+  caption-side: top;
+  padding-bottom: var(--sp-2);
+  font-family: var(--font-sans);
+  font-size: var(--fs-2xs);
+  font-weight: 800;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  text-align: left;
+  color: var(--c-text-3);
+}
+
+.titration__table th,
+.titration__table td {
+  padding: var(--sp-2) var(--sp-3);
+  text-align: right;
+  border-top: 1px solid var(--c-border);
+}
+.titration__table thead th {
+  font-family: var(--font-sans);
+  font-size: var(--fs-2xs);
+  font-weight: 700;
+  color: var(--c-text-3);
+  border-top: 0;
+}
+.titration__table th[scope="row"],
+.titration__table thead th:first-child { text-align: left; }
+.titration__table tbody th { font-weight: 700; color: var(--c-text); }
+.titration__table td:nth-child(2) { font-weight: 800; color: var(--c-text); }
+.titration__table td:nth-child(3) { color: var(--c-text-3); }
+
+.titration__row { transition: background .12s; }
+.titration__row--current { background: var(--c-primary-bg); }
+.titration__row--current th,
+.titration__row--current td:nth-child(2) { color: var(--c-primary-dark); }
+
 /* ── Responsive ───────────────────────────────────────────────────────────── */
 @media (max-width: 560px) {
   :root { --pad: 16px; }
 
-  .page-title { font-size: var(--fs-xl); }
+  .page-title { font-size: var(--fs-2xl); }
 
   .form { grid-template-columns: 1fr; }
 
   .drug-grid { grid-template-columns: repeat(2, 1fr); }
-
-  .result-card__values { grid-template-columns: 1fr 1fr; }
-  .result-card__values > :first-child { grid-column: 1 / -1; }
-
-  .result-value__num { font-size: var(--fs-2xl); }
-  .result-value__num--range { font-size: var(--fs-md); }
 
   .puyer-weight { max-width: 100%; }
   .tabs { gap: 1px; }

@@ -18,12 +18,12 @@ import { CATALOG_STATS } from '../data/landing-facts'
 export type Lang = 'id' | 'en'
 
 const drugCount = CATALOG_STATS.drugs
-const categoryCount = CATALOG_STATS.categories
+const groupCount = CATALOG_STATS.groups
 const sources: readonly string[] = CATALOG_STATS.sources
 
 export const CATALOG_FACTS = {
   drugs: drugCount,
-  categories: categoryCount,
+  groups: groupCount,
   sources,
   calculators: 4,
 }
@@ -59,7 +59,7 @@ export const LANDING: Record<Lang, LandingCopy> = {
       'Masukkan berat badan pasien, dapatkan dosis dalam mg, volume dalam mL, dan takaran ' +
       'sediaan yang benar-benar ada di apotek, lengkap dengan cara hitungnya.',
     ctaPrimary: 'Buka kalkulator',
-    ctaSecondary: `Telusuri ${drugCount} obat`,
+    ctaSecondary: 'Cara kerja & sumber',
     demoTitle: 'Coba sekarang',
     demoNote: 'Ubah berat badannya, semua angka di bawah ikut berubah.',
     chainTitle: 'Setiap angka bisa ditelusuri',
@@ -75,9 +75,9 @@ export const LANDING: Record<Lang, LandingCopy> = {
     factsTitle: 'Isi katalog',
     facts: [
       { value: String(drugCount), label: 'obat', href: '/obat' },
-      { value: String(categoryCount), label: 'kategori terapi', href: '/obat' },
+      { value: String(groupCount), label: 'golongan klinis', href: '/obat' },
       { value: String(sources.length), label: 'sumber acuan' },
-      { value: '4', label: 'mode hitung', href: '/hitung' },
+      { value: '5', label: 'alat hitung', href: '/obat' },
     ],
     trustTitle: 'Yang perlu Anda tahu',
     trust: [
@@ -115,7 +115,7 @@ export const LANDING: Record<Lang, LandingCopy> = {
       "Enter a patient's weight and get the dose in mg, the volume in mL, and the amount of a " +
       'real pharmacy preparation, with the working shown, not just the answer.',
     ctaPrimary: 'Open the calculator',
-    ctaSecondary: `Browse ${drugCount} drugs`,
+    ctaSecondary: 'How it works & sources',
     demoTitle: 'Try it',
     demoNote: 'Change the weight, every number below re-derives.',
     chainTitle: 'Every number is traceable',
@@ -131,9 +131,9 @@ export const LANDING: Record<Lang, LandingCopy> = {
     factsTitle: "What's in it",
     facts: [
       { value: String(drugCount), label: 'drugs', href: '/obat' },
-      { value: String(categoryCount), label: 'therapeutic categories', href: '/obat' },
+      { value: String(groupCount), label: 'clinical groups', href: '/obat' },
       { value: String(sources.length), label: 'reference sources' },
-      { value: '4', label: 'calculators', href: '/hitung' },
+      { value: '5', label: 'calculators', href: '/obat' },
     ],
     trustTitle: 'What you should know',
     trust: [

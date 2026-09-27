@@ -5,6 +5,8 @@ import { AboutPage as AboutEager } from './AboutPage'
 import { DrugPage as DrugEager } from './DrugPage'
 import { CalculatorPage as CalculatorEager } from './CalculatorPage'
 import { HistoryPage as HistoryEager } from './HistoryPage'
+import { ReviewPage as ReviewEager } from './ReviewPage'
+import { DaruratPage as DaruratEager } from './DaruratPage'
 
 /**
  * Route components, eager on the server and lazy in the browser.
@@ -50,6 +52,14 @@ export const HistoryPage = import.meta.env.SSR
   ? HistoryEager
   : lazy(() => import('./HistoryPage').then((m) => ({ default: m.HistoryPage })))
 
+export const ReviewPage = import.meta.env.SSR
+  ? ReviewEager
+  : lazy(() => import('./ReviewPage').then((m) => ({ default: m.ReviewPage })))
+
+export const DaruratPage = import.meta.env.SSR
+  ? DaruratEager
+  : lazy(() => import('./DaruratPage').then((m) => ({ default: m.DaruratPage })))
+
 /** Chunk loader per route id, for preloading before hydration and on idle. */
 export const ROUTE_CHUNKS: Record<string, () => Promise<unknown>> = {
   home: () => import('./LandingPage'),
@@ -60,4 +70,6 @@ export const ROUTE_CHUNKS: Record<string, () => Promise<unknown>> = {
   'about-en': () => import('./AboutPage'),
   calculator: () => import('./CalculatorPage'),
   history: () => import('./HistoryPage'),
+  review: () => import('./ReviewPage'),
+  darurat: () => import('./DaruratPage'),
 }

@@ -1,8 +1,10 @@
-import { useState, useRef } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { CheckIcon, ExclamationTriangleIcon } from '@radix-ui/react-icons'
 import { ALL_DRUGS, DrugPreset } from '../data/drugs'
 import { DrugGrid } from './DrugGrid'
 import { DerivationChain } from './DerivationChain'
+import { groupOf } from '../data/categories'
+import { usePatient, focusPatientWeight } from '../lib/patient'
 import { DosePositionBandCompact, DosePositionBandLegend } from './DosePositionBandCompact'
 import { calculate, CalcResult } from '../lib/calculate'
 import { suggestForms, describeForms, FormSuggestion } from '../lib/suggest'
@@ -126,7 +128,7 @@ function buildRecipeText(
 /**
  * DESIGN-REWORK.md §7: the one output that leaves the screen and goes to a
  * pharmacy, so it should be the best-designed surface in the app, not the
- * only one outside it. Rebuilt on the same stone/mono values index.css's
+ * only one outside it. Rebuilt on the same ward/mono values index.css's
  * token block defines — literal values, not var() against the app's
  * stylesheet, since this is a standalone document written into a popup via
  * document.write() with no link to index.css. Black on white, hairlines, no
@@ -177,29 +179,31 @@ function buildRecipePrintHtml(
   return `<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8">
 <title>Resep Puyer — DoseRx</title>
 <style>
-  /* Literal values matching index.css's stone/mono token block — kept in
-     sync by hand, since this document has no link to that stylesheet. */
+  /* Literal values matching index.css's ward/mono token block — kept in
+     sync by hand, since this document has no link to that stylesheet. The
+     print sheet stays on system fonts: it opens in a popup that cannot see
+     the app's self-hosted files, and a printer never needs them. */
   :root {
-    --stone-900: #111111;
-    --stone-600: #57534e;
-    --stone-500: #75716b;
-    --stone-400: #948e81;
+    --ward-900: #0f1e2a;
+    --ward-600: #3b4a47;
+    --ward-500: #56655f;
+    --ward-400: #7f8f8b;
     --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
     --font-mono: ui-monospace, 'SF Mono', 'Cascadia Code', 'Roboto Mono', monospace;
   }
   * { box-sizing: border-box; }
   body {
     font-family: var(--font-sans);
-    color: var(--stone-900);
+    color: var(--ward-900);
     background: #ffffff;
     padding: 28px;
     max-width: 560px;
     line-height: 1.5;
   }
   h1 { font-size: 1.25rem; font-weight: 700; margin: 0 0 2px; letter-spacing: -.01em; }
-  .meta { color: var(--stone-600); font-size: .875rem; margin-bottom: 4px; }
-  .patient { color: var(--stone-900); font-size: .875rem; font-weight: 600; margin-bottom: 20px; }
-  .drug { margin-bottom: 14px; border-top: 1px solid var(--stone-400); padding-top: 12px; }
+  .meta { color: var(--ward-600); font-size: .875rem; margin-bottom: 4px; }
+  .patient { color: var(--ward-900); font-size: .875rem; font-weight: 600; margin-bottom: 20px; }
+  .drug { margin-bottom: 14px; border-top: 1px solid var(--ward-400); padding-top: 12px; }
   .drug-name { font-weight: 700; }
   .dose-line {
     font-family: var(--font-mono);
@@ -208,25 +212,25 @@ function buildRecipePrintHtml(
     font-size: .95rem;
     margin: 3px 0 1px;
   }
-  .signa { color: var(--stone-600); font-size: .8rem; margin-bottom: 4px; }
+  .signa { color: var(--ward-600); font-size: .8rem; margin-bottom: 4px; }
   .form-line {
     font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
     font-size: .875rem;
-    color: var(--stone-900);
+    color: var(--ward-900);
     margin: 3px 0 0 12px;
   }
-  .form-note { font-size: .75rem; color: var(--stone-500); margin: 0 0 0 24px; }
+  .form-note { font-size: .75rem; color: var(--ward-500); margin: 0 0 0 24px; }
   .disclaimer {
     margin-top: 20px;
     padding-top: 12px;
-    border-top: 1px solid var(--stone-400);
+    border-top: 1px solid var(--ward-400);
     font-size: .75rem;
-    color: var(--stone-600);
+    color: var(--ward-600);
     line-height: 1.5;
   }
-  .disclaimer strong { color: var(--stone-900); }
-  .footer { margin-top: 10px; font-size: .7rem; color: var(--stone-500); }
+  .disclaimer strong { color: var(--ward-900); }
+  .footer { margin-top: 10px; font-size: .7rem; color: var(--ward-500); }
   @media print { body { padding: 0; max-width: none; } }
 </style>
 </head><body>
@@ -249,7 +253,11 @@ interface PuyerPanelProps {
 }
 
 export function PuyerPanel({ onHistoryUpdated: _onHistoryUpdated }: PuyerPanelProps) {
-  const [weight, setWeight] = useState('')
+  // The weight comes from the patient bar. The recipe is a snapshot taken at
+  // "Hitung Puyer", so a weight change afterwards invalidates it rather than
+  // leaving a recipe on screen computed for a different weight.
+  const { weightKg } = usePatient()
+  const weight = weightKg != null ? String(weightKg) : ''
   const [days, setDays] = useState('3')
   const [patientLabel, setPatientLabel] = useState('')
   const [doseMode, setDoseMode] = useState<DoseMode>(() => loadDoseMode())
@@ -268,6 +276,11 @@ export function PuyerPanel({ onHistoryUpdated: _onHistoryUpdated }: PuyerPanelPr
   // calculation failed for expands itself so the doctor doesn't have to
   // hunt for which one.
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
+
+  useEffect(() => {
+    setCalculated(false)
+    setWeightError(null)
+  }, [weightKg])
 
   const formRef = useRef<HTMLDivElement>(null)
 
@@ -329,9 +342,10 @@ export function PuyerPanel({ onHistoryUpdated: _onHistoryUpdated }: PuyerPanelPr
   }
 
   function handleCalculate() {
-    const w = parseFloat(weight)
-    if (!isFinite(w) || w <= 0) {
-      setWeightError('Masukkan berat badan yang valid.')
+    const w = weightKg
+    if (w == null) {
+      setWeightError('Isi berat pasien di bagian atas dulu.')
+      focusPatientWeight()
       return
     }
     setWeightError(null)
@@ -426,7 +440,7 @@ export function PuyerPanel({ onHistoryUpdated: _onHistoryUpdated }: PuyerPanelPr
         <div className="selected-drugs-summary">
           <div className="selected-drugs-summary__chips">
             {orderedEntries.map((e) => (
-              <span key={e.drug.id} className="drug-chip" data-cat={e.drug.category}>
+              <span key={e.drug.id} className="drug-chip" data-group={groupOf(e.drug)}>
                 {e.drug.name}
               </span>
             ))}
@@ -441,25 +455,10 @@ export function PuyerPanel({ onHistoryUpdated: _onHistoryUpdated }: PuyerPanelPr
       {!gridOpen && (
         <div ref={formRef}>
 
-          {/* Weight + days row */}
+          {weightError && <p className="error" role="alert">{weightError}</p>}
+
+          {/* Days row — the weight lives in the patient bar */}
           <div className="puyer-meta-row">
-            <div className="field">
-              <label className="label" htmlFor="puyer-weight">Berat badan (kg)</label>
-              <input
-                id="puyer-weight"
-                className={`input${isInvalidPositiveNumber(weight) ? ' input--invalid' : ''}`}
-                type="number"
-                min="0"
-                step="0.1"
-                placeholder="misal 14"
-                autoFocus
-                value={weight}
-                aria-invalid={isInvalidPositiveNumber(weight)}
-                onChange={(e) => { setWeight(e.target.value); setCalculated(false) }}
-              />
-              {/* role="alert": validation failure announced without moving focus. */}
-              {weightError && <p className="error" role="alert" style={{ marginTop: 4 }}>{weightError}</p>}
-            </div>
             <div className="field">
               <label className="label" htmlFor="puyer-days">Jumlah hari</label>
               <input

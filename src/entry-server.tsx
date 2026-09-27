@@ -19,4 +19,4 @@ export function render(path: string): string {
 // build is one bundle, and reaching into its internals would be guesswork.
 export { ROUTES, CALCULATOR_MODES } from './routes'
 export { SITE } from './site'
-export { DRUG_PRESETS } from './data/drugs'
+export { LIVE_CATALOG } from './data/catalog'

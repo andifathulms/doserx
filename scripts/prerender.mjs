@@ -24,7 +24,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 const root = resolve(__dirname, '..')
 const dist = resolve(root, 'dist')
 
-const { render, ROUTES, CALCULATOR_MODES, SITE, DRUG_PRESETS } = await import(
+const { render, ROUTES, CALCULATOR_MODES, SITE, LIVE_CATALOG } = await import(
   pathToFileURL(resolve(root, 'dist-ssr/entry-server.js')).href
 )
 
@@ -43,20 +43,25 @@ const ALTERNATES = {
 function pageMeta(path) {
   const drugMatch = path.match(/^\/obat\/(.+)$/)
   if (drugMatch) {
-    const drug = DRUG_PRESETS.find((d) => d.id === drugMatch[1])
+    const drug = LIVE_CATALOG.find((d) => d.id === drugMatch[1])
     if (!drug) return null
-    const range =
-      drug.dosePerKgMin != null && drug.dosePerKgMax != null
-        ? `${drug.dosePerKgMin}–${drug.dosePerKgMax}`
-        : String(drug.dosePerKg)
+    // Descriptions are BUILT FROM THE CATALOG, never written by hand — the
+    // rule we adopted when the manifest description drifted from the page.
+    const routes = [...new Set(drug.regimens.flatMap((r) => r.routes))].join(', ')
+    const p = drug.primary
+    const dosing = p
+      ? p.fixedDoseMg != null
+        ? `${p.fixedDoseMg} mg, ${p.freq}×/hari`
+        : `${p.dosePerKgMin != null && p.dosePerKgMax != null ? `${p.dosePerKgMin}–${p.dosePerKgMax}` : p.dosePerKg} mg/kg/hari, ${p.freq}×/hari`
+      : drug.regimens
+          .filter((r) => r.kind === 'infusion')
+          .map((r) => `${r.infusion.doseMin}–${r.infusion.doseMax} ${r.infusion.doseUnit}`)
+          .join('; ')
     return {
-      // Descriptions are BUILT FROM THE CATALOG, never written by hand — the
-      // rule we adopted when the manifest description drifted from the page.
       title: `Dosis ${drug.name} — ${SITE.name}`,
       description:
-        `Dosis ${drug.name} berbasis berat badan: ${range} mg/kg/hari, ${drug.freq}×/hari, ` +
-        `${drug.route}.${drug.source ? ` Acuan ${drug.source}.` : ''} Hitung mg dan mL langsung ` +
-        `di halaman ini.`,
+        `Dosis ${drug.name} berbasis berat badan: ${dosing}. Rute: ${routes}.` +
+        `${p?.source ? ` Acuan ${p.source}.` : ''} Hitung mg dan mL langsung di halaman ini.`,
       lang: 'id',
     }
   }
@@ -102,7 +107,7 @@ function headFor(path, meta) {
   }
 
   // History is personal; there is nothing to index and nothing to preview.
-  if (path === '/riwayat') tags.push('<meta name="robots" content="noindex">')
+  if (path === '/riwayat' || path === '/tinjau') tags.push('<meta name="robots" content="noindex">')
 
   return tags.join('\n    ')
 }
@@ -139,7 +144,7 @@ function writePage(path, html) {
 const paths = [
   ...ROUTES.filter((r) => !r.path.includes(':') && r.path !== '*').map((r) => r.path),
   ...CALCULATOR_MODES.map((m) => `/hitung/${m.id}`),
-  ...DRUG_PRESETS.map((d) => `/obat/${d.id}`),
+  ...LIVE_CATALOG.map((d) => `/obat/${d.id}`),
 ]
 
 let count = 0
@@ -166,7 +171,7 @@ if (existsSync(resolve(dist, '404.html'))) {
 
 // ── Sitemap ──────────────────────────────────────────────────────────────────
 const indexable = paths.filter((p) => {
-  if (p === '/riwayat') return false
+  if (p === '/riwayat' || p === '/tinjau') return false
   const route = ROUTES.find((r) => r.path === p)
   if (route) return route.index === true
   return p.startsWith('/obat/') || p.startsWith('/hitung/')

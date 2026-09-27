@@ -47,3 +47,22 @@ describe('stylesheet covers every className', () => {
     expect(defined.size).toBeGreaterThan(100)
   })
 })
+
+/**
+ * The page container must never grow wider than the viewport.
+ *
+ * .app is a column-flex child with auto side margins, which sizes it to its
+ * content. Without an explicit width and min-width, one non-wrapping row (the
+ * category chip scroller) stretched /hitung, /obat and /hitung/puyer to 820px
+ * on a 390px phone, so every page scrolled sideways. Nothing else failed.
+ */
+describe('page container', () => {
+  const block = (sel: string) =>
+    new RegExp(`(^|\\n)${sel.replace('.', '\\.')} \\{([^}]*)\\}`).exec(cssText)?.[2] ?? ''
+
+  it('pins .app to the viewport width', () => {
+    const app = block('.app')
+    expect(app).toMatch(/width:\s*100%/)
+    expect(app).toMatch(/min-width:\s*0/)
+  })
+})
