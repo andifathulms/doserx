@@ -15,6 +15,7 @@ import {
   CalculatorPage,
   HistoryPage,
   ReviewPage,
+  DaruratPage,
   ROUTE_CHUNKS,
 } from './pages'
 import { ROUTES, MODE_IDS } from './routes'
@@ -74,7 +75,8 @@ function App() {
 
   const showCalculator = routeId === 'calculator'
   // Every screen that turns a weight into a number carries the patient bar.
-  const showPatient = routeId === 'calculator' || routeId === 'catalog' || routeId === 'drug'
+  const showPatient =
+    routeId === 'calculator' || routeId === 'catalog' || routeId === 'drug' || routeId === 'darurat'
 
   return (
     <PatientProvider>
@@ -131,6 +133,11 @@ function App() {
         {routeId === 'history' && (
           <Suspense fallback={<PanelSkeleton />}>
             <HistoryPage entries={history} onUpdated={refreshHistory} />
+          </Suspense>
+        )}
+        {routeId === 'darurat' && (
+          <Suspense fallback={<PanelSkeleton />}>
+            <DaruratPage />
           </Suspense>
         )}
         {routeId === 'review' && (

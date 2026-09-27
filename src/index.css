@@ -4502,6 +4502,197 @@ a.review-item__name { color: var(--c-primary); }
 }
 .review-banner strong { color: var(--c-warn); }
 
+/* ── Darurat packs ─────────────────────────────────────────────────────────
+   One sheet per situation. Red is this section's colour (the only place a
+   screen uses it outside errors); the volume to draw up is the big number,
+   the mg beside it, the rule it came from under the name. ────────────── */
+.pack-tabs {
+  display: flex;
+  gap: var(--sp-2);
+  overflow-x: auto;
+  margin: 0 0 var(--sp-4);
+  padding-bottom: 2px;
+  scrollbar-width: none;
+}
+.pack-tabs::-webkit-scrollbar { display: none; }
+
+.pack-tab {
+  flex-shrink: 0;
+  min-height: var(--target);
+  padding: 0 var(--sp-4);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  white-space: nowrap;
+  color: var(--c-text-2);
+  background: var(--c-surface);
+  border: 1.5px solid var(--c-border);
+  border-radius: var(--r-full);
+}
+.pack-tab:hover { border-color: var(--c-border-mid); }
+.pack-tab--on {
+  color: var(--c-error);
+  background: var(--c-error-bg);
+  border-color: color-mix(in srgb, var(--c-error) 45%, transparent);
+}
+
+.pack-pending-note {
+  margin: 0 0 var(--sp-4);
+  padding: var(--sp-2) var(--sp-3);
+  font-size: var(--fs-sm);
+  color: var(--c-text-2);
+  background: var(--c-surface-2);
+  border-radius: var(--r);
+}
+
+.pack-section { margin: var(--sp-5) 0; }
+
+.pack-section__title {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-1);
+  font-size: var(--fs-base);
+  font-weight: 800;
+  color: var(--c-text);
+}
+
+.pack-section__time {
+  padding: 1px var(--sp-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  color: var(--c-error);
+  background: var(--c-error-bg);
+  border-radius: var(--r-xs);
+}
+
+.pack-section__note {
+  margin-bottom: var(--sp-2);
+  font-size: var(--fs-sm);
+  color: var(--c-text-2);
+}
+
+.pack-list {
+  list-style: none;
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+}
+
+.pack-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+}
+.pack-row + .pack-row { border-top: 1px solid var(--c-border); }
+.pack-row--pending { background: var(--c-surface-2); }
+
+.pack-row__main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.pack-row__link { color: inherit; text-decoration: none; }
+.pack-row__link:hover .pack-row__name { text-decoration: underline; }
+
+.pack-row__name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px var(--sp-2);
+  font-weight: 700;
+  color: var(--c-text);
+}
+
+.pack-row__rule {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--c-text-3);
+}
+
+.pack-row__pending {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  color: var(--c-warn);
+}
+
+.pack-row__note { font-size: var(--fs-xs); line-height: var(--lh-snug); color: var(--c-text-3); }
+
+.pack-row__dose {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+}
+
+.pack-row__value {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-xl);
+  font-weight: 800;
+  letter-spacing: -.02em;
+  white-space: nowrap;
+}
+
+.pack-row__unit { font-size: var(--fs-xs); font-weight: 600; color: var(--c-text-3); }
+
+.pack-row__sub {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  color: var(--c-primary);
+}
+
+/* ── Stopwatch (Kejang) ───────────────────────────────────────────────────── */
+.stopwatch {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  margin: 0 0 var(--sp-4);
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--c-surface);
+  border: 1.5px solid var(--c-border);
+  border-radius: var(--r-lg);
+}
+.stopwatch--on { background: var(--c-answer-bg); border-color: transparent; }
+
+.stopwatch__label {
+  display: block;
+  font-size: var(--fs-2xs);
+  font-weight: 800;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--c-text-3);
+}
+.stopwatch--on .stopwatch__label { color: var(--c-answer-sub); }
+
+.stopwatch__time {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-2xl);
+  font-weight: 800;
+  color: var(--c-text);
+}
+.stopwatch--on .stopwatch__time { color: var(--c-answer-num); }
+
+.stopwatch__btn { width: auto; min-width: 7rem; }
+.stopwatch--on .stopwatch__btn { color: var(--c-answer-text); border-color: var(--c-answer-line); }
+
 /* ── Responsive ───────────────────────────────────────────────────────────── */
 @media (max-width: 560px) {
   :root { --pad: 16px; }

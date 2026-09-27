@@ -75,6 +75,16 @@ export const ROUTES: RouteDef[] = [
     index: true,
   },
   {
+    path: '/darurat',
+    id: 'darurat',
+    title: 'Darurat',
+    description:
+      'Paket darurat untuk satu berat badan: intubasi (RSI), resusitasi, kejang bertahap dan anafilaksis — dosis mg dan volume mL siap tarik.',
+    navLabel: 'Darurat',
+    nav: true,
+    index: true,
+  },
+  {
     path: '/tentang',
     id: 'about',
     title: 'Cara kerja & sumber',
@@ -135,6 +145,7 @@ export interface NavItem {
 
 export const NAV_ITEMS: NavItem[] = [
   { id: 'catalog', href: '/obat', match: ['/obat', '/hitung/custom', '/hitung/infus'], label: 'Obat', icon: 'obat' },
+  { id: 'darurat', href: '/darurat', match: ['/darurat'], label: 'Darurat', icon: 'darurat' },
   { id: 'puyer', href: '/hitung/puyer', match: ['/hitung/puyer'], label: 'Puyer', icon: 'puyer' },
   { id: 'cairan', href: '/hitung/cairan', match: ['/hitung/cairan'], label: 'Cairan', icon: 'cairan' },
   { id: 'history', href: '/riwayat', match: ['/riwayat'], label: 'Riwayat', icon: 'riwayat' },
