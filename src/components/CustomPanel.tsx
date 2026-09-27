@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { CheckIcon } from '@radix-ui/react-icons'
 import { ResultCard } from './ResultCard'
-import { WeightInput } from './WeightInput'
+import { WeightPrompt } from './WeightPrompt'
 import { calculate, CalcResult } from '../lib/calculate'
 import { errorCopy } from '../lib/errorCopy'
-import { announceResult } from '../lib/announce'
+import { announceResult, useSettled } from '../lib/announce'
+import { usePatient } from '../lib/patient'
 import { saveCustomDrug, generateId } from '../lib/storage'
 import { isInvalidPositiveNumber } from '../lib/validateNumber'
 
@@ -15,34 +16,33 @@ interface CustomPanelProps {
 
 export function CustomPanel({ onHistoryUpdated, onPresetSaved }: CustomPanelProps) {
   const [drugName, setDrugName] = useState('')
-  const [weight, setWeight] = useState('')
+  const { weightKg } = usePatient()
   const [dosePerKg, setDosePerKg] = useState('')
   const [freq, setFreq] = useState('')
   const [maxDay, setMaxDay] = useState('')
   const [concentration, setConcentration] = useState('')
-  const [result, setResult] = useState<CalcResult | null>(null)
-  const [error, setError] = useState<string | null>(null)
 
   const [savingPreset, setSavingPreset] = useState(false)
   const [presetNote, setPresetNote] = useState('')
   const [presetSaved, setPresetSaved] = useState(false)
 
-  function handleCalculate() {
-    const out = calculate({
-      weight: parseFloat(weight),
+  // Live once dose and frequency are filled in; before that an empty custom
+  // form is not an error, just unfinished.
+  const outcome = useMemo(() => {
+    if (weightKg == null || !dosePerKg || !freq) return null
+    return calculate({
+      weight: weightKg,
       dosePerKg: parseFloat(dosePerKg),
       freq: parseFloat(freq),
       maxDay: maxDay ? parseFloat(maxDay) : undefined,
       concentration: concentration ? parseFloat(concentration) : undefined,
     })
-    if (!out.valid) {
-      setError(errorCopy(out.error))
-      setResult(null)
-    } else {
-      setError(null)
-      setResult(out)
-    }
-  }
+  }, [weightKg, dosePerKg, freq, maxDay, concentration])
+  const result: CalcResult | null = outcome && outcome.valid ? outcome : null
+  const error = outcome && !outcome.valid ? errorCopy(outcome.error) : null
+  const announcement = useSettled(
+    result ? announceResult(drugName || 'Obat kustom', result, parseFloat(freq)) : '',
+  )
 
   function canSavePreset(): boolean {
     return (
@@ -82,14 +82,9 @@ export function CustomPanel({ onHistoryUpdated, onPresetSaved }: CustomPanelProp
             type="text"
             placeholder="misal Metronidazole"
             value={drugName}
-            onChange={(e) => { setDrugName(e.target.value); setResult(null) }}
+            onChange={(e) => { setDrugName(e.target.value) }}
           />
         </div>
-        <WeightInput
-          id="custom-weight"
-          value={weight}
-          onChange={(v) => { setWeight(v); setResult(null) }}
-        />
         <div className="field">
           <label className="label" htmlFor="custom-dose">Dosis (mg/kg)</label>
           <input
@@ -101,7 +96,7 @@ export function CustomPanel({ onHistoryUpdated, onPresetSaved }: CustomPanelProp
             placeholder="misal 7.5"
             value={dosePerKg}
             aria-invalid={isInvalidPositiveNumber(dosePerKg)}
-            onChange={(e) => { setDosePerKg(e.target.value); setResult(null) }}
+            onChange={(e) => { setDosePerKg(e.target.value) }}
           />
         </div>
         <div className="field">
@@ -115,7 +110,7 @@ export function CustomPanel({ onHistoryUpdated, onPresetSaved }: CustomPanelProp
             placeholder="misal 3"
             value={freq}
             aria-invalid={isInvalidPositiveNumber(freq)}
-            onChange={(e) => { setFreq(e.target.value); setResult(null) }}
+            onChange={(e) => { setFreq(e.target.value) }}
           />
         </div>
         <div className="field">
@@ -129,7 +124,7 @@ export function CustomPanel({ onHistoryUpdated, onPresetSaved }: CustomPanelProp
             placeholder="misal 2000"
             value={maxDay}
             aria-invalid={isInvalidPositiveNumber(maxDay)}
-            onChange={(e) => { setMaxDay(e.target.value); setResult(null) }}
+            onChange={(e) => { setMaxDay(e.target.value) }}
           />
         </div>
         <div className="field">
@@ -143,24 +138,18 @@ export function CustomPanel({ onHistoryUpdated, onPresetSaved }: CustomPanelProp
             placeholder="misal 50"
             value={concentration}
             aria-invalid={isInvalidPositiveNumber(concentration)}
-            onChange={(e) => { setConcentration(e.target.value); setResult(null) }}
+            onChange={(e) => { setConcentration(e.target.value) }}
           />
         </div>
       </div>
+
+      {weightKg == null && <WeightPrompt />}
 
       {/* role="alert" has no native equivalent: a validation failure must be
           announced without moving focus away from the field being corrected. */}
       {error && <p className="error" role="alert">{error}</p>}
 
-      <button className="btn btn--primary" onClick={handleCalculate}>
-        Hitung
-      </button>
-
-      {/* Mounted with the form, before any result exists, so the announcement
-          fires on text change rather than on insertion. */}
-      <p className="sr-only" role="status">
-        {result ? announceResult(drugName || 'Obat kustom', result, parseFloat(freq)) : ''}
-      </p>
+      <p className="sr-only" role="status">{announcement}</p>
 
       {/* Save as preset */}
       {canSavePreset() && !savingPreset && (
@@ -200,11 +189,11 @@ export function CustomPanel({ onHistoryUpdated, onPresetSaved }: CustomPanelProp
         </div>
       )}
 
-      {result && (
+      {result && weightKg != null && (
         <ResultCard
           result={result}
           drugName={drugName || 'Obat kustom'}
-          weight={parseFloat(weight)}
+          weight={weightKg!}
           dosePerKg={parseFloat(dosePerKg)}
           freq={parseFloat(freq)}
           concentration={concentration ? parseFloat(concentration) : undefined}

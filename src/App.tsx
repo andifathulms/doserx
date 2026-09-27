@@ -24,6 +24,7 @@ import {
   ROUTE_CHUNKS,
 } from './pages'
 import { ROUTES, MODE_IDS } from './routes'
+import { PatientProvider } from './lib/patient'
 
 function App() {
   const path = useLocation()
@@ -84,9 +85,11 @@ function App() {
   }
 
   const showCalculator = routeId === 'calculator'
+  // Every screen that turns a weight into a number carries the patient bar.
+  const showPatient = routeId === 'calculator' || routeId === 'catalog' || routeId === 'drug'
 
   return (
-    <>
+    <PatientProvider>
       <SkipLink />
       {/* The header sits OUTSIDE .app so its bar spans the viewport while its
           inner container lines up with the page content. Nested inside, it was
@@ -96,6 +99,7 @@ function App() {
         path={path}
         historyCount={history.length}
         historyActive={routeId === 'history'}
+        showPatient={showPatient}
       />
       <RouteAnnouncer routeId={routeId} />
 
@@ -157,7 +161,7 @@ function App() {
       </div>
 
       <BottomNav path={path} historyCount={history.length} />
-    </>
+    </PatientProvider>
   )
 }
 

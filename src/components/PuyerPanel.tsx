@@ -1,9 +1,10 @@
-import { useState, useRef } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { CheckIcon, ExclamationTriangleIcon } from '@radix-ui/react-icons'
 import { ALL_DRUGS, DrugPreset } from '../data/drugs'
 import { DrugGrid } from './DrugGrid'
 import { DerivationChain } from './DerivationChain'
 import { groupOf } from '../data/categories'
+import { usePatient, focusPatientWeight } from '../lib/patient'
 import { DosePositionBandCompact, DosePositionBandLegend } from './DosePositionBandCompact'
 import { calculate, CalcResult } from '../lib/calculate'
 import { suggestForms, describeForms, FormSuggestion } from '../lib/suggest'
@@ -252,7 +253,11 @@ interface PuyerPanelProps {
 }
 
 export function PuyerPanel({ onHistoryUpdated: _onHistoryUpdated }: PuyerPanelProps) {
-  const [weight, setWeight] = useState('')
+  // The weight comes from the patient bar. The recipe is a snapshot taken at
+  // "Hitung Puyer", so a weight change afterwards invalidates it rather than
+  // leaving a recipe on screen computed for a different weight.
+  const { weightKg } = usePatient()
+  const weight = weightKg != null ? String(weightKg) : ''
   const [days, setDays] = useState('3')
   const [patientLabel, setPatientLabel] = useState('')
   const [doseMode, setDoseMode] = useState<DoseMode>(() => loadDoseMode())
@@ -271,6 +276,11 @@ export function PuyerPanel({ onHistoryUpdated: _onHistoryUpdated }: PuyerPanelPr
   // calculation failed for expands itself so the doctor doesn't have to
   // hunt for which one.
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
+
+  useEffect(() => {
+    setCalculated(false)
+    setWeightError(null)
+  }, [weightKg])
 
   const formRef = useRef<HTMLDivElement>(null)
 
@@ -332,9 +342,10 @@ export function PuyerPanel({ onHistoryUpdated: _onHistoryUpdated }: PuyerPanelPr
   }
 
   function handleCalculate() {
-    const w = parseFloat(weight)
-    if (!isFinite(w) || w <= 0) {
-      setWeightError('Masukkan berat badan yang valid.')
+    const w = weightKg
+    if (w == null) {
+      setWeightError('Isi berat pasien di bagian atas dulu.')
+      focusPatientWeight()
       return
     }
     setWeightError(null)
@@ -444,25 +455,10 @@ export function PuyerPanel({ onHistoryUpdated: _onHistoryUpdated }: PuyerPanelPr
       {!gridOpen && (
         <div ref={formRef}>
 
-          {/* Weight + days row */}
+          {weightError && <p className="error" role="alert">{weightError}</p>}
+
+          {/* Days row — the weight lives in the patient bar */}
           <div className="puyer-meta-row">
-            <div className="field">
-              <label className="label" htmlFor="puyer-weight">Berat badan (kg)</label>
-              <input
-                id="puyer-weight"
-                className={`input${isInvalidPositiveNumber(weight) ? ' input--invalid' : ''}`}
-                type="number"
-                min="0"
-                step="0.1"
-                placeholder="misal 14"
-                autoFocus
-                value={weight}
-                aria-invalid={isInvalidPositiveNumber(weight)}
-                onChange={(e) => { setWeight(e.target.value); setCalculated(false) }}
-              />
-              {/* role="alert": validation failure announced without moving focus. */}
-              {weightError && <p className="error" role="alert" style={{ marginTop: 4 }}>{weightError}</p>}
-            </div>
             <div className="field">
               <label className="label" htmlFor="puyer-days">Jumlah hari</label>
               <input

@@ -1,8 +1,10 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { CheckIcon } from '@radix-ui/react-icons'
 import { INFUSION_PRESETS, InfusionPreset } from '../data/infusionDrugs'
 import { calculateInfusion, InfusionResult } from '../lib/calculateInfusion'
-import { WeightInput } from './WeightInput'
+import { WeightPrompt } from './WeightPrompt'
+import { usePatient } from '../lib/patient'
+import { useSettled } from '../lib/announce'
 import { AnswerPanel } from './AnswerPanel'
 import { isInvalidPositiveNumber } from '../lib/validateNumber'
 
@@ -84,40 +86,39 @@ function InfusionResultCard({ result, drug, weight }: { result: InfusionResult; 
 
 export function InfusionPanel() {
   const [selected, setSelected] = useState<InfusionPreset | null>(null)
-  const [weight, setWeight] = useState('')
+  const { weightKg } = usePatient()
   const [dose, setDose] = useState('')
   const [stockConc, setStockConc] = useState('')
   const [diluentVol, setDiluentVol] = useState('')
-  const [result, setResult] = useState<InfusionResult | null>(null)
-  const [error, setError] = useState<string | null>(null)
 
   function handleSelect(drug: InfusionPreset) {
     setSelected(drug)
     setDose(String(drug.doseDefault))
     setStockConc(String(drug.stockConcentration))
     setDiluentVol(String(drug.diluentVolumeDefault))
-    setResult(null)
-    setError(null)
   }
 
-  function handleCalculate() {
-    if (!selected) return
-    const out = calculateInfusion({
-      weight: parseFloat(weight),
+  // Live, like every other calculator — no "Hitung" step.
+  const outcome = useMemo(() => {
+    if (!selected || weightKg == null) return null
+    return calculateInfusion({
+      weight: weightKg,
       dose: parseFloat(dose),
       doseUnit: selected.doseUnit,
       stockConcentration: parseFloat(stockConc),
       stockUnit: selected.stockUnit,
       diluentVolume: parseFloat(diluentVol),
     })
-    if (!out.valid) {
-      setError(out.error)
-      setResult(null)
-    } else {
-      setError(null)
-      setResult(out)
-    }
-  }
+  }, [selected, weightKg, dose, stockConc, diluentVol])
+  const result: InfusionResult | null = outcome && outcome.valid ? outcome : null
+  const error = outcome && !outcome.valid ? outcome.error : null
+  const announcement = useSettled(
+    result && selected
+      ? `${selected.name}: ${result.ratePerHr} mililiter per jam, ` +
+          `${result.dropsMacro} tetes per menit makro, ` +
+          `${result.dropsMicro} tetes per menit mikro.`
+      : '',
+  )
 
   return (
     <div className="panel">
@@ -141,13 +142,6 @@ export function InfusionPanel() {
           <div className="drug-note">{selected.note}</div>
 
           <div className="form">
-            <WeightInput
-              id="infusion-weight"
-              value={weight}
-              onChange={(v) => { setWeight(v); setResult(null) }}
-              autoFocus
-            />
-
             <div className="field">
               <label className="label" htmlFor="infusion-dose">
                 Dosis ({selected.doseUnit})
@@ -161,7 +155,7 @@ export function InfusionPanel() {
                 step="0.01"
                 value={dose}
                 aria-invalid={isInvalidPositiveNumber(dose)}
-                onChange={(e) => { setDose(e.target.value); setResult(null) }}
+                onChange={(e) => { setDose(e.target.value) }}
               />
             </div>
 
@@ -177,7 +171,7 @@ export function InfusionPanel() {
                 step="0.1"
                 value={stockConc}
                 aria-invalid={isInvalidPositiveNumber(stockConc)}
-                onChange={(e) => { setStockConc(e.target.value); setResult(null) }}
+                onChange={(e) => { setStockConc(e.target.value) }}
                 aria-describedby="infusion-conc-hint"
               />
               {/* The preset number describes one specific bag. Saying which
@@ -198,31 +192,21 @@ export function InfusionPanel() {
                 step="1"
                 value={diluentVol}
                 aria-invalid={isInvalidPositiveNumber(diluentVol)}
-                onChange={(e) => { setDiluentVol(e.target.value); setResult(null) }}
+                onChange={(e) => { setDiluentVol(e.target.value) }}
               />
             </div>
           </div>
+
+          {weightKg == null && <WeightPrompt what="kecepatan infus" />}
 
           {/* role="alert" has no native equivalent: a validation failure must
               be announced without moving focus off the field being fixed. */}
           {error && <p className="error" role="alert">{error}</p>}
 
-          <button className="btn btn--primary" onClick={handleCalculate}>
-            Hitung Kecepatan Infus
-          </button>
+          <p className="sr-only" role="status">{announcement}</p>
 
-          {/* Mounted before any result exists, so the announcement fires on
-              text change rather than on insertion. */}
-          <p className="sr-only" role="status">
-            {result
-              ? `${selected.name}: ${result.ratePerHr} mililiter per jam, ` +
-                `${result.dropsMacro} tetes per menit makro, ` +
-                `${result.dropsMicro} tetes per menit mikro.`
-              : ''}
-          </p>
-
-          {result && (
-            <InfusionResultCard result={result} drug={selected} weight={weight} />
+          {result && weightKg != null && (
+            <InfusionResultCard result={result} drug={selected} weight={String(weightKg)} />
           )}
         </>
       )}

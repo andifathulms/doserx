@@ -29,8 +29,11 @@ describe('DrugPage', () => {
       const html = renderToString(<DrugPage id={drug.id} onHistoryUpdated={() => {}} />)
       expect(html).toContain(drug.name)
       // The calculator travels with the page — landing from a search result
-      // and getting a dose must not require a detour.
-      expect(html).toContain('Hitung')
+      // and getting a dose must not require a detour. Results are live, so
+      // there is no button to look for: the dose field and the prompt that
+      // points at the patient bar are the calculator's footprint.
+      expect(html).toContain(`id="drug-${drug.id}-dose"`)
+      expect(html).toContain('weight-prompt')
     }
   })
 

@@ -1110,6 +1110,191 @@ body::before {
   .site-header__inner { justify-content: space-between; }
 }
 
+/* ── Patient bar — the one weight field, pinned under the header ─────────────
+   Lives inside the sticky header on tool screens so the weight stays in reach
+   while results scroll. 44px controls for one thumb; the weight itself in the
+   mono face, since it is the number every other number on screen derives
+   from. ────────────────────────────────────────────────────────────────── */
+.patient-bar { border-top: 1px solid var(--c-border); }
+
+.patient-bar__inner,
+.patient-bar__note,
+.patient-bar__estimate {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  padding-left: var(--pad);
+  padding-right: var(--pad);
+}
+
+.patient-bar__inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--sp-2);
+  padding-top: var(--sp-2);
+  padding-bottom: var(--sp-2);
+}
+
+/* Sized so field + steppers + Anak/Dewasa fit one row on a 390px phone;
+   below ~360px the switch wraps under the field rather than squeezing it. */
+.patient-bar__field { flex: 1 1 7rem; min-width: 0; }
+
+.patient-bar__label-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-height: var(--target-min);
+}
+
+.patient-bar__label {
+  font-size: var(--fs-2xs);
+  font-weight: 800;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--c-text-3);
+}
+
+.patient-bar__link {
+  margin-left: auto;
+  min-height: var(--target-min);
+  padding: 0;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  white-space: nowrap;
+  color: var(--c-primary);
+  background: none;
+  border: none;
+}
+.patient-bar__link:hover { text-decoration: underline; }
+
+.patient-bar__input-wrap {
+  display: flex;
+  align-items: center;
+  height: var(--target);
+  padding: 0 var(--sp-2) 0 var(--sp-3);
+  background: var(--c-surface);
+  border: 1.5px solid var(--c-border-mid);
+  border-radius: var(--r-sm);
+  transition: border-color .12s;
+}
+.patient-bar__input-wrap:focus-within { border-color: var(--c-primary); box-shadow: var(--sh-ring); }
+.patient-bar__input-wrap--invalid { border-color: var(--c-error); }
+
+.patient-bar__input {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-xl);
+  font-weight: 800;
+  letter-spacing: -.02em;
+  color: var(--c-text);
+  background: transparent;
+  border: 0;
+  outline: none;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+.patient-bar__input::-webkit-outer-spin-button,
+.patient-bar__input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+/* The wrapper carries the ring; a second ring on the bare input would sit
+   inside it. */
+.patient-bar__input:focus-visible { box-shadow: none; }
+.patient-bar__input::placeholder { color: var(--c-text-faint); }
+
+.patient-bar__unit {
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  color: var(--c-text-3);
+}
+
+.patient-bar__clear {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  margin-left: var(--sp-2);
+  display: grid;
+  place-items: center;
+  color: var(--c-text-2);
+  background: var(--c-surface-2);
+  border: 0;
+  border-radius: var(--r-full);
+}
+.patient-bar__clear:hover { color: var(--c-text); }
+
+.patient-bar__steppers { display: flex; gap: var(--sp-1); }
+
+.patient-bar__step {
+  width: var(--target);
+  height: var(--target);
+  display: grid;
+  place-items: center;
+  color: var(--c-text);
+  background: var(--c-surface);
+  border: 1.5px solid var(--c-border);
+  border-radius: var(--r-sm);
+  transition: border-color .12s, transform .08s;
+}
+.patient-bar__step:hover:not(:disabled) { border-color: var(--c-primary); }
+.patient-bar__step:active:not(:disabled) { transform: scale(.96); }
+.patient-bar__step:disabled { opacity: .4; cursor: not-allowed; }
+
+.patient-bar__pop {
+  display: flex;
+  height: var(--target);
+  padding: 3px;
+  background: var(--c-surface-2);
+  border: 0;
+  border-radius: var(--r-sm);
+}
+
+.patient-bar__pop-opt { display: flex; }
+
+.patient-bar__pop-btn {
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  color: var(--c-text-3);
+  border-radius: 8px;
+  cursor: pointer;
+}
+.patient-bar__pop-input:checked + .patient-bar__pop-btn {
+  color: var(--c-text);
+  background: var(--c-surface);
+  box-shadow: var(--sh-xs);
+}
+.patient-bar__pop-input:focus-visible + .patient-bar__pop-btn { box-shadow: var(--sh-ring); }
+
+.patient-bar__note {
+  padding-bottom: var(--sp-2);
+  font-size: var(--fs-xs);
+  line-height: var(--lh-snug);
+  color: var(--c-warn);
+}
+
+.patient-bar__estimate { padding-bottom: var(--sp-3); }
+
+/* ── Weight prompt — where a result will appear once a weight is set ────── */
+.weight-prompt {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  margin: var(--sp-4) 0;
+  padding: var(--sp-4);
+  border: 1.5px dashed var(--c-border-mid);
+  border-radius: var(--r-lg);
+}
+
+.weight-prompt__text {
+  font-size: var(--fs-base);
+  color: var(--c-text-2);
+}
+
 /* ── Header history toggle ────────────────────────────────────────────────── */
 .history-toggle {
   flex-shrink: 0;

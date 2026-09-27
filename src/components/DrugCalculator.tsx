@@ -1,12 +1,13 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
 import { ResultCard } from './ResultCard'
-import { WeightInput } from './WeightInput'
+import { WeightPrompt } from './WeightPrompt'
 import { DrugPreset } from '../data/drugs'
 import { DoseMode, loadDoseMode, saveDoseMode } from '../lib/storage'
 import { calculate, CalcResult } from '../lib/calculate'
 import { errorCopy } from '../lib/errorCopy'
-import { announceResult } from '../lib/announce'
+import { announceResult, useSettled } from '../lib/announce'
+import { usePatient } from '../lib/patient'
 import { isInvalidPositiveNumber } from '../lib/validateNumber'
 import { groupOf } from '../data/categories'
 
@@ -39,28 +40,22 @@ interface DrugCalculatorProps {
   drug: DrugPreset
   onHistoryUpdated: () => void
   idPrefix?: string
-  autoFocusWeight?: boolean
 }
 
 export function DrugCalculator({
   drug,
   onHistoryUpdated,
   idPrefix = 'calc',
-  autoFocusWeight = false,
 }: DrugCalculatorProps) {
   // Deterministic first render — the stored preference is applied on mount, so
   // prerendered HTML and the first client render agree. See App for why.
   const [doseMode, setDoseMode] = useState<DoseMode>('perDose')
-  const [weight, setWeight] = useState('')
   const [dose, setDose] = useState(() => String(dayToMode(drug.dosePerKg, drug.freq, 'perDose')))
   const [freq, setFreq] = useState(() => String(drug.freq))
   const [concentration, setConcentration] = useState(
     drug.concentration != null ? String(drug.concentration) : '',
   )
-  const [result, setResult] = useState<CalcResult | null>(null)
-  const [resultMin, setResultMin] = useState<CalcResult | null>(null)
-  const [resultMax, setResultMax] = useState<CalcResult | null>(null)
-  const [error, setError] = useState<string | null>(null)
+  const { weightKg } = usePatient()
 
   const doseUnit = doseMode === 'perDose' ? 'mg/kg/kali' : 'mg/kg/hari'
   const defaultDose = dayToMode(drug.dosePerKg, drug.freq, doseMode)!
@@ -82,16 +77,9 @@ export function DrugCalculator({
     setDose(String(dayToMode(drug.dosePerKg, drug.freq, doseMode)))
     setFreq(String(drug.freq))
     setConcentration(drug.concentration != null ? String(drug.concentration) : '')
-    clearResults()
-    setError(null)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [drug.id])
 
-  function clearResults() {
-    setResult(null)
-    setResultMin(null)
-    setResultMax(null)
-  }
 
   function handleToggleMode(mode: DoseMode) {
     if (mode === doseMode) return
@@ -106,43 +94,42 @@ export function DrugCalculator({
     }
     setDoseMode(mode)
     saveDoseMode(mode)
-    clearResults()
   }
 
-  function handleCalculate() {
-    const freqNum = parseFloat(freq)
-    const doseNum = parseFloat(dose)
+  // Live: every input change recomputes. The engine is pure and instant, so
+  // a "Hitung" button only added a step between the weight and the answer.
+  const freqNum = parseFloat(freq)
+  const doseNum = parseFloat(dose)
+  const concNum = concentration ? parseFloat(concentration) : undefined
+  const computed = useMemo(() => {
+    if (weightKg == null) return null
     const base = {
-      weight: parseFloat(weight),
+      weight: weightKg,
       freq: freqNum,
       maxDay: drug.maxDay,
       maxSingle: drug.maxSingle,
-      concentration: concentration ? parseFloat(concentration) : undefined,
+      concentration: concNum,
     }
-
     const out = calculate({ ...base, dosePerKg: modeToDay(doseNum, freqNum, doseMode) })
-
-    if (!out.valid) {
-      setError(errorCopy(out.error))
-      clearResults()
-      return
-    }
-
-    setError(null)
-    setResult(out)
+    if (!out.valid) return { error: errorCopy(out.error) }
 
     // Show the min/max range only when the dose is still at its preset default.
-    const usingDefault = doseNum === defaultDose
-    if (usingDefault && rangeMin != null && rangeMax != null) {
+    let resultMin: CalcResult | undefined
+    let resultMax: CalcResult | undefined
+    if (doseNum === defaultDose && rangeMin != null && rangeMax != null) {
       const outMin = calculate({ ...base, dosePerKg: modeToDay(rangeMin, freqNum, doseMode) })
       const outMax = calculate({ ...base, dosePerKg: modeToDay(rangeMax, freqNum, doseMode) })
-      setResultMin(outMin.valid ? outMin : null)
-      setResultMax(outMax.valid ? outMax : null)
-    } else {
-      setResultMin(null)
-      setResultMax(null)
+      if (outMin.valid && outMax.valid) {
+        resultMin = outMin
+        resultMax = outMax
+      }
     }
-  }
+    return { result: out, resultMin, resultMax }
+  }, [weightKg, freqNum, doseNum, concNum, doseMode, drug, defaultDose, rangeMin, rangeMax])
+
+  const result = computed && 'result' in computed ? computed.result : null
+  const error = computed && 'error' in computed ? computed.error : null
+  const announcement = useSettled(result ? announceResult(drug.name, result, freqNum) : '')
 
   const doseOverridden = dose !== String(defaultDose)
 
@@ -212,12 +199,6 @@ export function DrugCalculator({
       </div>
 
       <div className="form">
-        <WeightInput
-          id={`${idPrefix}-weight`}
-          value={weight}
-          onChange={(v) => { setWeight(v); clearResults() }}
-          autoFocus={autoFocusWeight}
-        />
         <div className="field">
           <div className="label-row">
             <label className="label" htmlFor={`${idPrefix}-dose`}>
@@ -229,7 +210,7 @@ export function DrugCalculator({
             {doseOverridden && (
               <button
                 className="reset-btn"
-                onClick={() => { setDose(String(defaultDose)); clearResults() }}
+                onClick={() => setDose(String(defaultDose))}
                 aria-label={`Reset dosis ke ${defaultDose} ${doseUnit}`}
               >
                 <span aria-hidden="true">↺ {defaultDose}</span>
@@ -244,7 +225,7 @@ export function DrugCalculator({
             step="0.01"
             value={dose}
             aria-invalid={isInvalidPositiveNumber(dose)}
-            onChange={(e) => { setDose(e.target.value); clearResults() }}
+            onChange={(e) => { setDose(e.target.value) }}
           />
           {/* Trying the top of the range used to mean retyping the number by
               hand — the manual arithmetic this app exists to remove. */}
@@ -261,7 +242,7 @@ export function DrugCalculator({
                   type="button"
                   className={`dose-picker__btn${dose === String(value) ? ' dose-picker__btn--active' : ''}`}
                   aria-pressed={dose === String(value)}
-                  onClick={() => { setDose(String(value)); clearResults() }}
+                  onClick={() => setDose(String(value))}
                 >
                   {label} <span className="dose-picker__num">{value}</span>
                 </button>
@@ -279,7 +260,7 @@ export function DrugCalculator({
             step="1"
             value={freq}
             aria-invalid={isInvalidPositiveNumber(freq)}
-            onChange={(e) => { setFreq(e.target.value); clearResults() }}
+            onChange={(e) => { setFreq(e.target.value) }}
           />
         </div>
         <div className="field">
@@ -295,7 +276,7 @@ export function DrugCalculator({
             placeholder="misal 24 — sirup 120mg/5mL = 24 mg/mL"
             value={concentration}
             aria-invalid={isInvalidPositiveNumber(concentration)}
-            onChange={(e) => { setConcentration(e.target.value); clearResults() }}
+            onChange={(e) => { setConcentration(e.target.value) }}
             aria-describedby={`${idPrefix}-conc-hint`}
           />
           <p className="field__hint" id={`${idPrefix}-conc-hint`}>
@@ -305,33 +286,27 @@ export function DrugCalculator({
         </div>
       </div>
 
+      {weightKg == null && <WeightPrompt />}
+
       {/* role="alert" has no native equivalent: a validation failure must be
           announced without moving focus off the field being fixed. */}
       {error && <p className="error" role="alert">{error}</p>}
 
-      <button className="btn btn--primary" onClick={handleCalculate}>
-        Hitung
-      </button>
+      <p className="sr-only" role="status">{announcement}</p>
 
-      {/* Mounted with the form, before any result exists, so the announcement
-          fires on text change rather than on insertion. */}
-      <p className="sr-only" role="status">
-        {result ? announceResult(drug.name, result, parseFloat(freq)) : ''}
-      </p>
-
-      {result && (
+      {result && weightKg != null && (
         <ResultCard
           result={result}
-          resultMin={resultMin ?? undefined}
-          resultMax={resultMax ?? undefined}
+          resultMin={computed && 'result' in computed ? computed.resultMin : undefined}
+          resultMax={computed && 'result' in computed ? computed.resultMax : undefined}
           dosePerKgMin={drug.dosePerKgMin}
           dosePerKgMax={drug.dosePerKgMax}
           drugName={drug.name}
-          weight={parseFloat(weight)}
-          dosePerKg={modeToDay(parseFloat(dose), parseFloat(freq), doseMode)}
-          freq={parseFloat(freq)}
+          weight={weightKg}
+          dosePerKg={modeToDay(doseNum, freqNum, doseMode)}
+          freq={freqNum}
           freqMax={drug.freqMax}
-          concentration={concentration ? parseFloat(concentration) : undefined}
+          concentration={concNum}
           availableForms={drug.availableForms}
           source={drug.source}
           maxDailyCap={drug.maxDay}

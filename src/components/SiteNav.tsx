@@ -3,6 +3,7 @@ import { SunIcon, MoonIcon } from '@radix-ui/react-icons'
 import { Link, isActive } from '../lib/router'
 import { NAV_ITEMS, routeTitle } from '../routes'
 import { Theme, loadTheme, saveTheme } from '../lib/storage'
+import { PatientBar } from './PatientBar'
 
 /**
  * Site chrome for a multi-page app.
@@ -74,9 +75,12 @@ interface SiteHeaderProps {
   historyCount: number
   historyActive: boolean
   path: string
+  /** Tool screens pin the patient bar under the header, inside the same
+   *  sticky element, so the weight stays in reach while scrolling results. */
+  showPatient?: boolean
 }
 
-export function SiteHeader({ historyCount, historyActive, path }: SiteHeaderProps) {
+export function SiteHeader({ historyCount, historyActive, path, showPatient = false }: SiteHeaderProps) {
   return (
     <header className="site-header">
       <div className="site-header__inner">
@@ -114,6 +118,7 @@ export function SiteHeader({ historyCount, historyActive, path }: SiteHeaderProp
           </Link>
         </div>
       </div>
+      {showPatient && <PatientBar />}
     </header>
   )
 }

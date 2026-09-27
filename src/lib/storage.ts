@@ -6,6 +6,8 @@ const RECENTS_MAX = 8
 const DOSE_MODE_KEY = 'doserx_dose_mode'
 const LAST_MODE_KEY = 'doserx_last_mode'
 const THEME_KEY = 'doserx_theme'
+const PATIENT_KEY = 'doserx_patient'
+const POPULATION_KEY = 'doserx_population'
 
 // ── Theme: manual, persisted, never OS-following ───────────────────────────────
 // index.html reads this same key in an inline script that runs before first
@@ -25,6 +27,68 @@ export function loadTheme(): Theme {
 export function saveTheme(theme: Theme): void {
   try {
     localStorage.setItem(THEME_KEY, theme)
+  } catch {
+    /* ignore */
+  }
+}
+
+// ── Current patient ──────────────────────────────────────────────────────────
+// The weight is the one input every tool shares, so it lives in the patient
+// bar rather than in each form. It is deliberately SHORT-lived: sessionStorage
+// (gone when the tab closes) plus an expiry, because a weight silently carried
+// over from the previous patient is the worst failure this feature could have.
+// An installed PWA can keep one "session" open for days; the TTL is what
+// actually protects the next patient.
+
+export type Population = 'anak' | 'dewasa'
+
+export interface StoredPatient {
+  weight: string
+  /** Formula text when the weight came from the age estimator, else null. */
+  estimatedFrom: string | null
+  updatedAt: number
+}
+
+export const PATIENT_TTL_MS = 60 * 60 * 1000
+
+export function loadPatient(now: number = Date.now()): StoredPatient | null {
+  try {
+    const raw = sessionStorage.getItem(PATIENT_KEY)
+    if (!raw) return null
+    const p = JSON.parse(raw) as StoredPatient
+    if (typeof p.weight !== 'string' || typeof p.updatedAt !== 'number') return null
+    if (now - p.updatedAt > PATIENT_TTL_MS) {
+      sessionStorage.removeItem(PATIENT_KEY)
+      return null
+    }
+    return p
+  } catch {
+    return null
+  }
+}
+
+export function savePatient(p: StoredPatient): void {
+  try {
+    if (!p.weight) sessionStorage.removeItem(PATIENT_KEY)
+    else sessionStorage.setItem(PATIENT_KEY, JSON.stringify(p))
+  } catch {
+    /* ignore */
+  }
+}
+
+/** Anak/Dewasa is a working preference (a doctor mostly sees one or the
+ *  other), not patient data — so it persists, unlike the weight. */
+export function loadPopulation(): Population {
+  try {
+    return localStorage.getItem(POPULATION_KEY) === 'dewasa' ? 'dewasa' : 'anak'
+  } catch {
+    return 'anak'
+  }
+}
+
+export function savePopulation(p: Population): void {
+  try {
+    localStorage.setItem(POPULATION_KEY, p)
   } catch {
     /* ignore */
   }

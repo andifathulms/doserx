@@ -144,7 +144,6 @@ export function PresetPanel({
             drug={selected}
             onHistoryUpdated={onHistoryUpdated}
             idPrefix="preset"
-            autoFocusWeight
           />
         </div>
       )}
