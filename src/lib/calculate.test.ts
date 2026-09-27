@@ -207,3 +207,45 @@ describe('calculateFixed — adult fixed-dose regimens', () => {
     expect(calculateFixed({ doseMg: 4, freq: -1 }).valid).toBe(false)
   })
 })
+
+describe('small doses — the mg shown agrees with the mL shown', () => {
+  it('atropine 7 kg: 0.14 mg and 0.56 mL (was "0.1 mg" beside 0.56 mL)', () => {
+    const out = calculate({ weight: 7, dosePerKg: 0.02, freq: 1, maxSingle: 0.5, concentration: 0.25 })
+    expect(out.valid && out.perDose).toBe(0.14)
+    expect(out.valid && out.volume).toBe(0.56)
+  })
+
+  it('naloxone 9 kg: 0.09 mg, not 0.1', () => {
+    const out = calculate({ weight: 9, dosePerKg: 0.01, freq: 1, maxSingle: 0.4, concentration: 0.4 })
+    expect(out.valid && out.perDose).toBe(0.09)
+  })
+
+  it('fentanyl 2 mcg/kg at 14 kg: 0.028 mg, never 0', () => {
+    const out = calculate({ weight: 14, dosePerKg: 0.002, freq: 1, concentration: 0.05 })
+    expect(out.valid && out.perDose).toBe(0.028)
+    expect(out.valid && out.volume).toBe(0.56)
+    expect(out.valid && out.steps[0].expression).toContain('0.002 mg/kg/hari')
+  })
+
+  it('keeps one decimal for large doses and two between 1 and 100 mg', () => {
+    const big = calculate({ weight: 14, dosePerKg: 50, freq: 3 }) // 233.33
+    expect(big.valid && big.perDose).toBe(233.3)
+    const mid = calculate({ weight: 5, dosePerKg: 0.45, freq: 3 }) // 0.75
+    expect(mid.valid && mid.perDose).toBe(0.75)
+    const mid2 = calculate({ weight: 29, dosePerKg: 1, freq: 3 }) // 9.666…
+    expect(mid2.valid && mid2.perDose).toBe(9.67)
+  })
+
+  it('agrees mg × concentration ≈ mL across the whole catalogue, at several weights', async () => {
+    const { DRUG_PRESETS } = await import('../data/drugs')
+    for (const p of DRUG_PRESETS) {
+      if (!p.concentration) continue
+      for (const w of [3, 7, 14, 30, 70]) {
+        const o = calculate({ weight: w, dosePerKg: p.dosePerKg, freq: p.freq, maxDay: p.maxDay, maxSingle: p.maxSingle, concentration: p.concentration })
+        if (!o.valid || o.volume == null) continue
+        // Within half a unit of the volume's last displayed decimal.
+        expect(Math.abs(o.perDose / p.concentration - o.volume), `${p.id} @ ${w} kg`).toBeLessThanOrEqual(0.0051 + o.volume * 0.005)
+      }
+    }
+  })
+})

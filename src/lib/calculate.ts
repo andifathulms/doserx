@@ -72,7 +72,7 @@ export function calculate(input: CalcInput): CalcOutput {
   steps.push({
     kind: 'daily',
     expression: `${trim(weight)} kg × ${trim(dosePerKg)} mg/kg/hari`,
-    result: `${round(rawDailyDose, 1)} mg/hari`,
+    result: `${roundMg(rawDailyDose)} mg/hari`,
   })
 
   const hasMaxDay = maxDay != null && isFinite(maxDay) && maxDay > 0
@@ -81,7 +81,7 @@ export function calculate(input: CalcInput): CalcOutput {
     cappedByMaxDay = true
     steps.push({
       kind: 'capDay',
-      expression: `${round(rawDailyDose, 1)} mg/hari melebihi maks ${trim(maxDay!)} mg/hari`,
+      expression: `${roundMg(rawDailyDose)} mg/hari melebihi maks ${trim(maxDay!)} mg/hari`,
       result: `${trim(maxDay!)} mg/hari`,
     })
   }
@@ -92,8 +92,8 @@ export function calculate(input: CalcInput): CalcOutput {
 
   steps.push({
     kind: 'perDose',
-    expression: `${round(dailyDose, 1)} mg/hari ÷ ${trim(freq)}× sehari`,
-    result: `${round(rawPerDose, 1)} mg/kali`,
+    expression: `${roundMg(dailyDose)} mg/hari ÷ ${trim(freq)}× sehari`,
+    result: `${roundMg(rawPerDose)} mg/kali`,
   })
 
   const hasMaxSingle = maxSingle != null && isFinite(maxSingle) && maxSingle > 0
@@ -102,14 +102,14 @@ export function calculate(input: CalcInput): CalcOutput {
     cappedByMaxSingle = true
     steps.push({
       kind: 'capSingle',
-      expression: `${round(rawPerDose, 1)} mg/kali melebihi maks ${trim(maxSingle!)} mg/kali`,
+      expression: `${roundMg(rawPerDose)} mg/kali melebihi maks ${trim(maxSingle!)} mg/kali`,
       result: `${trim(maxSingle!)} mg/kali`,
     })
   }
 
   const result: CalcResult = {
-    dailyDose: round(dailyDose, 1),
-    perDose: round(perDose, 1),
+    dailyDose: roundMg(dailyDose),
+    perDose: roundMg(perDose),
     cappedByMaxDay,
     cappedByMaxSingle,
     steps,
@@ -117,9 +117,9 @@ export function calculate(input: CalcInput): CalcOutput {
   }
 
   if (cappedByMaxDay || cappedByMaxSingle) {
-    result.uncappedDailyDose = round(rawDailyDose, 1)
+    result.uncappedDailyDose = roundMg(rawDailyDose)
     // What the per-dose would have been with no cap anywhere in the chain.
-    result.uncappedPerDose = round(rawDailyDose / freq, 1)
+    result.uncappedPerDose = roundMg(rawDailyDose / freq)
   }
 
   // Weight at which the first applicable cap starts binding. Both ceilings are
@@ -128,7 +128,7 @@ export function calculate(input: CalcInput): CalcOutput {
   if (hasMaxDay) capWeights.push(maxDay! / dosePerKg)
   if (hasMaxSingle) capWeights.push((maxSingle! * freq) / dosePerKg)
   if (capWeights.length > 0) {
-    result.capFromWeightKg = round(Math.min(...capWeights), 1)
+    result.capFromWeightKg = round(Math.min(...capWeights), 1) // kg, not mg
   }
 
   if (concentration != null && isFinite(concentration) && concentration > 0) {
@@ -136,7 +136,7 @@ export function calculate(input: CalcInput): CalcOutput {
     result.volume = volume
     steps.push({
       kind: 'volume',
-      expression: `${round(perDose, 1)} mg/kali ÷ ${trim(concentration)} mg/mL`,
+      expression: `${roundMg(perDose)} mg/kali ÷ ${trim(concentration)} mg/mL`,
       result: `${volume} mL`,
     })
   }
@@ -144,13 +144,36 @@ export function calculate(input: CalcInput): CalcOutput {
   return result
 }
 
+/**
+ * Rounding for a dose in mg, by magnitude. A fixed one decimal place was
+ * wrong for small doses: 0.14 mg of atropine displayed as "0.1 mg" beside a
+ * volume computed from the exact 0.14 (0.56 mL of 0.25 mg/mL) — the mg and
+ * the mL on the same card disagreed by 40%, and fentanyl's 0.028 mg would
+ * have shown as "0 mg". Now:
+ *   ≥ 100 mg  → 1 decimal   (233.3)
+ *   ≥ 1 mg    → 2 decimals  (7.25)
+ *   < 1 mg    → 3 significant figures (0.14, 0.0283)
+ * so the mg shown always agrees with the mL shown to the precision a
+ * syringe can deliver.
+ */
+export function roundMg(value: number): number {
+  const a = Math.abs(value)
+  if (a === 0 || !isFinite(a)) return value
+  if (a >= 100) return round(value, 1)
+  if (a >= 1) return round(value, 2)
+  return round(value, 2 - Math.floor(Math.log10(a)))
+}
+
 function round(value: number, decimals: number): number {
   const factor = Math.pow(10, decimals)
   return Math.round(value * factor) / factor
 }
 
-/** Drops trailing zeros so inputs read as typed: 30 not 30.0, 2.5 stays 2.5. */
+/** Inputs as typed: 30 not 30.0, 2.5 stays 2.5, and a small per-kg dose
+ *  (fentanil 0.002 mg/kg) keeps its digits instead of rounding to 0. */
 function trim(value: number): string {
+  const a = Math.abs(value)
+  if (a > 0 && a < 1) return String(round(value, 3 - Math.floor(Math.log10(a))))
   return String(round(value, 2))
 }
 
@@ -190,7 +213,7 @@ export function calculateFixed(input: FixedDoseInput): CalcOutput {
   steps.push({
     kind: 'daily',
     expression: `${trim(doseMg)} mg/kali × ${trim(freq)}× sehari`,
-    result: `${round(rawDaily, 1)} mg/hari`,
+    result: `${roundMg(rawDaily)} mg/hari`,
   })
 
   let perDose = doseMg
@@ -202,22 +225,22 @@ export function calculateFixed(input: FixedDoseInput): CalcOutput {
     cappedByMaxDay = true
     steps.push({
       kind: 'capDay',
-      expression: `${round(rawDaily, 1)} mg/hari melebihi maks ${trim(maxDay)} mg/hari`,
-      result: `${round(perDose, 1)} mg/kali`,
+      expression: `${roundMg(rawDaily)} mg/hari melebihi maks ${trim(maxDay)} mg/hari`,
+      result: `${roundMg(perDose)} mg/kali`,
     })
   }
 
   const result: CalcResult = {
-    dailyDose: round(dailyDose, 1),
-    perDose: round(perDose, 1),
+    dailyDose: roundMg(dailyDose),
+    perDose: roundMg(perDose),
     cappedByMaxDay,
     cappedByMaxSingle: false,
     steps,
     valid: true,
   }
   if (cappedByMaxDay) {
-    result.uncappedDailyDose = round(rawDaily, 1)
-    result.uncappedPerDose = round(doseMg, 1)
+    result.uncappedDailyDose = roundMg(rawDaily)
+    result.uncappedPerDose = roundMg(doseMg)
   }
 
   if (concentration != null && isFinite(concentration) && concentration > 0) {
@@ -225,7 +248,7 @@ export function calculateFixed(input: FixedDoseInput): CalcOutput {
     result.volume = volume
     steps.push({
       kind: 'volume',
-      expression: `${round(perDose, 1)} mg/kali ÷ ${trim(concentration)} mg/mL`,
+      expression: `${roundMg(perDose)} mg/kali ÷ ${trim(concentration)} mg/mL`,
       result: `${volume} mL`,
     })
   }
