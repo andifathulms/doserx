@@ -1,120 +1,138 @@
-/* ── Fonts — system stacks only ───────────────────────────────────────────────
-   No self-hosted or CDN font: PRD §6 requires the app to work fully offline
-   from a cold first load, and every platform already ships a competent sans,
-   serif and monospace face. Three families, three jobs — see the type-scale
-   comment below for which selectors use which. ──────────────────────────── */
+/* ── Fonts — self-hosted, precached ───────────────────────────────────────────
+   Plus Jakarta Sans (designed in Jakarta by Tokotype) for everything a person
+   reads or operates; JetBrains Mono for every number a clinician reads under
+   pressure — its 0/O, 1/l/I and 5/S are unmistakable at a glance, which is
+   the whole reason a dose calculator wants a mono face at all.
+
+   Both are bundled as latin-only variable woff2 (imported in main.tsx) and
+   precached by the service worker, so the app still renders fully offline
+   after its first load. On a cold first load with no network the system
+   stacks below stand in until the files arrive (font-display: swap) — a
+   deliberate change from the old system-fonts-only rule, see DESIGN.md. ──── */
 
 /* ── Reset ────────────────────────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 button { font: inherit; cursor: pointer; }
 input  { font: inherit; }
 
-/* ── Design tokens ────────────────────────────────────────────────────────── */
+/* ── Design tokens — "Ward Day" ───────────────────────────────────────────────
+   A clinical instrument rather than a reference book: cool, faintly green
+   greys for structure, one teal for everything you can operate, and one dark
+   "answer" panel that is the only dark object on a light screen. Ratios in
+   the comments are computed by scripts/contrast-check.mjs. ────────────────── */
 :root {
-  /* Palette — warm stone (canvas, text, structure) */
-  --stone-50:  #fbfbfa;
-  --stone-100: #f7f6f3;
-  --stone-200: #eaeaea;
-  --stone-400: #948e81;   /* ~3.2:1 on white/bg — the UI-component-boundary tier */
-  --stone-500: #75716b;   /* ~4.7:1 on white/bg */
-  --stone-600: #57534e;   /* ~7.4:1 on white/bg */
-  --stone-700: #333333;   /* CTA hover */
-  --stone-900: #111111;   /* near-black, never pure #000 */
-  --stone-faint: #a19c93; /* ~2.6:1 — decorative/placeholder only, never load-bearing copy */
+  /* Palette — ward neutrals (canvas, text, structure). Cool, green-leaning,
+     never a flat mid-grey, never pure #000/#fff for text. */
+  --ward-50:  #f2f5f4;   /* canvas */
+  --ward-100: #e9eeec;   /* secondary surface, tracks */
+  --ward-200: #dbe3e0;   /* decorative hairlines only */
+  --ward-400: #7f8f8b;   /* UI-component boundary tier — meets 3:1 */
+  --ward-500: #56655f;   /* tertiary text */
+  --ward-600: #3b4a47;   /* secondary text */
+  --ward-700: #1f3140;   /* ink hover */
+  --ward-900: #0f1e2a;   /* ink — text, primary buttons, the answer panel */
+  --ward-faint: #9aa8a4; /* decorative/placeholder only, never load-bearing */
 
-  /* Palette — pastels. Exactly four hues, one semantic job each: accent
-     (primary/links/focus), warn, error, success. Values below are the
-     WCAG-verified text/background pairs, not the raw suggestion swatches. */
-  --pastel-blue-bg:    #e1f3fe;
-  --pastel-blue-text:  #1f6c9f;   /* 5.5:1 on bg, 5.7:1 on surface */
-  --pastel-yellow-bg:  #fbf3db;
-  --pastel-yellow-text:#8a5a00;   /* 5.7:1 on bg, 5.9:1 on surface */
-  --pastel-red-bg:     #fdebec;
-  --pastel-red-text:   #9f2f2d;   /* 6.9:1 on bg, 7.2:1 on surface */
-  --pastel-green-bg:   #edf3ec;
-  --pastel-green-text: #346538;   /* 6.6:1 on bg, 6.8:1 on surface */
+  /* Palette — signal pairs. Four hues, one semantic job each: teal (operate:
+     links, focus, selection), amber (caution: caps, warnings), red (errors,
+     Darurat), green (inside a published range — the band only). */
+  --teal-bg:     #dcf1ed;
+  --teal-text:   #0a7066;
+  --amber-bg:    #fff1d9;
+  --amber-text:  #8a5500;
+  --red-bg:      #fde9e6;
+  --red-text:    #a92c22;
+  --green-bg:    #e3f3e8;
+  --green-text:  #256a3b;
 
-  /* Clay — the one documented second accent, distinct from the four pastels
-     above. Real semantic need, not decoration: it marks "solid preparation"
-     (tablet/powder) apart from the blue "liquid" chip elsewhere on the same
-     screen — collapsing them to one hue would erase a clinically real
-     distinction the app makes between how two different doses are given. */
-  --clay-bg:   #f5ebe0;
-  --clay-text: #8b5e34;   /* 5.4:1 on bg, 5.6:1 on surface, 4.8:1 on its own pale bg */
+  /* Clay — the one documented second accent: "solid preparation" (tablet,
+     powder) apart from a liquid dose on the same screen. A real clinical
+     distinction, not decoration. */
+  --clay-bg:   #f6ebdf;
+  --clay-text: #83562d;
 
-  /* Semantic — Warm Editorial (light) */
+  /* Readout mint — used ONLY for dose digits inside the answer panel. */
+  --mint:      #7fe8d2;
+
+  /* Semantic — light */
   color-scheme: light;
-  --c-bg:           var(--stone-50);
+  --c-bg:           var(--ward-50);
   --c-surface:      #ffffff;
-  --c-surface-2:    var(--stone-100);
-  --c-border:       var(--stone-200);   /* decorative hairlines only */
-  --c-border-mid:   var(--stone-400);   /* real UI-component boundaries — meets 3:1 */
+  --c-surface-2:    var(--ward-100);
+  --c-border:       var(--ward-200);   /* decorative hairlines only */
+  --c-border-mid:   var(--ward-400);   /* real UI-component boundaries — meets 3:1 */
 
-  --c-text:         var(--stone-900);
-  --c-text-2:       var(--stone-600);
-  --c-text-3:       var(--stone-500);
-  --c-text-faint:   var(--stone-faint);
+  --c-text:         var(--ward-900);
+  --c-text-2:       var(--ward-600);
+  --c-text-3:       var(--ward-500);
+  --c-text-faint:   var(--ward-faint);
 
-  --c-primary:      var(--pastel-blue-text);
-  --c-primary-dark: #185a84;           /* darker step for hover, 7.1:1 on white */
-  --c-primary-dim:  #123f5c;
-  --c-primary-bg:   var(--pastel-blue-bg);
-  --c-primary-bdr:  #b9e0f8;
-  /* Text/icon colour for a small solid --c-primary FILL (count badges, the
-     grid step number) — not the same thing as --c-primary itself, which is
-     used as text/icon color on the app's own bg/surface. White reads at
-     5.67:1 here; in dark mode --c-primary becomes a light pastel blue, where
-     white-on-white would be the failure, so this flips to near-black
-     (9.68:1) instead of following --c-primary's own light->dark swap. */
+  --c-ink:          var(--ward-900);   /* primary button fill */
+  --c-ink-hover:    var(--ward-700);
+  --c-on-ink:       #ffffff;
+
+  --c-primary:      var(--teal-text);
+  --c-primary-dark: #075a52;
+  --c-primary-dim:  #053f3a;
+  --c-primary-bg:   var(--teal-bg);
+  --c-primary-bdr:  #a3d9cf;
+  /* Text/icon colour on a small solid --c-primary FILL (count badges, step
+     numbers). White on light-mode teal; flips to ink in dark mode, where
+     --c-primary becomes a light mint. */
   --c-on-primary:   #ffffff;
 
-  /* Clay secondary — see --clay-* above for why this stays distinct from primary. */
   --c-accent:       var(--clay-text);
   --c-accent-bg:    var(--clay-bg);
-  --c-accent-bdr:   #e8d9c5;
+  --c-accent-bdr:   #e6d4bf;
 
-  --c-warn:         var(--pastel-yellow-text);
-  --c-warn-bg:      var(--pastel-yellow-bg);
-  --c-warn-bdr:     #f0e2b0;
+  --c-warn:         var(--amber-text);
+  --c-warn-bg:      var(--amber-bg);
+  --c-warn-bdr:     #f0dcae;
   --c-warn-text:    var(--c-text-2);
-  --c-warn-strong:  var(--pastel-yellow-text);
+  --c-warn-strong:  var(--amber-text);
 
-  --c-error:        var(--pastel-red-text);
-  --c-error-bg:     var(--pastel-red-bg);
+  --c-error:        var(--red-text);
+  --c-error-bg:     var(--red-bg);
 
-  --c-success:      var(--pastel-green-text);
-  --c-success-bg:   var(--pastel-green-bg);
+  --c-success:      var(--green-text);
+  --c-success-bg:   var(--green-bg);
 
-  /* Focus indicator — pastel-blue-text clears 3:1 (1.4.11) on both --c-bg
-     and --c-surface, same bar the previous teal ring was held to. */
+  /* The answer panel. Identical intent in both themes: the one dark,
+     high-contrast object on screen, with the dose in mint. */
+  --c-answer-bg:    var(--ward-900);
+  --c-answer-text:  #e8f0ee;
+  --c-answer-sub:   #a3c0ba;
+  --c-answer-num:   var(--mint);
+  --c-answer-line:  rgba(232,240,238,.14);
+  --c-answer-chip:  rgba(232,240,238,.09);
+
   --c-focus:        var(--c-primary);
 
-  /* Shadows — ultra-diffuse, warm-tinted (never slate/blue-tinted black). */
-  --sh-xs: 0 1px 2px rgba(40,35,28,.03);
-  --sh-sm: 0 1px 3px rgba(40,35,28,.04), 0 1px 2px rgba(40,35,28,.03);
-  --sh:    0 2px 6px rgba(40,35,28,.04), 0 1px 3px rgba(40,35,28,.03);
-  --sh-md: 0 6px 16px rgba(40,35,28,.045), 0 2px 6px rgba(40,35,28,.03);
+  /* Shadows — soft, ink-tinted. */
+  --sh-xs: 0 1px 2px rgba(15,30,42,.05);
+  --sh-sm: 0 1px 3px rgba(15,30,42,.07), 0 1px 2px rgba(15,30,42,.04);
+  --sh:    0 4px 12px rgba(15,30,42,.07), 0 1px 3px rgba(15,30,42,.05);
+  --sh-md: 0 12px 32px -8px rgba(15,30,42,.18), 0 2px 6px rgba(15,30,42,.06);
   --sh-ring: 0 0 0 3px var(--c-focus);
 
-  /* Radii — crisp, capped. Pills reserved for tags/badges/segmented controls.
-     --r-lg (12px) is the roundest non-pill surface (the result card) — there
-     was also a --r-xl at the same 12px value with no distinct use, which
-     DESIGN-REWORK.md §9 flagged; removed rather than kept as a second name
-     for the same number. */
-  --r-xs:  4px;
-  --r-sm:  6px;
-  --r:     8px;
-  --r-lg:  12px;
+  /* Radii — softer than the notebook era; pills for chips and segmented
+     controls. --r-xl is the answer panel, the roundest surface. */
+  --r-xs:  6px;
+  --r-sm:  10px;
+  --r:     12px;
+  --r-lg:  16px;
+  --r-xl:  20px;
   --r-full: 9999px;
 
   /* Layout */
-  --max-w: 820px;
+  --max-w: 880px;
   --pad:   20px;
 
-  /* Minimum interactive target. WCAG 2.5.8 (AA) asks for 24x24 CSS px; text
-     buttons that sit inline with other text are exempt, but these are the
-     controls a tired hand aims at, so they get the floor anyway. */
+  /* Interactive targets. --target-min is the WCAG floor for inline
+     controls; --target is what a primary control a tired hand aims at
+     one-handed gets (the patient-bar steppers, route chips, nav). */
   --target-min: 24px;
+  --target:     44px;
 
   /* ── Spacing scale — 4px base. Use these, not raw px. ─────────────────── */
   --sp-1:  4px;
@@ -127,21 +145,20 @@ input  { font: inherit; }
   --sp-10: 40px;
   --sp-12: 48px;
 
-  /* ── Type scale — one scale, anchored at 16px body ─────────────────────
-     Rule of use: anything a person READS (prose, values, form controls,
-     buttons, drug names) is --fs-base or larger. The sub-16px steps are for
-     non-prose only: uppercase eyebrows, unit suffixes, count badges, chips.
-     Never set a font-size outside this scale.
+  /* ── Type ──────────────────────────────────────────────────────────────
+     Anything a person READS (prose, values, controls, drug names) is
+     --fs-base or larger; sub-16px steps are for non-prose only (eyebrows,
+     unit suffixes, badges, chips).
 
-     Three font families, three jobs:
-       --font-sans   UI chrome, body copy, buttons, nav, labels (default).
-       --font-serif  Editorial moments only — hero/page titles, drug-name
-                     headings, pull quotes. Never body copy, never buttons.
-       --font-mono   Every number a clinician reads under pressure — doses,
-                     mL, weights, timestamps — paired with tabular-nums. ── */
-  --font-sans:  -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-  --font-serif: ui-serif, Georgia, 'Iowan Old Style', 'Times New Roman', serif;
-  --font-mono:  ui-monospace, 'SF Mono', 'Cascadia Code', 'Roboto Mono', monospace;
+     Two families, two jobs:
+       --font-sans  everything a person reads or operates. Titles and drug
+                    names use it at 800 with tight tracking (--font-display
+                    is the same face, named for that role).
+       --font-mono  every number a clinician reads mid-task — doses, mL,
+                    weights, timestamps — always with tabular-nums. ─────── */
+  --font-sans:    'Plus Jakarta Sans Variable', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --font-display: var(--font-sans);
+  --font-mono:    'JetBrains Mono Variable', ui-monospace, 'SF Mono', 'Cascadia Code', 'Roboto Mono', monospace;
 
   --fs-3xs:  0.6875rem;  /* 11px — count badges, unit suffixes */
   --fs-2xs:  0.75rem;    /* 12px — uppercase eyebrow labels */
@@ -150,18 +167,16 @@ input  { font: inherit; }
   --fs-base: 1rem;       /* 16px — body copy, inputs, buttons */
   --fs-md:   1.125rem;   /* 18px — lead paragraphs, card titles */
   --fs-lg:   1.25rem;    /* 20px — section headings */
-  --fs-xl:   1.5rem;     /* 24px — panel headings */
-  --fs-2xl:  1.75rem;    /* 28px — app title */
-  --fs-3xl:  2.375rem;   /* 38px — the result number (the app's hero) */
+  --fs-xl:   1.5rem;     /* 24px — panel headings, drug names */
+  --fs-2xl:  1.75rem;    /* 28px — secondary readouts */
+  --fs-3xl:  2.375rem;   /* 38px — page titles */
+  --fs-hero: 3rem;       /* 48px — the dose, inside the answer panel */
 
-  /* Line heights */
   --lh-tight: 1.15;
   --lh-snug:  1.35;
   --lh-body:  1.55;
 
-  /* Typography */
   font-family: var(--font-sans);
-  font-feature-settings: 'cv11', 'ss01', 'cv04';
   font-size: 16px;
   line-height: 1.5;
   color: var(--c-text);
@@ -170,53 +185,63 @@ input  { font: inherit; }
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ── Dark mode (opt-in only) ──────────────────────────────────────────────────
-   The GP-facing app is light by default and no longer follows the OS setting.
-   This palette stays dormant until something sets data-theme="dark" on <html>
-   (kept for a future in-app toggle). Warm-dark analogue of the light tokens
-   above, verified against the same WCAG bar. ─────────────────────────────── */
+/* ── Dark mode — "Ward Night" (manual, persisted, never OS-following) ─────────
+   Set by the header toggle and applied before first paint by index.html's
+   inline script. A designed night palette, not an inversion: deep blue-green
+   canvas, mint as the operating colour, and the answer panel shifts to a
+   teal-black so it still reads as the one distinct object. ─────────────── */
 :root[data-theme="dark"] {
-  --c-bg:           #1c1b19;
-  --c-surface:      #242320;
-  --c-surface-2:    #2b2925;
-  --c-border:       #38352f;
-  --c-border-mid:   #786f63;   /* ~3.5:1 on bg, ~3.2:1 on surface */
+  --c-bg:           #0a1216;
+  --c-surface:      #111c22;
+  --c-surface-2:    #18252c;
+  --c-border:       #243540;
+  --c-border-mid:   #5b707a;   /* ≥3:1 on bg and surface */
 
-  --c-text:         #f2f0ec;
-  --c-text-2:       #c9c4ba;
-  --c-text-3:       #a39d91;
-  --c-text-faint:   #7a756a;
+  --c-text:         #e8f0ee;
+  --c-text-2:       #b9c7c5;
+  --c-text-3:       #93a4a3;
+  --c-text-faint:   #62737a;
 
-  --c-primary:      #7fc1ee;   /* ~8.8:1 on bg, ~8.1:1 on surface */
-  --c-primary-dark: #a7d7f5;
-  --c-primary-dim:  #cfe9fa;
-  --c-primary-bg:   rgba(127,193,238,.14);
-  --c-primary-bdr:  rgba(127,193,238,.34);
-  --c-on-primary:   var(--stone-900);   /* 9.68:1 on the light dark-mode primary */
+  --c-ink:          #e8f0ee;
+  --c-ink-hover:    #ffffff;
+  --c-on-ink:       #0a1216;
 
-  --c-accent:       #d9a876;   /* dark-mode clay, ~8:1 on bg */
-  --c-accent-bg:    rgba(217,168,118,.14);
-  --c-accent-bdr:   rgba(217,168,118,.34);
+  --c-primary:      #4fd1bf;
+  --c-primary-dark: #7fe8d2;
+  --c-primary-dim:  #b6f3e6;
+  --c-primary-bg:   rgba(79,209,191,.13);
+  --c-primary-bdr:  rgba(79,209,191,.38);
+  --c-on-primary:   #0a1216;
 
-  --c-warn:         #e8b84b;
-  --c-warn-bg:      rgba(232,184,75,.14);
-  --c-warn-bdr:     rgba(232,184,75,.36);
+  --c-accent:       #dcab7a;
+  --c-accent-bg:    rgba(220,171,122,.14);
+  --c-accent-bdr:   rgba(220,171,122,.34);
+
+  --c-warn:         #f0b45a;
+  --c-warn-bg:      rgba(240,180,90,.13);
+  --c-warn-bdr:     rgba(240,180,90,.36);
   --c-warn-text:    var(--c-text-2);
-  --c-warn-strong:  #e8b84b;
+  --c-warn-strong:  #f0b45a;
 
   --c-focus:        var(--c-primary);
-  --c-error:        #f0908c;
-  --c-error-bg:     rgba(240,144,140,.14);
+  --c-error:        #f4887c;
+  --c-error-bg:     rgba(244,136,124,.13);
 
-  --c-success:      #8fcb93;
-  --c-success-bg:   rgba(143,203,147,.14);
+  --c-success:      #74d49e;
+  --c-success-bg:   rgba(116,212,158,.13);
+
+  --c-answer-bg:    #0f2b2c;
+  --c-answer-text:  #e8f0ee;
+  --c-answer-sub:   #95b9b2;
+  --c-answer-line:  rgba(127,232,210,.16);
+  --c-answer-chip:  rgba(127,232,210,.09);
 
   color-scheme: dark;
 
-  --sh-xs: 0 1px 2px rgba(0,0,0,.35);
-  --sh-sm: 0 1px 3px rgba(0,0,0,.4), 0 1px 2px rgba(0,0,0,.35);
-  --sh:    0 2px 6px rgba(0,0,0,.4), 0 1px 3px rgba(0,0,0,.35);
-  --sh-md: 0 6px 16px rgba(0,0,0,.45), 0 2px 6px rgba(0,0,0,.35);
+  --sh-xs: 0 1px 2px rgba(0,0,0,.4);
+  --sh-sm: 0 1px 3px rgba(0,0,0,.45), 0 1px 2px rgba(0,0,0,.35);
+  --sh:    0 4px 12px rgba(0,0,0,.45), 0 1px 3px rgba(0,0,0,.35);
+  --sh-md: 0 12px 32px -8px rgba(0,0,0,.6), 0 2px 6px rgba(0,0,0,.4);
 }
 
 /* ── Focus-visible — one rule, applied everywhere ─────────────────────────────
@@ -324,7 +349,7 @@ body::before {
   position: fixed;
   inset: 0 0 auto 0;
   height: 3px;
-  background: linear-gradient(90deg, var(--stone-900) 0%, var(--c-primary) 100%);
+  background: linear-gradient(90deg, var(--c-ink) 0%, var(--c-primary) 100%);
   z-index: 999;
 }
 
@@ -451,7 +476,7 @@ body::before {
 .lang-toggle:hover { border-color: var(--c-border-mid); color: var(--c-text); }
 
 .landing-title {
-  font-family: var(--font-serif);
+  font-family: var(--font-display);
   font-size: clamp(2rem, 6vw, 3rem);
   font-weight: 700;
   letter-spacing: -0.03em;
@@ -771,7 +796,7 @@ body::before {
 }
 
 .landing-close__title {
-  font-family: var(--font-serif);
+  font-family: var(--font-display);
   font-size: var(--fs-xl);
   font-weight: 700;
   letter-spacing: -0.02em;
@@ -991,10 +1016,10 @@ body::before {
 }
 
 .page-title {
-  font-family: var(--font-serif);
-  font-size: var(--fs-2xl);
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  font-family: var(--font-display);
+  font-size: var(--fs-3xl);
+  font-weight: 800;
+  letter-spacing: -0.035em;
   line-height: var(--lh-tight);
   color: var(--c-text);
 }
@@ -1154,12 +1179,11 @@ body::before {
      disclaimer butting straight into the panel below it on all four tabs. */
   margin: var(--sp-3) 0 var(--sp-5);
   padding: var(--sp-3) var(--sp-4);
-  background: var(--c-surface);
-  border: 1px solid var(--c-border);
-  border-left: 3px solid var(--c-warn);
-  border-radius: var(--r-sm);
+  background: var(--c-warn-bg);
+  border: 1px solid var(--c-warn-bdr);
+  border-radius: var(--r);
   font-size: var(--fs-base);
-  line-height: var(--lh-body);
+  line-height: var(--lh-snug);
   color: var(--c-text-2);
   text-wrap: pretty;
 }
@@ -1347,14 +1371,14 @@ body::before {
 [data-cat="Gawat Darurat"]       { --_cat: #953737; }  /* brick red — emergency only */
 [data-cat="Analgesik/NSAID"]     { --_cat: #9b5c31; }  /* burnt orange */
 [data-cat="Antibiotik"]          { --_cat: #5a5a9e; }  /* indigo */
-[data-cat="Antivirus"]           { --_cat: #2e7a8c; }  /* muted cyan */
-[data-cat="Antijamur"]           { --_cat: #8a6c28; }  /* muted gold */
+[data-cat="Antivirus"]           { --_cat: #2a7283; }  /* muted cyan */
+[data-cat="Antijamur"]           { --_cat: #816524; }  /* muted gold */
 [data-cat="Anti-TB (OAT)"]       { --_cat: #94384e; }  /* dark rose */
-[data-cat="Antiparasit"]         { --_cat: #368352; }  /* muted green */
+[data-cat="Antiparasit"]         { --_cat: #2e7849; }  /* muted green */
 [data-cat="Antikonvulsan"]       { --_cat: #683894; }  /* muted violet */
 [data-cat="Kardiovaskular"]      { --_cat: #8e3e62; }  /* muted pink */
 [data-cat="Pulmologi"]           { --_cat: #2e769b; }  /* muted sky */
-[data-cat="Gastrointestinal"]    { --_cat: #9b6a31; }  /* muted amber */
+[data-cat="Gastrointestinal"]    { --_cat: #8f612b; }  /* muted amber */
 [data-cat="Kortikosteroid"]      { --_cat: #5a3795; }  /* muted purple */
 [data-cat="Antihistamin/Alergi"] { --_cat: #843f8d; }  /* muted fuchsia */
 [data-cat="Vitamin/Mineral"]     { --_cat: #546e28; }  /* muted olive */
@@ -1878,21 +1902,22 @@ body::before {
   letter-spacing: -.01em;
 }
 
-/* Solid near-black, not the accent colour — the CTA is a UI convention here,
-   not a place to spend the app's one accent hue. Left as a literal rather
-   than --c-on-primary: this fill is --stone-900, which never changes
-   between themes, so unlike the count badges below there is no light-mode-
-   only value drifting silently wrong in dark mode here to fix. */
+/* Solid ink, not the accent colour — the CTA is a UI convention here, not a
+   place to spend teal, which means "you can operate this". --c-ink flips to
+   near-white in dark mode and --c-on-ink follows it, so the pair holds in
+   both themes. */
 .btn--primary {
-  background: var(--stone-900);
-  color: #fff;
-  border-color: var(--stone-900);
+  background: var(--c-ink);
+  color: var(--c-on-ink);
+  border-color: var(--c-ink);
   width: 100%;
+  min-height: var(--target);
   padding: var(--sp-3);
   font-size: var(--fs-base);
+  font-weight: 700;
   box-shadow: var(--sh-sm);
 }
-.btn--primary:hover { background: var(--stone-700); border-color: var(--stone-700); box-shadow: var(--sh); }
+.btn--primary:hover { background: var(--c-ink-hover); border-color: var(--c-ink-hover); box-shadow: var(--sh); }
 
 .btn--secondary {
   background: var(--c-surface);
@@ -2007,8 +2032,8 @@ body::before {
 .result-card {
   margin-top: var(--sp-5);
   background: var(--c-surface);
-  border: 1.5px solid var(--c-border);
-  border-radius: var(--r-lg);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-xl);
   padding: var(--sp-5) var(--sp-4) var(--sp-4);
   box-shadow: var(--sh-md);
 }
@@ -2021,17 +2046,143 @@ body::before {
 }
 
 .result-card__drug {
-  font-family: var(--font-serif);
-  font-size: var(--fs-md);
-  font-weight: 700;
+  font-family: var(--font-display);
+  font-size: var(--fs-xl);
+  font-weight: 800;
+  line-height: var(--lh-tight);
   color: var(--c-text);
-  letter-spacing: -.02em;
+  letter-spacing: -.03em;
 }
 
 .result-card__weight {
-  font-size: var(--fs-base);
-  color: var(--c-text-3);
-  font-weight: 500;
+  flex-shrink: 0;
+  padding: 2px var(--sp-2);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  color: var(--c-text-2);
+  background: var(--c-surface-2);
+  border-radius: var(--r-xs);
+}
+
+/* ── Answer panel — the one dark object on the screen ───────────────────────
+   Same place, face and size in every mode, so the eye never hunts for the
+   answer. Dark ink with mint digits in both themes (see --c-answer-*). ──── */
+.answer {
+  margin: 0 0 var(--sp-4);
+  padding: var(--sp-4);
+  display: grid;
+  gap: var(--sp-3);
+  color: var(--c-answer-text);
+  background: var(--c-answer-bg);
+  border-radius: var(--r-xl);
+  box-shadow: var(--sh);
+}
+
+.answer__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--sp-3) var(--sp-5);
+}
+
+.answer__readout {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.answer__readout:not(.answer__readout--main) { text-align: right; margin-left: auto; }
+
+.answer__label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--fs-2xs);
+  font-weight: 800;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--c-answer-sub);
+}
+
+.answer__readout:not(.answer__readout--main) .answer__label { justify-content: flex-end; }
+
+/* A capped dose never looks identical to an uncapped one (PRODUCT.md
+   principle 4): the tag rides on the label, the full reason sits above. */
+.answer__cap {
+  padding: 1px 6px;
+  font-size: var(--fs-3xs);
+  letter-spacing: .06em;
+  color: var(--ward-900);
+  background: var(--c-warn-strong);
+  border-radius: var(--r-xs);
+}
+
+.answer__num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-2xl);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -.03em;
+  color: var(--c-answer-text);
+  overflow-wrap: anywhere;
+}
+
+.answer__readout--main .answer__num {
+  font-size: var(--fs-hero);
+  letter-spacing: -.045em;
+  color: var(--c-answer-num);
+}
+
+.answer__unit {
+  margin-left: .2em;
+  font-size: .42em;
+  font-weight: 600;
+  letter-spacing: 0;
+  color: var(--c-answer-text);
+}
+
+.answer__num--pending { color: var(--c-answer-sub); }
+
+.answer__sub {
+  font-size: var(--fs-sm);
+  color: var(--c-answer-sub);
+}
+
+.answer__facts {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+.answer__fact {
+  padding: 3px var(--sp-3);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--c-answer-text);
+  background: var(--c-answer-chip);
+  border-radius: var(--r-full);
+}
+
+.answer__working {
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--c-answer-line);
+}
+
+.answer__working .derivation-line {
+  margin: 0;
+  color: var(--c-answer-sub);
+}
+
+@media (max-width: 380px) {
+  .answer__readout--main .answer__num { font-size: 2.5rem; }
 }
 
 /* Citation sits with the number it justifies. Quiet by default — it is
@@ -2094,74 +2245,6 @@ body::before {
 
 .result-card__headroom strong { font-weight: 600; color: var(--c-text-2); }
 
-.result-card__values {
-  display: grid;
-  /* auto-fit, not a fixed 3: a range such as "5.83–8.75" in the mono face
-     does not fit a third of a phone, and was clipped to "5.83–". */
-  grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
-  gap: var(--sp-3);
-  margin-bottom: var(--sp-4);
-}
-
-.result-value {
-  background: var(--c-surface-2);
-  border: 1px solid var(--c-border);
-  border-radius: var(--r-sm);
-  padding: var(--sp-3);
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.result-value--highlight {
-  background: var(--c-primary-bg);
-  border-color: var(--c-primary-bdr);
-}
-
-.result-value__label {
-  font-size: var(--fs-3xs);
-  color: var(--c-text-3);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: .06em;
-}
-
-.result-value__num {
-  min-width: 0;
-  overflow-wrap: anywhere;
-  font-size: var(--fs-2xl);
-  font-weight: 700;
-  color: var(--c-text);
-  letter-spacing: -0.03em;
-  line-height: 1.1;
-  font-variant-numeric: tabular-nums;
-  font-family: var(--font-mono);
-}
-
-/* The dose answer is the visual peak of the screen — bigger and bolder than the brand */
-.result-value--highlight .result-value__num {
-  color: var(--c-primary);
-  font-size: var(--fs-3xl);
-  font-weight: 800;
-  letter-spacing: -0.045em;
-}
-
-.result-value__num--range {
-  font-size: var(--fs-lg);
-  letter-spacing: -0.03em;
-}
-
-.result-value--highlight .result-value__num--range {
-  font-size: var(--fs-2xl);
-  letter-spacing: -0.03em;
-}
-
-.result-value__unit {
-  font-size: var(--fs-3xs);
-  color: var(--c-text-3);
-  font-weight: 500;
-}
-
 /* ── Dose range caption ───────────────────────────────────────────────────────
    Was a pill with no content ever rendered into it. Now it explains where the
    range on screen comes from, so it needs to read as a sentence. ─────────── */
@@ -2216,14 +2299,7 @@ body::before {
 
 .dose-picker__num { font-weight: 700; }
 
-/* ── Pending volume — an honest gap, not a missing tile ───────────────────── */
-.result-value--pending {
-  border-style: dashed;
-  background: transparent;
-}
-
-.result-value__num--pending { color: var(--c-text-faint); }
-
+/* ── Pending volume hint ──────────────────────────────────────────────────── */
 .result-card__pending-hint {
   margin-bottom: var(--sp-4);
   font-size: var(--fs-base);
@@ -2771,7 +2847,7 @@ body::before {
 .history-table th,
 .history-table td {
   padding: var(--sp-2) var(--sp-3);
-  /* DESIGN-REWORK.md §6 names --stone-200 directly; --c-border is that same
+  /* DESIGN-REWORK.md §6 names --stone-200 (now --ward-200) directly; --c-border is that same
      value aliased (see index.css's token block) plus its own correct dark-
      mode redefinition, so the hairline stays a hairline in both themes
      instead of the light-only literal going invisible-then-wrong in dark. */
@@ -3283,7 +3359,7 @@ body::before {
 }
 
 .puyer-recipe__title {
-  font-family: var(--font-serif);
+  font-family: var(--font-display);
   font-size: var(--fs-base);
   font-weight: 700;
   color: var(--c-primary);
@@ -3730,17 +3806,11 @@ body::before {
 @media (max-width: 560px) {
   :root { --pad: 16px; }
 
-  .page-title { font-size: var(--fs-xl); }
+  .page-title { font-size: var(--fs-2xl); }
 
   .form { grid-template-columns: 1fr; }
 
   .drug-grid { grid-template-columns: repeat(2, 1fr); }
-
-  .result-card__values { grid-template-columns: 1fr 1fr; }
-  .result-card__values > :first-child { grid-column: 1 / -1; }
-
-  .result-value__num { font-size: var(--fs-2xl); }
-  .result-value__num--range { font-size: var(--fs-md); }
 
   .puyer-weight { max-width: 100%; }
   .tabs { gap: 1px; }

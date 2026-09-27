@@ -4,7 +4,7 @@ import { CalcResult } from '../lib/calculate'
 import { HistoryEntry, generateId, saveEntry } from '../lib/storage'
 import { DrugForm } from '../data/drugs'
 import { describeForms, FormDoseLine } from '../lib/suggest'
-import { DerivationChain } from './DerivationChain'
+import { AnswerPanel, AnswerReadout } from './AnswerPanel'
 import { DosePositionBand } from './DosePositionBand'
 
 function freqText(freq: number, freqMax?: number): string {
@@ -99,6 +99,29 @@ export function ResultCard({
     !volumeCoveredByForms &&
     (hasLiquidForm || !availableForms?.length)
 
+  const volumeReadout: AnswerReadout | undefined =
+    result.volume != null
+      ? {
+          label: 'Volume / kali',
+          value: result.volume,
+          unit: 'mL',
+          sub: concentration != null ? `${concentration} mg/mL` : undefined,
+        }
+      : needsConcentration
+        ? { label: 'Volume / kali', value: null, unit: 'mL', pending: 'isi konsentrasi stok' }
+        : undefined
+
+  const facts: string[] = []
+  if (hasRange) facts.push(`Rentang ${resultMin!.perDose}–${resultMax!.perDose} mg/kali`)
+  facts.push(
+    hasRange
+      ? `${resultMin!.dailyDose}–${resultMax!.dailyDose} mg/hari`
+      : `${result.dailyDose} mg/hari`,
+  )
+  if (hasRange && resultMin!.volume != null && resultMax!.volume != null) {
+    facts.push(`${resultMin!.volume}–${resultMax!.volume} mL`)
+  }
+
   function handleCopy() {
     navigator.clipboard
       .writeText(buildResultText(drugName, weight, freq, freqMax, result, formLines, source))
@@ -190,57 +213,22 @@ export function ResultCard({
         </p>
       )}
 
-      {/* Main result values. Per-kali (per dose) is the primary number —
-          it's how clinicians prescribe. Daily total is shown as context. */}
-      <div className="result-card__values">
-        <div className="result-value result-value--highlight">
-          <span className="result-value__label">Dosis / kali</span>
-          {hasRange ? (
-            <span className="result-value__num result-value__num--range">
-              {resultMin!.perDose}–{resultMax!.perDose}
-            </span>
-          ) : (
-            <span className="result-value__num">{result.perDose}</span>
-          )}
-          <span className="result-value__unit">mg · {freqText(freq, freqMax)}</span>
-        </div>
-
-        <div className="result-value">
-          <span className="result-value__label">Dosis / hari</span>
-          {hasRange ? (
-            <span className="result-value__num result-value__num--range">
-              {resultMin!.dailyDose}–{resultMax!.dailyDose}
-            </span>
-          ) : (
-            <span className="result-value__num">{result.dailyDose}</span>
-          )}
-          <span className="result-value__unit">mg/hari</span>
-        </div>
-
-        {(result.volume != null || (hasRange && resultMin!.volume != null)) && (
-          <div className="result-value result-value--highlight">
-            <span className="result-value__label">Volume / kali</span>
-            {hasRange && resultMin!.volume != null && resultMax!.volume != null ? (
-              <span className="result-value__num result-value__num--range">
-                {resultMin!.volume}–{resultMax!.volume}
-              </span>
-            ) : (
-              <span className="result-value__num">{result.volume}</span>
-            )}
-            <span className="result-value__unit">mL</span>
-          </div>
-        )}
-
-        {needsConcentration && (
-          <div className="result-value result-value--pending">
-            <span className="result-value__label">Volume / kali</span>
-            <span className="result-value__num result-value__num--pending">—</span>
-            <span className="result-value__unit">belum bisa dihitung</span>
-          </div>
-        )}
-      </div>
-
-      <DerivationChain
+      {/* The answer. One hero number — the dose at the value actually used,
+          which is also what the working line beneath it derives. The
+          published range is context, never the hero: showing "140–210" as
+          the answer while the derivation said 175 was two answers to "what
+          do I give?". */}
+      <AnswerPanel
+        label={`Hasil ${drugName}`}
+        primary={{
+          label: 'Dosis / kali',
+          value: result.perDose,
+          unit: 'mg',
+          sub: freqText(freq, freqMax),
+        }}
+        secondary={volumeReadout}
+        capped={result.cappedByMaxDay || result.cappedByMaxSingle}
+        facts={facts}
         steps={result.steps}
         pendingNote={needsConcentration ? 'volume belum bisa dihitung' : undefined}
       />

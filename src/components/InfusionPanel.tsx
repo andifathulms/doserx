@@ -3,7 +3,7 @@ import { CheckIcon } from '@radix-ui/react-icons'
 import { INFUSION_PRESETS, InfusionPreset } from '../data/infusionDrugs'
 import { calculateInfusion, InfusionResult } from '../lib/calculateInfusion'
 import { WeightInput } from './WeightInput'
-import { DerivationChain } from './DerivationChain'
+import { AnswerPanel } from './AnswerPanel'
 import { isInvalidPositiveNumber } from '../lib/validateNumber'
 
 function InfusionResultCard({ result, drug, weight }: { result: InfusionResult; drug: InfusionPreset; weight: string }) {
@@ -32,25 +32,15 @@ function InfusionResultCard({ result, drug, weight }: { result: InfusionResult; 
         <span className="result-card__weight">{weight} kg</span>
       </div>
 
-      <div className="result-card__values">
-        <div className="result-value result-value--highlight">
-          <span className="result-value__label">Kecepatan</span>
-          <span className="result-value__num">{result.ratePerHr}</span>
-          <span className="result-value__unit">mL/jam</span>
-        </div>
-        <div className="result-value">
-          <span className="result-value__label">Makro (20 gtt/mL)</span>
-          <span className="result-value__num">{result.dropsMacro}</span>
-          <span className="result-value__unit">tpm</span>
-        </div>
-        <div className="result-value">
-          <span className="result-value__label">Mikro (60 gtt/mL)</span>
-          <span className="result-value__num">{result.dropsMicro}</span>
-          <span className="result-value__unit">tpm</span>
-        </div>
-      </div>
-
-      <DerivationChain steps={result.steps} />
+      {/* Drops per minute are a primary answer, not a footnote: many wards
+          run infusions on a gravity set, not a pump. */}
+      <AnswerPanel
+        label={`Hasil infus ${drug.name}`}
+        primary={{ label: 'Kecepatan', value: result.ratePerHr, unit: 'mL/jam' }}
+        secondary={{ label: 'Makro · 20 gtt/mL', value: result.dropsMacro, unit: 'tpm' }}
+        facts={[`Mikro ${result.dropsMicro} tpm`, `${result.dosePerHr} ${result.dosePerHrUnit}`]}
+        steps={result.steps}
+      />
 
       <div className="infusion-result__dose-summary">
         Total dosis: <strong>{result.dosePerHr} {result.dosePerHrUnit}</strong>

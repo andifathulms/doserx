@@ -126,7 +126,7 @@ function buildRecipeText(
 /**
  * DESIGN-REWORK.md §7: the one output that leaves the screen and goes to a
  * pharmacy, so it should be the best-designed surface in the app, not the
- * only one outside it. Rebuilt on the same stone/mono values index.css's
+ * only one outside it. Rebuilt on the same ward/mono values index.css's
  * token block defines — literal values, not var() against the app's
  * stylesheet, since this is a standalone document written into a popup via
  * document.write() with no link to index.css. Black on white, hairlines, no
@@ -177,29 +177,31 @@ function buildRecipePrintHtml(
   return `<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8">
 <title>Resep Puyer — DoseRx</title>
 <style>
-  /* Literal values matching index.css's stone/mono token block — kept in
-     sync by hand, since this document has no link to that stylesheet. */
+  /* Literal values matching index.css's ward/mono token block — kept in
+     sync by hand, since this document has no link to that stylesheet. The
+     print sheet stays on system fonts: it opens in a popup that cannot see
+     the app's self-hosted files, and a printer never needs them. */
   :root {
-    --stone-900: #111111;
-    --stone-600: #57534e;
-    --stone-500: #75716b;
-    --stone-400: #948e81;
+    --ward-900: #0f1e2a;
+    --ward-600: #3b4a47;
+    --ward-500: #56655f;
+    --ward-400: #7f8f8b;
     --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
     --font-mono: ui-monospace, 'SF Mono', 'Cascadia Code', 'Roboto Mono', monospace;
   }
   * { box-sizing: border-box; }
   body {
     font-family: var(--font-sans);
-    color: var(--stone-900);
+    color: var(--ward-900);
     background: #ffffff;
     padding: 28px;
     max-width: 560px;
     line-height: 1.5;
   }
   h1 { font-size: 1.25rem; font-weight: 700; margin: 0 0 2px; letter-spacing: -.01em; }
-  .meta { color: var(--stone-600); font-size: .875rem; margin-bottom: 4px; }
-  .patient { color: var(--stone-900); font-size: .875rem; font-weight: 600; margin-bottom: 20px; }
-  .drug { margin-bottom: 14px; border-top: 1px solid var(--stone-400); padding-top: 12px; }
+  .meta { color: var(--ward-600); font-size: .875rem; margin-bottom: 4px; }
+  .patient { color: var(--ward-900); font-size: .875rem; font-weight: 600; margin-bottom: 20px; }
+  .drug { margin-bottom: 14px; border-top: 1px solid var(--ward-400); padding-top: 12px; }
   .drug-name { font-weight: 700; }
   .dose-line {
     font-family: var(--font-mono);
@@ -208,25 +210,25 @@ function buildRecipePrintHtml(
     font-size: .95rem;
     margin: 3px 0 1px;
   }
-  .signa { color: var(--stone-600); font-size: .8rem; margin-bottom: 4px; }
+  .signa { color: var(--ward-600); font-size: .8rem; margin-bottom: 4px; }
   .form-line {
     font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
     font-size: .875rem;
-    color: var(--stone-900);
+    color: var(--ward-900);
     margin: 3px 0 0 12px;
   }
-  .form-note { font-size: .75rem; color: var(--stone-500); margin: 0 0 0 24px; }
+  .form-note { font-size: .75rem; color: var(--ward-500); margin: 0 0 0 24px; }
   .disclaimer {
     margin-top: 20px;
     padding-top: 12px;
-    border-top: 1px solid var(--stone-400);
+    border-top: 1px solid var(--ward-400);
     font-size: .75rem;
-    color: var(--stone-600);
+    color: var(--ward-600);
     line-height: 1.5;
   }
-  .disclaimer strong { color: var(--stone-900); }
-  .footer { margin-top: 10px; font-size: .7rem; color: var(--stone-500); }
+  .disclaimer strong { color: var(--ward-900); }
+  .footer { margin-top: 10px; font-size: .7rem; color: var(--ward-500); }
   @media print { body { padding: 0; max-width: none; } }
 </style>
 </head><body>

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { CheckIcon } from '@radix-ui/react-icons'
 import { Tabs } from './Tabs'
 import { WeightInput } from './WeightInput'
-import { DerivationChain } from './DerivationChain'
+import { AnswerPanel } from './AnswerPanel'
 import { calculateFluidRate, FluidRateResult } from '../lib/calculateFluidRate'
 import { calculateDextrose, DextroseConcentration, DextroseResult } from '../lib/calculateDextrose'
 import { isInvalidPositiveNumber } from '../lib/validateNumber'
@@ -61,30 +61,16 @@ function FluidRateResultCard({ result, fluidType }: { result: FluidRateResult; f
         <span className="result-card__drug">{fluidType}</span>
       </div>
 
-      <div className="result-card__values">
-        <div className="result-value result-value--highlight">
-          <span className="result-value__label">Kecepatan</span>
-          <span className="result-value__num">{result.ratePerHr}</span>
-          <span className="result-value__unit">mL/jam</span>
-        </div>
-        <div className="result-value">
-          <span className="result-value__label">Makro (20 gtt/mL)</span>
-          <span className="result-value__num">{result.dropsMacro}</span>
-          <span className="result-value__unit">tpm</span>
-        </div>
-        <div className="result-value">
-          <span className="result-value__label">Mikro (60 gtt/mL)</span>
-          <span className="result-value__num">{result.dropsMicro}</span>
-          <span className="result-value__unit">tpm</span>
-        </div>
-        <div className="result-value">
-          <span className="result-value__label">Transfusi (15 gtt/mL)</span>
-          <span className="result-value__num">{result.dropsTransfusion}</span>
-          <span className="result-value__unit">tpm</span>
-        </div>
-      </div>
-
-      <DerivationChain steps={result.steps} />
+      <AnswerPanel
+        label={`Hasil rumatan ${fluidType}`}
+        primary={{ label: 'Kecepatan', value: result.ratePerHr, unit: 'mL/jam' }}
+        secondary={{ label: 'Makro · 20 gtt/mL', value: result.dropsMacro, unit: 'tpm' }}
+        facts={[
+          `Mikro ${result.dropsMicro} tpm`,
+          `Transfusi ${result.dropsTransfusion} tpm`,
+        ]}
+        steps={result.steps}
+      />
 
       <details className="derivation">
         <summary className="derivation__summary">Cara hitung</summary>
@@ -140,20 +126,12 @@ function DextroseResultCard({ result, concentration }: { result: DextroseResult;
         <span className="result-card__drug">{concentration}</span>
       </div>
 
-      <div className="result-card__values">
-        <div className="result-value result-value--highlight">
-          <span className="result-value__label">Volume</span>
-          <span className="result-value__num">{result.volumeMl}</span>
-          <span className="result-value__unit">mL</span>
-        </div>
-        <div className="result-value">
-          <span className="result-value__label">Dosis</span>
-          <span className="result-value__num">{result.doseGram}</span>
-          <span className="result-value__unit">g</span>
-        </div>
-      </div>
-
-      <DerivationChain steps={result.steps} />
+      <AnswerPanel
+        label={`Hasil koreksi dekstrosa ${concentration}`}
+        primary={{ label: 'Volume', value: result.volumeMl, unit: 'mL', sub: concentration }}
+        secondary={{ label: 'Dosis', value: result.doseGram, unit: 'g' }}
+        steps={result.steps}
+      />
 
       <details className="derivation">
         <summary className="derivation__summary">Cara hitung</summary>

@@ -223,6 +223,15 @@ const PAIRS = [
   // ── Success ──
   { group: 'Success', label: 'Success text (--c-success)', fg: '--c-success', mode: 'plain', min: TEXT_MIN, kind: 'text' },
   { group: 'Success', label: 'Success text on its own tint (--c-success-bg)', fg: '--c-success', bg: '--c-success-bg', mode: 'tint', min: TEXT_MIN, kind: 'text' },
+
+  // ── Ink (primary button) — now themed: --c-ink flips to near-white in dark
+  //    mode and --c-on-ink follows it, so it is checked in both themes. ──
+  { group: 'Ink', label: 'Primary button text (--c-on-ink on --c-ink)', fg: '--c-on-ink', bg: '--c-ink', mode: 'tint', min: TEXT_MIN, kind: 'text' },
+
+  // ── The answer panel — the one dark object on screen, in both themes ──
+  { group: 'Answer', label: 'Dose digits (--c-answer-num on --c-answer-bg)', fg: '--c-answer-num', bg: '--c-answer-bg', mode: 'tint', min: TEXT_MIN, kind: 'text' },
+  { group: 'Answer', label: 'Panel text (--c-answer-text on --c-answer-bg)', fg: '--c-answer-text', bg: '--c-answer-bg', mode: 'tint', min: TEXT_MIN, kind: 'text' },
+  { group: 'Answer', label: 'Panel secondary (--c-answer-sub on --c-answer-bg)', fg: '--c-answer-sub', bg: '--c-answer-bg', mode: 'tint', min: TEXT_MIN, kind: 'text' },
 ]
 
 // ── Run ───────────────────────────────────────────────────────────────────────
@@ -293,12 +302,6 @@ for (const cat of CATEGORIES) {
   categoryRows.push(cell)
 }
 
-// One-off: the primary button's fixed #fff-on-stone-900 fill. Not a --c-*
-// semantic token (index.css uses var(--stone-900) directly, unchanged by
-// dark mode), so it sits outside the theme loop above by construction.
-const btnFg = parseColor('#ffffff')
-const btnBg = parseColor(resolveVar('stone-900', lightVars))
-const btnRatio = contrastRatio(btnFg, btnBg)
 
 // ── Report ────────────────────────────────────────────────────────────────────
 
@@ -314,7 +317,7 @@ function fmt(ratio) {
 const asJson = process.argv.includes('--json')
 
 if (asJson) {
-  console.log(JSON.stringify({ rows, categoryRows, button: { ratio: btnRatio } }, null, 2))
+  console.log(JSON.stringify({ rows, categoryRows }, null, 2))
   process.exit(0)
 }
 
@@ -387,10 +390,6 @@ for (const cell of categoryRows) {
   }
 }
 
-console.log('\n## Fixed pair (not theme-dependent)\n')
-console.log('| Pair | Ratio | Min | Status |')
-console.log('|---|---|---|---|')
-console.log(`| Primary button — #ffffff on var(--stone-900) | ${fmt(btnRatio)} | ${TEXT_MIN}:1 | ${status(btnRatio, TEXT_MIN)} |`)
 
 console.log(`\n## Summary\n`)
 console.log(`- ${evaluated.length + failures.length} pairs evaluated against a minimum ratio (${TEXT_MIN}:1 text / ${UI_MIN}:1 UI-boundary), plus ${infoRows.length} informational (decorative, no AA floor).`)

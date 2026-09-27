@@ -1,0 +1,27 @@
+/* Self-hosted variable fonts, latin subset only.
+ *
+ * Declared here rather than by importing the packages' own CSS: that pulls in
+ * every subset (cyrillic, vietnamese, latin-ext…), and the service worker's
+ * precache glob would then store all of them on every doctor's phone. The UI
+ * is Indonesian and English, which latin covers; any glyph outside it (≥, ↦)
+ * falls back per-character to the system stack declared in index.css.
+ *
+ * font-display: swap — a cold first load with no network shows the system
+ * face immediately and swaps once the precached file is there. */
+@font-face {
+  font-family: 'Plus Jakarta Sans Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 200 800;
+  src: url('../node_modules/@fontsource-variable/plus-jakarta-sans/files/plus-jakarta-sans-latin-wght-normal.woff2')
+    format('woff2-variations');
+}
+
+@font-face {
+  font-family: 'JetBrains Mono Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 800;
+  src: url('../node_modules/@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2')
+    format('woff2-variations');
+}
