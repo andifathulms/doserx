@@ -333,6 +333,11 @@ body::before {
   display: flex;
   flex-direction: column;
   flex: 1;
+  /* A column-flex child with auto side margins shrinks to its content, so
+     one non-wrapping row (the category chips) stretched the page to its
+     820px cap on a 390px phone. width + min-width pin it to the viewport. */
+  width: 100%;
+  min-width: 0;
   max-width: var(--max-w);
   margin: 0 auto;
   padding: 0 var(--pad);
@@ -978,7 +983,7 @@ body::before {
 }
 
 /* ── App main ─────────────────────────────────────────────────────────────── */
-.app-main { flex: 1; padding-bottom: var(--sp-8); }
+.app-main { flex: 1; min-width: 0; padding-bottom: var(--sp-8); }
 
 /* ── Page head — every route owns its heading ─────────────────────────────── */
 .page-head {
@@ -2091,7 +2096,9 @@ body::before {
 
 .result-card__values {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  /* auto-fit, not a fixed 3: a range such as "5.83–8.75" in the mono face
+     does not fit a third of a phone, and was clipped to "5.83–". */
+  grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
   gap: var(--sp-3);
   margin-bottom: var(--sp-4);
 }
@@ -2120,6 +2127,8 @@ body::before {
 }
 
 .result-value__num {
+  min-width: 0;
+  overflow-wrap: anywhere;
   font-size: var(--fs-2xl);
   font-weight: 700;
   color: var(--c-text);
@@ -2351,20 +2360,7 @@ body::before {
   background: var(--c-error);
 }
 
-.dose-band__labels {
-  display: flex;
-  margin-top: var(--sp-1);
-}
-
-.dose-band__label {
-  font-size: var(--fs-3xs);
-  color: var(--c-text-3);
-  text-align: center;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  padding: 0 2px;
-}
+.dose-band__legend { margin: var(--sp-2) 0 0; }
 
 .dose-band__caption {
   margin-top: var(--sp-1);

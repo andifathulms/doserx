@@ -70,13 +70,14 @@ export function DosePositionBand(props: DosePositionBandProps) {
         </div>
       </div>
 
-      <div className="dose-band__labels" aria-hidden="true">
+      {/* A legend, not labels under each zone. Proportional labels were
+          squeezed to the zone's width, so a narrow "rentang lazim" zone read
+          "r…" on a phone — and these words are what keeps the band readable
+          with colour removed. Same legend vocabulary as Puyer's compact rows. */}
+      <div className="dose-band-legend dose-band__legend" aria-hidden="true">
         {zones.map((zone, i) => (
-          <span
-            key={i}
-            className="dose-band__label"
-            style={{ flexBasis: `${((zone.to - zone.from) / span) * 100}%` }}
-          >
+          <span key={i} className="dose-band-legend__item">
+            <span className={`dose-band-legend__swatch dose-band-legend__swatch--${zone.kind}`} />
             {ZONE_LABEL[zone.kind]}
           </span>
         ))}
