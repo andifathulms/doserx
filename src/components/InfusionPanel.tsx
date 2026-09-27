@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { CheckIcon } from '@radix-ui/react-icons'
-import { INFUSION_PRESETS, InfusionPreset } from '../data/infusionDrugs'
+import { InfusionPreset } from '../data/infusionDrugs'
+import { LIVE_INFUSIONS } from '../data/catalog'
 import { calculateInfusion, InfusionResult } from '../lib/calculateInfusion'
 import { WeightPrompt } from './WeightPrompt'
 import { usePatient } from '../lib/patient'
@@ -125,7 +126,7 @@ export function InfusionPanel() {
       {/* Mode description now lives on the tab control (see App.tsx TABS). */}
       {/* Drug selector */}
       <div className="infusion-drug-grid">
-        {INFUSION_PRESETS.map((drug) => (
+        {LIVE_INFUSIONS.map((drug) => (
           <button
             key={drug.id}
             className={`infusion-drug-btn${selected?.id === drug.id ? ' infusion-drug-btn--selected' : ''}`}

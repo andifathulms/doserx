@@ -153,3 +153,82 @@ function round(value: number, decimals: number): number {
 function trim(value: number): string {
   return String(round(value, 2))
 }
+
+export interface FixedDoseInput {
+  /** mg per administration, as published — not derived from weight. */
+  doseMg: number
+  freq: number
+  maxDay?: number
+  concentration?: number
+}
+
+/**
+ * The adult fixed-dose counterpart of calculate(): many adult regimens are
+ * "30 mg IV tiap 8 jam", not mg/kg. Returns the same CalcResult shape so the
+ * answer panel, history and copy text need no second code path, with a step
+ * trail that says plainly the dose is fixed rather than weight-derived.
+ *
+ * A daily ceiling still applies: if doseMg × freq exceeds maxDay, the
+ * per-dose figure is reduced to maxDay / freq and flagged as capped, exactly
+ * as calculate() does for a weight-based dose.
+ */
+export function calculateFixed(input: FixedDoseInput): CalcOutput {
+  const { doseMg, freq, maxDay, concentration } = input
+
+  if (!isFinite(doseMg) || doseMg <= 0) {
+    return { valid: false, error: 'Dose must be a positive number.' }
+  }
+  if (!isFinite(freq) || freq <= 0) {
+    return { valid: false, error: 'Frequency must be a positive number.' }
+  }
+
+  const steps: CalcStep[] = [
+    { kind: 'perDose', expression: 'dosis tetap (tidak berbasis berat)', result: `${trim(doseMg)} mg/kali` },
+  ]
+
+  const rawDaily = doseMg * freq
+  steps.push({
+    kind: 'daily',
+    expression: `${trim(doseMg)} mg/kali × ${trim(freq)}× sehari`,
+    result: `${round(rawDaily, 1)} mg/hari`,
+  })
+
+  let perDose = doseMg
+  let dailyDose = rawDaily
+  let cappedByMaxDay = false
+  if (maxDay != null && isFinite(maxDay) && maxDay > 0 && rawDaily > maxDay) {
+    dailyDose = maxDay
+    perDose = maxDay / freq
+    cappedByMaxDay = true
+    steps.push({
+      kind: 'capDay',
+      expression: `${round(rawDaily, 1)} mg/hari melebihi maks ${trim(maxDay)} mg/hari`,
+      result: `${round(perDose, 1)} mg/kali`,
+    })
+  }
+
+  const result: CalcResult = {
+    dailyDose: round(dailyDose, 1),
+    perDose: round(perDose, 1),
+    cappedByMaxDay,
+    cappedByMaxSingle: false,
+    steps,
+    valid: true,
+  }
+  if (cappedByMaxDay) {
+    result.uncappedDailyDose = round(rawDaily, 1)
+    result.uncappedPerDose = round(doseMg, 1)
+  }
+
+  if (concentration != null && isFinite(concentration) && concentration > 0) {
+    const volume = round(perDose / concentration, 2)
+    result.volume = volume
+    steps.push({
+      kind: 'volume',
+      expression: `${round(perDose, 1)} mg/kali ÷ ${trim(concentration)} mg/mL`,
+      result: `${volume} mL`,
+    })
+  }
+
+  return result
+}

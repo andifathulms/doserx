@@ -52,6 +52,46 @@ export type DrugGroup =
   | 'Anestesi & Intubasi'
   | 'Lain-lain & Nutrisi'
 
+// ── Routes, populations, preparation ────────────────────────────────────────
+
+/** Structured administration routes — what the drug page's route chips show. */
+export type RouteCode =
+  | 'Oral'
+  | 'IV'
+  | 'IM'
+  | 'SC'
+  | 'Infus'
+  | 'Rektal'
+  | 'Nebul'
+  | 'Bukal'
+  | 'Intranasal'
+  | 'Topikal'
+
+/** Who a regimen's dosing applies to. 'semua' = weight-based with an adult
+ *  ceiling that holds across ages. */
+export type RegimenPopulation = 'anak' | 'dewasa' | 'semua'
+
+/**
+ * How the drug goes from the pack to the patient — the question that follows
+ * "how many mg": how many mL do I draw up, and how do I give it. Display
+ * only; `concentration` is the one field that also feeds the volume
+ * calculation, and only when the regimen has no concentration of its own.
+ */
+export interface Preparation {
+  /** "Serbuk 1 g + 10 mL aqua pro injeksi" */
+  reconstitute?: string
+  /** mg/mL once reconstituted as above. */
+  concentration?: number
+  /** "Encerkan dalam 100 mL NaCl 0,9%" */
+  dilute?: string
+  /** "IV pelan 3–5 menit" / "Infus 30 menit" */
+  give?: string
+}
+
+/** Review state of a catalog entry. Drafts never reach the live catalog
+ *  unless review mode is switched on (see lib/review.ts). */
+export type EntryStatus = 'draft' | 'verified'
+
 export interface DrugForm {
   strength: number // mg per unit (solid) or mg/mL (liquid)
   form: FormType
@@ -82,6 +122,31 @@ export interface DrugPreset {
   availableForms?: DrugForm[]
   note: string
   forPuyer?: boolean
+
+  // ── Regimen model (see data/catalog.ts) ─────────────────────────────────────
+  /** When set, this preset is one more regimen (route/indication/population)
+   *  of the catalog drug with that id, not a drug of its own. */
+  parent?: string
+  /** Structured routes. Derived from `route` when absent (parseRoutes). */
+  routes?: RouteCode[]
+  /** Who the dosing applies to. Absent = 'anak': the original catalog is
+   *  paediatric mg/kg dosing. */
+  population?: RegimenPopulation
+  /** Short qualifier shown on the route chip — "kejang", "anafilaksis". */
+  regimenLabel?: string
+  /** ISMP / Kemenkes high-alert medication: insulin, concentrated
+   *  electrolytes, opioids, neuromuscular blockers, … Shows a HIGH-ALERT tag
+   *  and a double-check line wherever a dose is shown. */
+  highAlert?: boolean
+  /** Adult fixed dose in mg per administration, for regimens that are not
+   *  weight-based. When set, calculateFixed() is used instead of calculate()
+   *  and dosePerKg is ignored for the result (kept only for the band). */
+  fixedDoseMg?: number
+  prep?: Preparation
+  /** Draft entries are hidden from the live catalog until reviewed. */
+  status?: EntryStatus
+  /** Who verified this entry, and when — shown in the monograph. */
+  reviewedBy?: string
 
   // ── Catalog/UX metadata (display only — never consumed by calculate.ts) ──────
   source?: string // dosing reference, e.g. 'IDAI', 'BNFc', 'Fornas', 'WHO'

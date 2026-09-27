@@ -1,6 +1,6 @@
 import { DRUG_PRESETS } from '../data/drugs'
 import { groupOf } from '../data/categories'
-import { INFUSION_PRESETS } from '../data/infusionDrugs'
+import { LIVE_INFUSIONS } from '../data/catalog'
 import { Lang } from './landing'
 
 /**
@@ -25,7 +25,7 @@ export const ABOUT_FACTS = {
   drugs: DRUG_PRESETS.length,
   groups: new Set(DRUG_PRESETS.map(groupOf)).size,
   uncited: DRUG_PRESETS.filter((d) => !d.source).length,
-  infusionDrugs: INFUSION_PRESETS.length,
+  infusionDrugs: LIVE_INFUSIONS.length,
   withRange: DRUG_PRESETS.filter((d) => d.dosePerKgMin != null && d.dosePerKgMax != null).length,
   withMax: DRUG_PRESETS.filter((d) => d.maxDay != null || d.maxSingle != null).length,
   withConcentration: DRUG_PRESETS.filter((d) => d.concentration != null).length,

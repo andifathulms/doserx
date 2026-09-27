@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { calculate } from './calculate'
+import { calculate, calculateFixed } from './calculate'
 
 describe('calculate', () => {
   it('computes normal dose without caps', () => {
@@ -174,5 +174,36 @@ describe('calculate — cap context', () => {
     const result = calculate({ weight: 10, dosePerKg: 15, freq: 4 })
     if (!result.valid) throw new Error('expected valid')
     expect(result.capFromWeightKg).toBeUndefined()
+  })
+})
+
+describe('calculateFixed — adult fixed-dose regimens', () => {
+  it('uses the published dose regardless of weight', () => {
+    const out = calculateFixed({ doseMg: 30, freq: 3, concentration: 30 })
+    expect(out.valid).toBe(true)
+    if (!out.valid) return
+    expect(out.perDose).toBe(30)
+    expect(out.dailyDose).toBe(90)
+    expect(out.volume).toBe(1)
+    expect(out.cappedByMaxDay).toBe(false)
+    expect(out.steps[0].expression).toMatch(/dosis tetap/)
+  })
+
+  it('caps the per-dose when the daily total exceeds the ceiling', () => {
+    const out = calculateFixed({ doseMg: 1000, freq: 6, maxDay: 4000 })
+    expect(out.valid).toBe(true)
+    if (!out.valid) return
+    expect(out.dailyDose).toBe(4000)
+    expect(out.perDose).toBe(666.7)
+    expect(out.cappedByMaxDay).toBe(true)
+    expect(out.uncappedDailyDose).toBe(6000)
+  })
+
+  it('omits the volume without a concentration and rejects invalid input', () => {
+    const ok = calculateFixed({ doseMg: 4, freq: 3 })
+    expect(ok.valid && ok.volume).toBe(undefined)
+    expect(calculateFixed({ doseMg: 0, freq: 3 }).valid).toBe(false)
+    expect(calculateFixed({ doseMg: NaN, freq: 3 }).valid).toBe(false)
+    expect(calculateFixed({ doseMg: 4, freq: -1 }).valid).toBe(false)
   })
 })
