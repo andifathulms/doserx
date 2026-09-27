@@ -129,6 +129,9 @@ This replaces the earlier "Bedside Notebook" direction (warm paper, serif titles
 - **Red** (`#a92c22` on `#fde9e6`): validation errors and the Darurat (emergency) section.
 - **Green** (`#256a3b` on `#e3f3e8`): the "inside the published range" band zone only — never a verdict.
 
+### Clinical groups (catalog)
+Nine hues, one per clinical group, spaced around the wheel so they can be learned (the old 17-category map could not be): Kardiovaskular crimson `#a8304f`, Respirasi & Alergi sky `#246f9e`, Neurologi violet `#6c43ad`, Analgetik orange `#a3521b`, Cairan & Elektrolit blue-indigo `#3a52bb`, Gastrointestinal mustard `#7a6200`, Anti-infeksi green `#2b7431`, Anestesi & Intubasi plum `#8a3886`, Lain-lain & Nutrisi slate `#566267` — each with a lifted dark-theme pair. Teal is deliberately absent (it means "operate"). `src/data/groupColors.ts` is the typed source; `groupColors.test.ts` fails if `index.css`'s `[data-group]` rules drift from it, and the contrast script checks all 18 values. Colour always sits beside the group's name (chip label, section heading, drug page tag).
+
 ### Named rules
 **The Four Signals Rule.** Outside the drug-group map, the palette carries teal, amber, red and green plus clay. A new UI state does not get a new colour; it is expressed with an existing signal, weight, or icon.
 
@@ -161,6 +164,9 @@ Both are self-hosted latin-only variable woff2 files (`src/fonts.css`, ~68 kB to
 
 ## Layout
 
+### Structure
+Navigation is by clinical task, not calculation type: **Obat · Darurat · Puyer · Cairan · Riwayat** (bottom bar with icons on phones, header links on desktop; Beranda via the wordmark, Tentang as a quiet header link). A **patient bar** (weight + Anak/Dewasa) is pinned inside the sticky header on every tool screen; every calculator reads it. Picking a drug is one list (/obat) whose rows show the dose for the current weight; a drug page opens on the answer and chooses the regimen with route chips. /hitung/custom and /hitung/infus live under Obat; /tinjau (review mode) is linked from Tentang only.
+
 Content-first, capped at an `880px` column with `20px` gutters (`16px` on phones), on a 4px spacing scale. Primary breakpoint `560px` (bottom navigation appears, grids collapse). Every page is guarded against horizontal overflow — `.app` carries `width: 100%; min-width: 0` and `styles.test.ts` fails if either is removed. Interactive targets hold a `24px` floor; the controls a hand aims at one-handed (patient-bar steppers, route chips, bottom navigation, primary buttons) hold `44px` (`--target`).
 
 ## Elevation & Depth
@@ -181,6 +187,24 @@ Radii: `6px` (xs — chips inside panels, weight tag), `10px` (sm — buttons, i
 - A value that cannot be computed shows a dashed `—` with its reason (e.g. "isi konsentrasi stok"), never an omitted tile.
 - A capped dose carries a `maks` tag on its label; the full cap explanation sits above the panel.
 - Nothing inside it animates.
+
+### Patient bar
+The one weight field. Inside the sticky header on tool screens: a mono 24px weight input with a clear button (next patient in one tap), 44px −/+ steppers (0.5 kg under 10 kg, 1 kg above), an Anak/Dewasa segmented radio, and the age estimator behind "Dari usia?". The weight is session-scoped and expires after an hour; Anak/Dewasa persists. Every result screen without a weight shows a dashed **weight prompt** that focuses this field — never a second weight input.
+
+### Drug row (Obat list)
+One row per drug in a single bordered list: a 4px group-colour bar, the name (with HIGH-ALERT / DRAF tags), mono route pills, and on the right the dose per kali for the current weight (mono 18px, 800) with the volume in teal below — or the published mg/kg range when no weight is set. A capped dose carries a `MAKS` tag. Rows are links to the drug page. The last row of every list/search is a dashed "+ Hitung obat lain (kustom)".
+
+### Route chips
+Radio chips, one per regimen, on the drug page: routes in mono (IV / IM / Oral / Infus…), a qualifier line below (indication, population when a drug has both child and adult regimens, "draf"). Selected = teal tint + teal border. They follow Anak/Dewasa until the doctor picks one.
+
+### Notices and tags
+Short uppercase tags ride next to a name: HIGH-ALERT (red outline), DARURAT (red tint), DRAF (amber tint), MAKS (amber tint). Regimen notices sit above the answer: draft (amber, with its source), high-alert (red tint, "cek ganda"), and Anak/Dewasa mismatch (neutral).
+
+### Darurat packs
+Sheets per situation (Intubasi, Resusitasi, Kejang, Anafilaksis), red as the section's accent. Each row: name, route pill and the rule it came from ("20 mg/kg (maks 1500 mg)"); on the right the **volume to draw up** as the big mono number, the mg below. Kejang adds time markers per phase and a stopwatch that turns into the answer-panel ink when running. A draft row keeps its place but shows "menunggu verifikasi" and no number — not the result, not the rule — outside review mode.
+
+### Titration table
+Under every drip result: the published dose range in 5–7 rounded steps → mL/jam and micro drops, mono, right-aligned, the row matching the current dose tinted teal.
 
 ### Buttons
 - **Primary:** ink fill, `--c-on-ink` text, full width, `44px` minimum height, `700` weight.
@@ -210,6 +234,8 @@ The Puyer recipe's printed output is a standalone document with literal values m
 - **Do** pair every colour with a word, icon, or position.
 - **Do** render the safety disclaimer inline and visible near any dose output.
 - **Do** run `npm run contrast` after touching any colour token.
+- **Do** read the weight from the patient bar; never add a second weight field.
+- **Do** keep new clinical data as a draft (`status: 'draft'`, with `source`) until a clinician signs it off.
 
 ### Don't
 - **Don't** show a range as the hero value next to a derivation that computes a single number.
@@ -218,3 +244,4 @@ The Puyer recipe's printed output is a standalone document with literal values m
 - **Don't** apply the landing page's scroll-reveal to calculator, catalog, or history screens.
 - **Don't** add a font from a CDN; fonts are self-hosted and precached, latin subset only.
 - **Don't** let the print document follow the app theme.
+- **Don't** show a draft's number, or the rule that produces it, outside review mode.
