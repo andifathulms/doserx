@@ -1,6 +1,6 @@
 import { DRUG_PRESETS } from '../data/drugs'
 import { groupOf } from '../data/categories'
-import { LIVE_INFUSIONS } from '../data/catalog'
+import { LIVE_CATALOG, LIVE_INFUSIONS } from '../data/catalog'
 import { Lang } from './landing'
 
 /**
@@ -21,11 +21,16 @@ export const SOURCE_COUNTS = Object.entries(
   }, {}),
 ).sort((a, b) => b[1] - a[1])
 
+// A drug can now have several dose regimens (route, indication,
+// population), so "drugs" and "dose regimens" are different counts: the
+// catalog has `drugs`; the per-regimen facts below count `doseRegimens`.
 export const ABOUT_FACTS = {
-  drugs: DRUG_PRESETS.length,
+  drugs: LIVE_CATALOG.length,
+  doseRegimens: DRUG_PRESETS.length,
   groups: new Set(DRUG_PRESETS.map(groupOf)).size,
   uncited: DRUG_PRESETS.filter((d) => !d.source).length,
   infusionDrugs: LIVE_INFUSIONS.length,
+  infusionUncited: LIVE_INFUSIONS.filter((i) => !i.source).length,
   withRange: DRUG_PRESETS.filter((d) => d.dosePerKgMin != null && d.dosePerKgMax != null).length,
   withMax: DRUG_PRESETS.filter((d) => d.maxDay != null || d.maxSingle != null).length,
   withConcentration: DRUG_PRESETS.filter((d) => d.concentration != null).length,
@@ -67,9 +72,9 @@ export const ABOUT: Record<Lang, AboutCopy> = {
       'belum punya rujukan.',
 
     sourcesTitle: 'Sumber acuan dosis',
-    sourcesLede: `Setiap obat di katalog mencantumkan acuan dosisnya, dan acuan itu ditampilkan di tempat angkanya muncul — bukan di catatan kaki. Dari ${ABOUT_FACTS.drugs} obat, berikut pembagiannya:`,
+    sourcesLede: `Setiap obat di katalog mencantumkan acuan dosisnya, dan acuan itu ditampilkan di tempat angkanya muncul — bukan di catatan kaki. Dari ${ABOUT_FACTS.doseRegimens} regimen dosis pada ${ABOUT_FACTS.drugs} obat, berikut pembagiannya:`,
     sourcesColDrug: 'Sumber',
-    sourcesColCount: 'Jumlah obat',
+    sourcesColCount: 'Jumlah regimen',
 
     howTitle: 'Bagaimana dosis dihitung',
     how: [
@@ -84,7 +89,7 @@ export const ABOUT: Record<Lang, AboutCopy> = {
         title: '2. Batas maksimum',
         body: [
           'Bila dosis harian melampaui batas maksimum obat, dosis dipotong ke batas itu dan ditandai.',
-          `${ABOUT_FACTS.withMax} dari ${ABOUT_FACTS.drugs} obat punya batas maksimum harian atau per kali. Aplikasi juga menghitung pada berat berapa batas itu mulai berlaku, karena di atas berat tersebut dosis berhenti mengikuti berat badan.`,
+          `${ABOUT_FACTS.withMax} dari ${ABOUT_FACTS.doseRegimens} regimen dosis punya batas maksimum harian atau per kali. Aplikasi juga menghitung pada berat berapa batas itu mulai berlaku, karena di atas berat tersebut dosis berhenti mengikuti berat badan.`,
         ],
       },
       {
@@ -95,7 +100,7 @@ export const ABOUT: Record<Lang, AboutCopy> = {
         title: '4. Volume',
         body: [
           'Dosis per kali ÷ konsentrasi stok (mg/mL) = volume dalam mL.',
-          `Konsentrasi tergantung sediaan yang ada di tangan Anda, jadi katalog hanya menyimpannya untuk ${ABOUT_FACTS.withConcentration} obat; sisanya Anda isi sendiri.`,
+          `Konsentrasi tergantung sediaan yang ada di tangan Anda, jadi katalog hanya menyimpannya untuk ${ABOUT_FACTS.withConcentration} regimen; sisanya Anda isi sendiri.`,
         ],
       },
       {
@@ -128,7 +133,7 @@ export const ABOUT: Record<Lang, AboutCopy> = {
       },
       {
         title: 'Infus',
-        body: `Tetes per menit memakai faktor set infus 20 tetes/mL (makro) dan 60 tetes/mL (mikro); set yang Anda pakai bisa berbeda. Konsentrasi awal tiap obat mengasumsikan pengenceran tertentu, yang ditampilkan di sebelah kolomnya. Katalog infus (${ABOUT_FACTS.infusionDrugs} obat) belum mencantumkan sumber acuan — ini kekurangan yang belum dilengkapi.`,
+        body: `Tetes per menit memakai faktor set infus 20 tetes/mL (makro) dan 60 tetes/mL (mikro); set yang Anda pakai bisa berbeda. Konsentrasi awal tiap obat mengasumsikan pengenceran tertentu, yang ditampilkan di sebelah kolomnya. ${ABOUT_FACTS.infusionUncited} dari ${ABOUT_FACTS.infusionDrugs} obat drip belum mencantumkan sumber acuan — kekurangan yang belum dilengkapi.`,
       },
     ],
 
@@ -169,9 +174,9 @@ export const ABOUT: Record<Lang, AboutCopy> = {
       'importantly — where this app rounds, estimates, assumes, or has no citation yet.',
 
     sourcesTitle: 'Dosing references',
-    sourcesLede: `Every drug in the catalog names its dosing reference, and that reference is shown where the number appears rather than in a footnote. Across ${ABOUT_FACTS.drugs} drugs:`,
+    sourcesLede: `Every drug in the catalog names its dosing reference, and that reference is shown where the number appears rather than in a footnote. Across ${ABOUT_FACTS.doseRegimens} dose regimens on ${ABOUT_FACTS.drugs} drugs:`,
     sourcesColDrug: 'Source',
-    sourcesColCount: 'Drugs',
+    sourcesColCount: 'Regimens',
 
     howTitle: 'How a dose is calculated',
     how: [
@@ -186,7 +191,7 @@ export const ABOUT: Record<Lang, AboutCopy> = {
         title: '2. Maximum',
         body: [
           'If the daily dose exceeds the drug’s ceiling it is capped there and flagged.',
-          `${ABOUT_FACTS.withMax} of ${ABOUT_FACTS.drugs} drugs carry a daily or single-dose maximum. The app also computes the weight at which that ceiling starts binding, because above it the dose stops following body weight.`,
+          `${ABOUT_FACTS.withMax} of ${ABOUT_FACTS.doseRegimens} dose regimens carry a daily or single-dose maximum. The app also computes the weight at which that ceiling starts binding, because above it the dose stops following body weight.`,
         ],
       },
       {
@@ -197,7 +202,7 @@ export const ABOUT: Record<Lang, AboutCopy> = {
         title: '4. Volume',
         body: [
           'Dose per administration ÷ stock concentration (mg/mL) = volume in mL.',
-          `Concentration depends on the preparation in your hand, so the catalog stores it for only ${ABOUT_FACTS.withConcentration} drugs; you supply the rest.`,
+          `Concentration depends on the preparation in your hand, so the catalog stores it for only ${ABOUT_FACTS.withConcentration} regimens; you supply the rest.`,
         ],
       },
       {
@@ -229,7 +234,7 @@ export const ABOUT: Record<Lang, AboutCopy> = {
       },
       {
         title: 'Infusions',
-        body: `Drops per minute assume a giving set of 20 drops/mL (macro) or 60 drops/mL (micro); yours may differ. Each drug's default concentration assumes a specific dilution, which is stated next to the field. The infusion catalog (${ABOUT_FACTS.infusionDrugs} drugs) does not yet cite sources — an acknowledged gap.`,
+        body: `Drops per minute assume a giving set of 20 drops/mL (macro) or 60 drops/mL (micro); yours may differ. Each drug's default concentration assumes a specific dilution, which is stated next to the field. ${ABOUT_FACTS.infusionUncited} of ${ABOUT_FACTS.infusionDrugs} drips do not yet cite a source — an acknowledged gap.`,
       },
     ],
 

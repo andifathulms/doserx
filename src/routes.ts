@@ -41,7 +41,7 @@ export const ROUTES: RouteDef[] = [
     title: 'DoseRx — Weight-Based Dose Calculator',
     description:
       "Enter a patient's weight and get the dose in mg and the volume in mL, with the working " +
-      'shown. A clinical dose calculator for 92 drugs — runs offline, nothing leaves your device.',
+      'shown. A clinical dose calculator for 127 drugs — runs offline, nothing leaves your device.',
     index: true,
   },
   {

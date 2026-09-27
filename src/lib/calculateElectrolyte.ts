@@ -3,9 +3,8 @@
  * a step trail for the derivation line, and a typed error instead of NaN.
  *
  * These encode clinical rules (bolus volumes, correction ceilings,
- * concentration limits) that are drafts awaiting review — the UI shows them
- * in review mode only. The constants are named and cited here so a reviewer
- * can check each one in one place.
+ * concentration limits), reviewed and approved 27 Sep 2026. The constants
+ * are named and cited here so any future change is checked in one place.
  */
 
 export interface ElectrolyteStep {

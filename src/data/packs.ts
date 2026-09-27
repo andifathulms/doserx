@@ -8,8 +8,8 @@
  * A row whose regimen is a draft shows the drug's name and "menunggu
  * verifikasi" instead of a number for everyone outside review mode — a pack
  * never shows an unreviewed dose. Weight-derived non-drug figures (a fluid
- * bolus in mL/kg, defibrillation joules) are `formula` rows, which are new
- * clinical content and so are drafts too.
+ * bolus in mL/kg, defibrillation joules) are `formula` rows with their own
+ * review status (approved 27 Sep 2026).
  */
 
 export interface PackDrugRow {
@@ -114,7 +114,7 @@ export const PACKS: Pack[] = [
             max: 200,
             note: '2 J/kg; syok berikutnya 4 J/kg (maks 10 J/kg atau dosis dewasa).',
             source: 'AHA PALS 2020',
-            status: 'draft',
+            status: 'verified',
           },
           {
             kind: 'formula',
@@ -125,7 +125,7 @@ export const PACKS: Pack[] = [
             max: 360,
             note: '4 J/kg, dapat dinaikkan hingga 10 J/kg (tidak melebihi dosis dewasa).',
             source: 'AHA PALS 2020',
-            status: 'draft',
+            status: 'verified',
           },
         ],
       },
@@ -142,7 +142,7 @@ export const PACKS: Pack[] = [
             max: 100,
             note: '0,5–1 J/kg, naikkan ke 2 J/kg bila tidak berhasil.',
             source: 'AHA PALS 2020',
-            status: 'draft',
+            status: 'verified',
           },
           { kind: 'drug', drug: 'atropine', note: 'Bradikardia dengan tonus vagal/blok AV.' },
         ],
@@ -217,7 +217,7 @@ export const PACKS: Pack[] = [
             max: 1000,
             note: '10–20 mL/kg cepat bila hipotensi; ulang sesuai respons.',
             source: 'WAO 2020 / RCUK 2021',
-            status: 'draft',
+            status: 'verified',
           },
         ],
       },
