@@ -131,6 +131,9 @@ export default defineConfig({
           }
           // The drug catalog: needed by the calculator, the catalog index and
           // every drug page, but NOT by the methodology page.
+          // categories.ts and groupColors.ts are small lookup tables the
+          // landing page needs without the 92 drugs behind them.
+          if (/\/src\/data\/(categories|groupColors)\.ts/.test(id)) return undefined
           if (id.includes('/src/data/')) return 'catalog'
           // Landing and about copy, shared by the two bilingual routes only.
           if (id.includes('/src/content/')) return 'content'

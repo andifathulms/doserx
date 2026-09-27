@@ -1357,63 +1357,33 @@ body::before {
   box-shadow: var(--sh-xs);
 }
 
-/* ── Category accent map — single source of truth for any element with data-cat
-   (drug cards, summary dots, …). Loudest red reserved for emergencies; the rest
-   are spaced apart in hue so they stay distinguishable under stress. ────────── */
-/* Every value below is a desaturated, darkened pass over the previous vivid
-   set (same hue, ~55% of the original saturation, lightness clamped to
-   28-40%) so the 92-card grid keeps its 17-way visual triage without reading
-   as a rainbow SaaS palette — the one deliberate exception to "four pastels
-   only" (see index.css token comment). "Antibiotik" was shifted from blue to
-   indigo since blue is now the app's single primary/accent hue and reusing
-   it for a category would blur that meaning. Each hex clears 4.5:1 on white,
-   the same bar these already meet as small text (.drug-card__check). */
-[data-cat="Gawat Darurat"]       { --_cat: #953737; }  /* brick red — emergency only */
-[data-cat="Analgesik/NSAID"]     { --_cat: #9b5c31; }  /* burnt orange */
-[data-cat="Antibiotik"]          { --_cat: #5a5a9e; }  /* indigo */
-[data-cat="Antivirus"]           { --_cat: #2a7283; }  /* muted cyan */
-[data-cat="Antijamur"]           { --_cat: #816524; }  /* muted gold */
-[data-cat="Anti-TB (OAT)"]       { --_cat: #94384e; }  /* dark rose */
-[data-cat="Antiparasit"]         { --_cat: #2e7849; }  /* muted green */
-[data-cat="Antikonvulsan"]       { --_cat: #683894; }  /* muted violet */
-[data-cat="Kardiovaskular"]      { --_cat: #8e3e62; }  /* muted pink */
-[data-cat="Pulmologi"]           { --_cat: #2e769b; }  /* muted sky */
-[data-cat="Gastrointestinal"]    { --_cat: #8f612b; }  /* muted amber */
-[data-cat="Kortikosteroid"]      { --_cat: #5a3795; }  /* muted purple */
-[data-cat="Antihistamin/Alergi"] { --_cat: #843f8d; }  /* muted fuchsia */
-[data-cat="Vitamin/Mineral"]     { --_cat: #546e28; }  /* muted olive */
-[data-cat="Cairan & Elektrolit"] { --_cat: #275f7d; }  /* muted deep blue */
-[data-cat="Antimalarial"]        { --_cat: #2b766f; }  /* muted teal */
-[data-cat="Lain-lain"]           { --_cat: #5d646f; }  /* stone-slate */
+/* ── Group accent map — single source of truth for any element with data-group
+   (drug rows, chips, dots, swatches). Nine hues spaced around the wheel so
+   they can be learned; teal is deliberately absent (it means "operate"), and
+   the bright signal red stays reserved for errors and Darurat. Values mirror
+   src/data/groupColors.ts (groupColors.test.ts keeps them in sync) and are
+   checked by npm run contrast against --c-bg and --c-surface. ──────────── */
+[data-group="Kardiovaskular"]       { --_grp: #a8304f; }  /* crimson */
+[data-group="Respirasi & Alergi"]   { --_grp: #246f9e; }  /* sky */
+[data-group="Neurologi"]            { --_grp: #6c43ad; }  /* violet */
+[data-group="Analgetik"]            { --_grp: #a3521b; }  /* orange */
+[data-group="Cairan & Elektrolit"]  { --_grp: #3a52bb; }  /* blue-indigo */
+[data-group="Gastrointestinal"]     { --_grp: #7a6200; }  /* mustard */
+[data-group="Anti-infeksi"]         { --_grp: #2b7431; }  /* green */
+[data-group="Anestesi & Intubasi"]  { --_grp: #8a3886; }  /* plum */
+[data-group="Lain-lain & Nutrisi"]  { --_grp: #566267; }  /* slate */
 
-/* Dark-mode pass over the map above. --_cat is a plain hex, not a --c-*
-   semantic token, so it is never redefined by the dark block up in :root —
-   scripts/contrast-check.mjs caught exactly this: all 17 light values read
-   2–3.7:1 against the dark surface, well under the 4.5:1 these are supposed
-   to clear (DESIGN-REWORK.md §5, §8). Same hue as its light counterpart in
-   every case, saturation eased and lightness raised until each cleared
-   4.5:1 against --c-surface(dark) (#242320, the harder of the app's two dark
-   backgrounds) with a small margin; every one lands at 4.60:1 there and
-   5.04:1 against --c-bg(dark). Higher specificity than the plain
-   [data-cat] rule above (an extra :root[data-theme="dark"] ancestor), so
-   this wins over it without touching selector order. */
-:root[data-theme="dark"] [data-cat="Gawat Darurat"]       { --_cat: #c67474; }
-:root[data-theme="dark"] [data-cat="Analgesik/NSAID"]     { --_cat: #be7b4d; }
-:root[data-theme="dark"] [data-cat="Antibiotik"]          { --_cat: #8787b6; }
-:root[data-theme="dark"] [data-cat="Antivirus"]           { --_cat: #4096aa; }
-:root[data-theme="dark"] [data-cat="Antijamur"]           { --_cat: #a88639; }
-:root[data-theme="dark"] [data-cat="Anti-TB (OAT)"]       { --_cat: #c47386; }
-:root[data-theme="dark"] [data-cat="Antiparasit"]         { --_cat: #479b65; }
-:root[data-theme="dark"] [data-cat="Antikonvulsan"]       { --_cat: #a27ac7; }
-:root[data-theme="dark"] [data-cat="Kardiovaskular"]      { --_cat: #bd7595; }
-:root[data-theme="dark"] [data-cat="Pulmologi"]           { --_cat: #4193bd; }
-:root[data-theme="dark"] [data-cat="Gastrointestinal"]    { --_cat: #b68042; }
-:root[data-theme="dark"] [data-cat="Kortikosteroid"]      { --_cat: #997dc9; }
-:root[data-theme="dark"] [data-cat="Antihistamin/Alergi"] { --_cat: #b374bb; }
-:root[data-theme="dark"] [data-cat="Vitamin/Mineral"]     { --_cat: #75953d; }
-:root[data-theme="dark"] [data-cat="Cairan & Elektrolit"] { --_cat: #4593bc; }
-:root[data-theme="dark"] [data-cat="Antimalarial"]        { --_cat: #3e9990; }
-:root[data-theme="dark"] [data-cat="Lain-lain"]           { --_cat: #848b96; }
+/* Night pass — same hues, lifted until each clears 4.5:1 on the dark
+   canvas and surface. Higher specificity than the plain rule above. */
+:root[data-theme="dark"] [data-group="Kardiovaskular"]       { --_grp: #f08aa4; }
+:root[data-theme="dark"] [data-group="Respirasi & Alergi"]   { --_grp: #6db5e6; }
+:root[data-theme="dark"] [data-group="Neurologi"]            { --_grp: #b096ec; }
+:root[data-theme="dark"] [data-group="Analgetik"]            { --_grp: #ee9a64; }
+:root[data-theme="dark"] [data-group="Cairan & Elektrolit"]  { --_grp: #94a6f4; }
+:root[data-theme="dark"] [data-group="Gastrointestinal"]     { --_grp: #d8bb4e; }
+:root[data-theme="dark"] [data-group="Anti-infeksi"]         { --_grp: #74c87b; }
+:root[data-theme="dark"] [data-group="Anestesi & Intubasi"]  { --_grp: #dc8ed6; }
+:root[data-theme="dark"] [data-group="Lain-lain & Nutrisi"]  { --_grp: #a8b3b8; }
 
 /* ── Catalog page ─────────────────────────────────────────────────────────────
    The catalog is made of links, not buttons: every drug is a destination with
@@ -1563,7 +1533,7 @@ body::before {
   padding: var(--sp-3) var(--sp-3);
   background: var(--c-surface);
   border: 1.5px solid var(--c-border);
-  border-left: 3px solid var(--_cat, var(--c-border-mid));
+  border-left: 3px solid var(--_grp, var(--c-border-mid));
   border-radius: var(--r-sm);
   text-align: left;
   transition: transform .12s, box-shadow .12s, border-color .12s, background .12s;
@@ -1571,13 +1541,13 @@ body::before {
 }
 
 /* Tint derived from the accent — one source, works in light & dark */
-.drug-card { --_cat-bg: color-mix(in srgb, var(--_cat, var(--c-primary)) 9%, var(--c-surface)); }
+.drug-card { --_grp-bg: color-mix(in srgb, var(--_grp, var(--c-primary)) 9%, var(--c-surface)); }
 
 @media (hover: hover) {
   .drug-card:hover {
     transform: translateY(-1px);
-    border-color: var(--_cat, var(--c-primary));
-    background: var(--_cat-bg);
+    border-color: var(--_grp, var(--c-primary));
+    background: var(--_grp-bg);
     box-shadow: var(--sh-sm);
   }
 }
@@ -1585,16 +1555,16 @@ body::before {
 /* The app's primary control had no visible keyboard focus at all — the ring
    token already existed, the 92-card grid just never used it. */
 .drug-card:focus-visible {
-  border-color: var(--_cat, var(--c-primary));
+  border-color: var(--_grp, var(--c-primary));
 }
 
 /* Selected ≠ hover: 2px border + accent ring make it unmistakable at a glance */
 .drug-card--selected {
-  background: var(--_cat-bg);
-  border-color: var(--_cat, var(--c-primary));
+  background: var(--_grp-bg);
+  border-color: var(--_grp, var(--c-primary));
   border-width: 2px;
   padding: var(--sp-2) var(--sp-3) var(--sp-2) var(--sp-2);            /* compensate for the +0.5px border */
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--_cat, var(--c-primary)) 35%, transparent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--_grp, var(--c-primary)) 35%, transparent);
 }
 
 /* At 320px the grid is two 140px columns; minus the card padding and the
@@ -1620,7 +1590,7 @@ body::before {
   gap: 2px;
   font-size: var(--fs-3xs);
   font-weight: 700;
-  color: var(--_cat, var(--c-primary));
+  color: var(--_grp, var(--c-primary));
   margin-top: 2px;
 }
 
@@ -1679,26 +1649,44 @@ body::before {
 .cat-chip-row::-webkit-scrollbar { height: 4px; }
 .cat-chip-row::-webkit-scrollbar-thumb { background: var(--c-border-mid); border-radius: var(--r-full); }
 
+.group-filter { min-width: 0; }
+
 .cat-chip {
   flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-height: 36px;
   font-size: var(--fs-sm);
   font-weight: 600;
   white-space: nowrap;
   padding: var(--sp-1) var(--sp-3);
   border-radius: var(--r-full);
-  border: 1.5px solid var(--c-border);
+  border: 1px solid var(--c-border);
   background: var(--c-surface);
   color: var(--c-text-2);
   transition: background .12s, border-color .12s, color .12s;
 }
+
+/* The group's colour as a small square — the chip still names the group, so
+   colour is never the only carrier (Colour-Only-Encoding rule). */
+.cat-chip__dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 3px;
+  background: var(--_grp, var(--c-border-mid));
+}
+
+.cat-chip-row--sub { margin-top: calc(-1 * var(--sp-2)); }
+.cat-chip--sub { min-height: 32px; font-size: var(--fs-xs); }
 .cat-chip:hover { border-color: var(--c-border-mid); color: var(--c-text); }
 /* A tinted background + coloured text/border, not a solid fill — large
    saturated fills read as generic SaaS and every category colour above is
    tuned to work as text, not as a background for white text. */
 .cat-chip--active {
-  color: var(--_cat, var(--c-primary));
-  background: color-mix(in srgb, var(--_cat, var(--c-primary)) 12%, var(--c-surface));
-  border-color: color-mix(in srgb, var(--_cat, var(--c-primary)) 45%, var(--c-surface));
+  color: var(--_grp, var(--c-primary));
+  background: color-mix(in srgb, var(--_grp, var(--c-primary)) 12%, var(--c-surface));
+  border-color: color-mix(in srgb, var(--_grp, var(--c-primary)) 45%, var(--c-surface));
 }
 
 /* ── Pinned "Sering dipakai" ──────────────────────────────────────────────── */
@@ -3078,7 +3066,7 @@ body::before {
   width: 10px;
   height: 10px;
   border-radius: var(--r-full);
-  background: var(--_cat, var(--c-border-mid));
+  background: var(--_grp, var(--c-border-mid));
 }
 
 .selected-drug-bar__name {
@@ -3772,8 +3760,8 @@ body::before {
 }
 
 .cat-swatch:hover {
-  border-color: var(--_cat, var(--c-border-mid));
-  background: color-mix(in srgb, var(--_cat, var(--c-primary)) 8%, var(--c-surface));
+  border-color: var(--_grp, var(--c-border-mid));
+  background: color-mix(in srgb, var(--_grp, var(--c-primary)) 8%, var(--c-surface));
 }
 
 .cat-swatch__dot {
@@ -3781,7 +3769,7 @@ body::before {
   width: 8px;
   height: 8px;
   border-radius: var(--r-full);
-  background: var(--_cat, var(--c-border-mid));
+  background: var(--_grp, var(--c-border-mid));
 }
 
 /* ── Trust section — one lead item, two supporting ────────────────────────────

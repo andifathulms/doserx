@@ -4,6 +4,7 @@ import { DrugCalculator } from './DrugCalculator'
 import { DrugPreset } from '../data/drugs'
 import { CustomDrugPreset, deleteCustomDrug } from '../lib/storage'
 import { scrollBehavior } from '../lib/motion'
+import { groupOf } from '../data/categories'
 
 /**
  * Drug selection for the Preset mode. Everything after a drug is chosen lives
@@ -127,7 +128,7 @@ export function PresetPanel({
         selected && (
           <button className="selected-drug-bar" onClick={handleChangeDrug}>
             <div className="selected-drug-bar__info">
-              <span className="selected-drug-bar__dot" data-cat={selected.category} />
+              <span className="selected-drug-bar__dot" data-group={groupOf(selected)} />
               <span className="selected-drug-bar__name">{selected.name}</span>
               <span className="selected-drug-bar__route">{selected.route}</span>
             </div>

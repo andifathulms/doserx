@@ -11,12 +11,9 @@ export type FormType =
   | 'sachet'
 
 // ── Therapeutic categories ───────────────────────────────────────────────────
-// Every value here needs a matching entry in categoryColors.ts's
-// CATEGORY_COLORS (a Record<DrugCategory, …> — TypeScript won't compile
-// without one) and a matching `[data-cat="…"]` rule in index.css, in both
-// themes (categoryColors.test.ts fails if index.css drifts from
-// CATEGORY_COLORS). A category added here without both no longer fails
-// silently with an uncoloured card — DESIGN-REWORK.md §9.
+// The fine-grained therapeutic class. What the doctor browses by is the
+// coarser DrugGroup below (groupOf() in categories.ts maps one to the other);
+// category survives as a sub-filter, for search, and in the monograph.
 export type DrugCategory =
   | 'Gawat Darurat'
   | 'Analgesik/NSAID'
@@ -36,6 +33,25 @@ export type DrugCategory =
   | 'Antimalarial'
   | 'Lain-lain'
 
+// ── Clinical groups ─────────────────────────────────────────────────────────
+// What the doctor browses by. Nine groups, following how an Indonesian ward
+// organises its drug list (Kardiovaskular, Hematoimun-Respirasi, Neurologi,
+// Analgetik, Cairan & Elektrolit, Gastrointestinal, Antibiotik, Obat Intubasi,
+// Lain-lain). The finer `category` above stays as a sub-filter (Anti-infeksi →
+// Antibiotik / Antivirus / …) and for search. Every group needs an entry in
+// groupColors.ts and a matching [data-group] rule in index.css in both themes
+// (groupColors.test.ts fails otherwise).
+export type DrugGroup =
+  | 'Kardiovaskular'
+  | 'Respirasi & Alergi'
+  | 'Neurologi'
+  | 'Analgetik'
+  | 'Cairan & Elektrolit'
+  | 'Gastrointestinal'
+  | 'Anti-infeksi'
+  | 'Anestesi & Intubasi'
+  | 'Lain-lain & Nutrisi'
+
 export interface DrugForm {
   strength: number // mg per unit (solid) or mg/mL (liquid)
   form: FormType
@@ -48,6 +64,11 @@ export interface DrugPreset {
   name: string
   route: string
   category: DrugCategory
+  /** Set only where the category alone doesn't decide it — every
+   *  'Gawat Darurat' drug, which belongs to a body system like any other,
+   *  and a few drugs a ward files elsewhere (zinc under Gastrointestinal).
+   *  Otherwise groupOf() derives it from `category`. */
+  group?: DrugGroup
   // CONVENTION: dosePerKg is the TOTAL mg/kg/DAY. The engine computes
   // dailyDose = weight × dosePerKg, then perDose = dailyDose / freq.
   dosePerKg: number

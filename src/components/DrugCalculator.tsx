@@ -8,6 +8,7 @@ import { calculate, CalcResult } from '../lib/calculate'
 import { errorCopy } from '../lib/errorCopy'
 import { announceResult } from '../lib/announce'
 import { isInvalidPositiveNumber } from '../lib/validateNumber'
+import { groupOf } from '../data/categories'
 
 /**
  * Everything that happens once a drug is chosen: the clinical note, the dose
@@ -354,7 +355,7 @@ export function DrugMonograph({ drug, open = false }: { drug: DrugPreset; open?:
   if (drug.maxDay != null) maxParts.push(`${drug.maxDay} mg/hari`)
 
   const rows: Array<[string, string | undefined]> = [
-    ['Golongan', drug.category],
+    ['Golongan', groupOf(drug) === 'Anti-infeksi' || drug.category === 'Gawat Darurat' ? `${groupOf(drug)} · ${drug.category}` : groupOf(drug)],
     ['Indikasi', drug.indications?.length ? drug.indications.join(', ') : undefined],
     ['Dosis', doseRange],
     ['Dosis maksimum', maxParts.length ? maxParts.join(' · ') : undefined],

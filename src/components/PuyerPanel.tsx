@@ -3,6 +3,7 @@ import { CheckIcon, ExclamationTriangleIcon } from '@radix-ui/react-icons'
 import { ALL_DRUGS, DrugPreset } from '../data/drugs'
 import { DrugGrid } from './DrugGrid'
 import { DerivationChain } from './DerivationChain'
+import { groupOf } from '../data/categories'
 import { DosePositionBandCompact, DosePositionBandLegend } from './DosePositionBandCompact'
 import { calculate, CalcResult } from '../lib/calculate'
 import { suggestForms, describeForms, FormSuggestion } from '../lib/suggest'
@@ -428,7 +429,7 @@ export function PuyerPanel({ onHistoryUpdated: _onHistoryUpdated }: PuyerPanelPr
         <div className="selected-drugs-summary">
           <div className="selected-drugs-summary__chips">
             {orderedEntries.map((e) => (
-              <span key={e.drug.id} className="drug-chip" data-cat={e.drug.category}>
+              <span key={e.drug.id} className="drug-chip" data-group={groupOf(e.drug)}>
                 {e.drug.name}
               </span>
             ))}

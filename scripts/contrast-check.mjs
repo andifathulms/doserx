@@ -67,14 +67,14 @@ const darkVars = { ...lightVars, ...parseVars(darkBlock) }
 // 17-entry category accent map, plus its dark-mode override block (added
 // after this script first flagged the light values failing on a dark
 // surface — see DESIGN-REWORK.md §5, §8). The two selector shapes are
-// anchored to line-start so a light rule (`[data-cat="X"] {`) is never
-// mistaken for a dark override (`:root[data-theme="dark"] [data-cat="X"] {`),
+// anchored to line-start so a light rule (`[data-group="X"] {`) is never
+// mistaken for a dark override (`:root[data-theme="dark"] [data-group="X"] {`),
 // which is a substring match away from the light pattern.
 const CATEGORIES = []
 {
-  const lightRe = /^\[data-cat="([^"]+)"\]\s*\{\s*--_cat:\s*(#[0-9a-fA-F]{3,6});/gm
+  const lightRe = /^\[data-group="([^"]+)"\]\s*\{\s*--_grp:\s*(#[0-9a-fA-F]{3,6});/gm
   const darkRe =
-    /^:root\[data-theme="dark"\]\s*\[data-cat="([^"]+)"\]\s*\{\s*--_cat:\s*(#[0-9a-fA-F]{3,6});/gm
+    /^:root\[data-theme="dark"\]\s*\[data-group="([^"]+)"\]\s*\{\s*--_grp:\s*(#[0-9a-fA-F]{3,6});/gm
   const darkHex = new Map()
   let m
   while ((m = darkRe.exec(css))) darkHex.set(m[1], m[2])
@@ -82,8 +82,8 @@ const CATEGORIES = []
     CATEGORIES.push({ name: m[1], lightHex: m[2], darkHex: darkHex.get(m[1]) ?? null })
   }
 }
-if (CATEGORIES.length !== 17) {
-  throw new Error(`Expected 17 category accents, found ${CATEGORIES.length}`)
+if (CATEGORIES.length !== 9) {
+  throw new Error(`Expected 9 group accents, found ${CATEGORIES.length}`)
 }
 const missingDarkOverride = CATEGORIES.filter((c) => c.darkHex == null)
 
@@ -368,7 +368,7 @@ for (const cell of rows) {
   }
 }
 
-console.log('\n## Category accents (17) — light hex vs. dark hex, each checked against its own theme\n')
+console.log('\n## Group accents (9) — light hex vs. dark hex, each checked against its own theme\n')
 if (missingDarkOverride.length > 0) {
   console.log(
     `**${missingDarkOverride.length} categor${missingDarkOverride.length === 1 ? 'y has' : 'ies have'} no dark override — falling back to the light hex for the dark-theme rows below:** ` +

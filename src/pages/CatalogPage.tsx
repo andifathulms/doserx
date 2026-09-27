@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react'
 import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
-import { DRUG_PRESETS, DrugCategory } from '../data/drugs'
+import { DRUG_PRESETS } from '../data/drugs'
 import { searchDrugs } from '../lib/search'
 import { Link } from '../lib/router'
-import { CATEGORY_ORDER } from '../data/categories'
+import { groupOf } from '../data/categories'
+import { GroupFilter, GroupSelection, NO_GROUP, filterByGroup, groupDrugs } from '../components/GroupFilter'
 
 /**
  * /obat — the catalog as a browsable index.
@@ -16,26 +17,13 @@ import { CATEGORY_ORDER } from '../data/categories'
  */
 export function CatalogPage() {
   const [query, setQuery] = useState('')
-  const [activeCat, setActiveCat] = useState<DrugCategory | null>(null)
+  const [sel, setSel] = useState<GroupSelection>(NO_GROUP)
 
-  const scoped = useMemo(
-    () => (activeCat ? DRUG_PRESETS.filter((d) => d.category === activeCat) : DRUG_PRESETS),
-    [activeCat],
-  )
+  const scoped = useMemo(() => filterByGroup(DRUG_PRESETS, sel), [sel])
   const results = useMemo(() => searchDrugs(scoped, query), [scoped, query])
   const searching = query.trim().length > 0
 
-  const grouped = useMemo(() => {
-    const map = new Map<DrugCategory, typeof DRUG_PRESETS>()
-    for (const cat of CATEGORY_ORDER) map.set(cat, [])
-    for (const d of results) map.get(d.category)?.push(d)
-    return [...map.entries()].filter(([, list]) => list.length > 0)
-  }, [results])
-
-  const presentCategories = useMemo(() => {
-    const set = new Set(DRUG_PRESETS.map((d) => d.category))
-    return CATEGORY_ORDER.filter((c) => set.has(c))
-  }, [])
+  const grouped = useMemo(() => groupDrugs(results), [results])
 
   return (
     <>
@@ -58,28 +46,7 @@ export function CatalogPage() {
         />
       </div>
 
-      <div className="cat-chip-row">
-        <button
-          type="button"
-          aria-pressed={activeCat === null}
-          className={`cat-chip${activeCat === null ? ' cat-chip--active' : ''}`}
-          onClick={() => setActiveCat(null)}
-        >
-          Semua
-        </button>
-        {presentCategories.map((cat) => (
-          <button
-            key={cat}
-            type="button"
-            data-cat={cat}
-            aria-pressed={activeCat === cat}
-            className={`cat-chip${activeCat === cat ? ' cat-chip--active' : ''}`}
-            onClick={() => setActiveCat(activeCat === cat ? null : cat)}
-          >
-            {cat}
-          </button>
-        ))}
-      </div>
+      <GroupFilter drugs={DRUG_PRESETS} value={sel} onChange={setSel} />
 
       {results.length === 0 ? (
         <p className="empty-hint">Tidak ada hasil untuk “{query}”.</p>
@@ -113,7 +80,7 @@ export function CatalogPage() {
 function CatalogCard({ drug }: { drug: (typeof DRUG_PRESETS)[number] }) {
   const flagged = !!(drug.warning || drug.contraindication)
   return (
-    <Link to={`/obat/${drug.id}`} className="drug-card catalog-card" data-cat={drug.category}>
+    <Link to={`/obat/${drug.id}`} className="drug-card catalog-card" data-group={groupOf(drug)}>
       <span className="drug-card__name">
         {drug.name}
         {flagged && (

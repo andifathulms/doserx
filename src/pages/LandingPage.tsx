@@ -4,21 +4,12 @@ import { Link } from '../lib/router'
 import { WorkedExample } from '../components/WorkedExample'
 import { Reveal } from '../components/Reveal'
 import { LANDING, LANG_PATHS, Lang } from '../content/landing'
+import { GROUP_ORDER } from '../data/categories'
 
-// A representative spread of the catalog's therapeutic categories, in real
-// use-frequency order (data/categories.ts) — the same colours that mark every
-// drug card in the calculator and catalog. Real texture, not a decoration
-// invented for this page.
-const SWATCH_CATEGORIES = [
-  'Gawat Darurat',
-  'Analgesik/NSAID',
-  'Antibiotik',
-  'Antivirus',
-  'Kardiovaskular',
-  'Pulmologi',
-  'Antikonvulsan',
-  'Vitamin/Mineral',
-] as const
+// The nine clinical groups, in ward order — the same colours that mark every
+// drug in the calculator and catalog. Real texture, not a decoration invented
+// for this page.
+const SWATCH_GROUPS = GROUP_ORDER
 
 /**
  * / and /en — the front door for someone who has never seen this before.
@@ -117,12 +108,12 @@ export function LandingPage({ lang }: { lang: Lang }) {
 
           {/* Real category colours from the catalog itself — the same accent
               that marks every drug card, not a graphic made for this page. */}
-          <ul className="cat-swatches" aria-label={lang === 'id' ? 'Contoh kategori terapi' : 'Sample therapeutic categories'}>
-            {SWATCH_CATEGORIES.map((cat) => (
-              <li key={cat}>
-                <Link to="/obat" className="cat-swatch" data-cat={cat}>
+          <ul className="cat-swatches" aria-label={lang === 'id' ? 'Golongan klinis' : 'Clinical groups'}>
+            {SWATCH_GROUPS.map((g) => (
+              <li key={g}>
+                <Link to="/obat" className="cat-swatch" data-group={g}>
                   <span className="cat-swatch__dot" aria-hidden="true" />
-                  {cat}
+                  {g}
                 </Link>
               </li>
             ))}

@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { DRUG_PRESETS } from '../data/drugs'
 import { DrugCalculator } from '../components/DrugCalculator'
 import { Link } from '../lib/router'
+import { groupOf } from '../data/categories'
 
 /**
  * /obat/:id — one drug, as a destination.
@@ -17,7 +18,7 @@ export function DrugPage({ id, onHistoryUpdated }: { id: string; onHistoryUpdate
 
   const related = useMemo(() => {
     if (!drug) return []
-    return DRUG_PRESETS.filter((d) => d.category === drug.category && d.id !== drug.id).slice(0, 6)
+    return DRUG_PRESETS.filter((d) => groupOf(d) === groupOf(drug) && d.id !== drug.id).slice(0, 6)
   }, [drug])
 
   if (!drug) {
@@ -46,7 +47,7 @@ export function DrugPage({ id, onHistoryUpdated }: { id: string; onHistoryUpdate
       <nav className="breadcrumb" aria-label="Remah roti">
         <Link to="/obat">Katalog obat</Link>
         <span aria-hidden="true"> › </span>
-        <span className="breadcrumb__current">{drug.category}</span>
+        <span className="breadcrumb__current">{groupOf(drug)}</span>
       </nav>
 
       <div className="page-head">
@@ -68,10 +69,10 @@ export function DrugPage({ id, onHistoryUpdated }: { id: string; onHistoryUpdate
 
       {related.length > 0 && (
         <section className="related">
-          <h2 className="drug-category-label">Obat lain di {drug.category}</h2>
+          <h2 className="drug-category-label">Obat lain di {groupOf(drug)}</h2>
           <div className="drug-grid">
             {related.map((d) => (
-              <Link key={d.id} to={`/obat/${d.id}`} className="drug-card catalog-card" data-cat={d.category}>
+              <Link key={d.id} to={`/obat/${d.id}`} className="drug-card catalog-card" data-group={groupOf(d)}>
                 <span className="drug-card__name">{d.name}</span>
                 <span className="drug-card__route">{d.route}</span>
               </Link>

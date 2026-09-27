@@ -1,4 +1,5 @@
 import { DRUG_PRESETS } from '../data/drugs'
+import { groupOf } from '../data/categories'
 import { INFUSION_PRESETS } from '../data/infusionDrugs'
 import { Lang } from './landing'
 
@@ -22,7 +23,7 @@ export const SOURCE_COUNTS = Object.entries(
 
 export const ABOUT_FACTS = {
   drugs: DRUG_PRESETS.length,
-  categories: new Set(DRUG_PRESETS.map((d) => d.category)).size,
+  groups: new Set(DRUG_PRESETS.map(groupOf)).size,
   uncited: DRUG_PRESETS.filter((d) => !d.source).length,
   infusionDrugs: INFUSION_PRESETS.length,
   withRange: DRUG_PRESETS.filter((d) => d.dosePerKgMin != null && d.dosePerKgMax != null).length,

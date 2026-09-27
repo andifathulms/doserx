@@ -18,12 +18,12 @@ import { CATALOG_STATS } from '../data/landing-facts'
 export type Lang = 'id' | 'en'
 
 const drugCount = CATALOG_STATS.drugs
-const categoryCount = CATALOG_STATS.categories
+const groupCount = CATALOG_STATS.groups
 const sources: readonly string[] = CATALOG_STATS.sources
 
 export const CATALOG_FACTS = {
   drugs: drugCount,
-  categories: categoryCount,
+  groups: groupCount,
   sources,
   calculators: 4,
 }
@@ -75,7 +75,7 @@ export const LANDING: Record<Lang, LandingCopy> = {
     factsTitle: 'Isi katalog',
     facts: [
       { value: String(drugCount), label: 'obat', href: '/obat' },
-      { value: String(categoryCount), label: 'kategori terapi', href: '/obat' },
+      { value: String(groupCount), label: 'golongan klinis', href: '/obat' },
       { value: String(sources.length), label: 'sumber acuan' },
       { value: '4', label: 'mode hitung', href: '/hitung' },
     ],
@@ -131,7 +131,7 @@ export const LANDING: Record<Lang, LandingCopy> = {
     factsTitle: "What's in it",
     facts: [
       { value: String(drugCount), label: 'drugs', href: '/obat' },
-      { value: String(categoryCount), label: 'therapeutic categories', href: '/obat' },
+      { value: String(groupCount), label: 'clinical groups', href: '/obat' },
       { value: String(sources.length), label: 'reference sources' },
       { value: '4', label: 'calculators', href: '/hitung' },
     ],
