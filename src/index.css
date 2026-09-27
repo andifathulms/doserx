@@ -4693,6 +4693,57 @@ a.review-item__name { color: var(--c-primary); }
 .stopwatch__btn { width: auto; min-width: 7rem; }
 .stopwatch--on .stopwatch__btn { color: var(--c-answer-text); border-color: var(--c-answer-line); }
 
+/* ── Titration table — the pump chart ─────────────────────────────────────── */
+.titration { margin: 0 0 var(--sp-4); overflow-x: auto; }
+
+.titration__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-sm);
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+}
+
+.titration__caption {
+  caption-side: top;
+  padding-bottom: var(--sp-2);
+  font-family: var(--font-sans);
+  font-size: var(--fs-2xs);
+  font-weight: 800;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  text-align: left;
+  color: var(--c-text-3);
+}
+
+.titration__table th,
+.titration__table td {
+  padding: var(--sp-2) var(--sp-3);
+  text-align: right;
+  border-top: 1px solid var(--c-border);
+}
+.titration__table thead th {
+  font-family: var(--font-sans);
+  font-size: var(--fs-2xs);
+  font-weight: 700;
+  color: var(--c-text-3);
+  border-top: 0;
+}
+.titration__table th[scope="row"],
+.titration__table thead th:first-child { text-align: left; }
+.titration__table tbody th { font-weight: 700; color: var(--c-text); }
+.titration__table td:nth-child(2) { font-weight: 800; color: var(--c-text); }
+.titration__table td:nth-child(3) { color: var(--c-text-3); }
+
+.titration__row { transition: background .12s; }
+.titration__row--current { background: var(--c-primary-bg); }
+.titration__row--current th,
+.titration__row--current td:nth-child(2) { color: var(--c-primary-dark); }
+
 /* ── Responsive ───────────────────────────────────────────────────────────── */
 @media (max-width: 560px) {
   :root { --pad: 16px; }

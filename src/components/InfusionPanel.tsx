@@ -6,6 +6,7 @@ import { calculateInfusion, InfusionResult } from '../lib/calculateInfusion'
 import { WeightPrompt } from './WeightPrompt'
 import { usePatient } from '../lib/patient'
 import { useSettled } from '../lib/announce'
+import { titrationSteps } from '../lib/titration'
 import { AnswerPanel } from './AnswerPanel'
 import { isInvalidPositiveNumber } from '../lib/validateNumber'
 
@@ -176,6 +177,16 @@ export function InfusionCalculator({ drug, onDrugPage = false }: { drug: Infusio
           hideName={onDrugPage}
         />
       )}
+      {result && (weightKg != null || weightFree) && (
+        <TitrationTable
+          drug={drug}
+          weightKg={weightKg}
+          stockConc={parseFloat(stockConc)}
+          diluentVol={parseFloat(diluentVol)}
+          currentDose={parseFloat(dose)}
+        />
+      )}
+
       <h3 className="adjust__title">Atur dosis &amp; pengenceran</h3>
       <div className="drug-note">{drug.note}</div>
 
@@ -236,5 +247,67 @@ export function InfusionCalculator({ drug, onDrugPage = false }: { drug: Infusio
       </div>
 
     </>
+  )
+}
+
+/**
+ * The pump chart: each dose step in the published range → mL/jam for this
+ * patient and this dilution, every row from calculateInfusion(). Titrating
+ * becomes reading a row instead of redoing the arithmetic. The row matching
+ * the dose currently set is marked.
+ */
+function TitrationTable({
+  drug,
+  weightKg,
+  stockConc,
+  diluentVol,
+  currentDose,
+}: {
+  drug: InfusionPreset
+  weightKg: number | null
+  stockConc: number
+  diluentVol: number
+  currentDose: number
+}) {
+  const rows = titrationSteps(drug.doseMin, drug.doseMax, drug.doseDefault)
+    .map((step) => {
+      const out = calculateInfusion({
+        weight: weightKg ?? NaN,
+        dose: step,
+        doseUnit: drug.doseUnit,
+        stockConcentration: stockConc,
+        stockUnit: drug.stockUnit,
+        diluentVolume: diluentVol,
+      })
+      return out.valid ? { step, rate: out.ratePerHr, drops: out.dropsMicro } : null
+    })
+    .filter((r): r is { step: number; rate: number; drops: number } => r != null)
+
+  if (rows.length < 2) return null
+  return (
+    <div className="titration">
+      <table className="titration__table">
+        <caption className="titration__caption">
+          Tabel titrasi — {weightKg != null && !isWeightFreeUnit(drug.doseUnit) ? `${weightKg} kg, ` : ''}
+          stok {stockConc} {drug.stockUnit}
+        </caption>
+        <thead>
+          <tr>
+            <th scope="col">Dosis ({drug.doseUnit})</th>
+            <th scope="col">mL/jam</th>
+            <th scope="col">tpm mikro</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r) => (
+            <tr key={r.step} className={`titration__row${r.step === currentDose ? ' titration__row--current' : ''}`}>
+              <th scope="row">{r.step}</th>
+              <td>{r.rate}</td>
+              <td>{r.drops}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   )
 }

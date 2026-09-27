@@ -8,18 +8,37 @@ import { AnswerPanel } from './AnswerPanel'
 import { calculateFluidRate, FluidRateResult } from '../lib/calculateFluidRate'
 import { calculateDextrose, DextroseConcentration, DextroseResult } from '../lib/calculateDextrose'
 import { isInvalidPositiveNumber } from '../lib/validateNumber'
+import { useReviewMode } from '../lib/review'
+import { PotassiumCorrection, SodiumCorrection } from './ElectrolytePanels'
 
-const SUB_MODES = [
+type SubMode = 'rumatan' | 'dekstrosa' | 'natrium' | 'kalium'
+
+const SUB_MODES: { id: SubMode; label: string; hint: string; draft?: boolean }[] = [
   { id: 'rumatan', label: 'Rumatan', hint: 'Kecepatan cairan rumatan (aturan 4-2-1) dan tetes per menit.' },
   { id: 'dekstrosa', label: 'Dekstrosa', hint: 'Dosis koreksi dekstrosa g/kg, dikonversi ke volume larutan.' },
+  // Drafts: shown in review mode only (see ElectrolytePanels).
+  { id: 'natrium', label: 'Natrium', hint: 'Koreksi hiponatremia dengan NaCl 3% (draf).', draft: true },
+  { id: 'kalium', label: 'Kalium', hint: 'Koreksi hipokalemia dengan KCl, dalam mEq (draf).', draft: true },
 ]
 
+// The rate (4-2-1) does not depend on the fluid; the choice is carried into
+// the result and the copied text, and each hint states what is in the bag.
 const FLUID_TYPES = [
   { id: 'NaCl 0,9%', label: 'NaCl 0,9%', hint: 'Isotonik netral. Pilihan umum untuk rumatan dan resusitasi.' },
   {
     id: 'RL',
-    label: 'RL (Ringer Laktat)',
-    hint: 'Mengandung laktat, kalium, kalsium — hindari jalur sama dengan produk darah.',
+    label: 'RL',
+    hint: 'Ringer Laktat — mengandung laktat, kalium, kalsium; hindari jalur sama dengan produk darah.',
+  },
+  {
+    id: 'KaEN 1B',
+    label: 'KaEN 1B',
+    hint: 'Na 38,5 · Cl 38,5 mEq/L, glukosa 3,75%, tanpa kalium — cairan awal bila status kalium/ginjal belum diketahui (label Otsuka).',
+  },
+  {
+    id: 'KaEN 3B',
+    label: 'KaEN 3B',
+    hint: 'Na 50 · K 20 · Cl 50 · laktat 20 mEq/L, glukosa 2,7% — rumatan anak setelah diuresis ada (label Otsuka).',
   },
 ]
 
@@ -160,8 +179,10 @@ function DextroseResultCard({ result, concentration }: { result: DextroseResult;
 }
 
 export function FluidPanel() {
-  const [subMode, setSubMode] = useState<'rumatan' | 'dekstrosa'>('rumatan')
+  const [subMode, setSubMode] = useState<SubMode>('rumatan')
   const { weightKg } = usePatient()
+  const review = useReviewMode()
+  const modes = SUB_MODES.filter((m) => review || !m.draft)
 
   // Rumatan (maintenance) state
   const [fluidType, setFluidType] = useState(FLUID_TYPES[0].id)
@@ -213,13 +234,18 @@ export function FluidPanel() {
   return (
     <div className="panel">
       <Tabs
-        tabs={SUB_MODES}
+        tabs={modes.map((m) => ({ ...m, label: m.draft ? `${m.label} · draf` : m.label }))}
         active={subMode}
-        onChange={(id) => setSubMode(id as 'rumatan' | 'dekstrosa')}
+        onChange={(id) => setSubMode(id as SubMode)}
         label="Jenis hitung"
       />
 
-      {weightKg == null && <WeightPrompt what="hasilnya" />}
+      {subMode === 'natrium' && review && <SodiumCorrection />}
+      {subMode === 'kalium' && review && <PotassiumCorrection />}
+
+      {weightKg == null && (subMode === 'rumatan' || subMode === 'dekstrosa') && (
+        <WeightPrompt what="hasilnya" />
+      )}
 
       <p className="sr-only" role="status">{announcement}</p>
 
