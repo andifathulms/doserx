@@ -107,7 +107,7 @@ function headFor(path, meta) {
   }
 
   // History is personal; there is nothing to index and nothing to preview.
-  if (path === '/riwayat') tags.push('<meta name="robots" content="noindex">')
+  if (path === '/riwayat' || path === '/tinjau') tags.push('<meta name="robots" content="noindex">')
 
   return tags.join('\n    ')
 }
@@ -171,7 +171,7 @@ if (existsSync(resolve(dist, '404.html'))) {
 
 // ── Sitemap ──────────────────────────────────────────────────────────────────
 const indexable = paths.filter((p) => {
-  if (p === '/riwayat') return false
+  if (p === '/riwayat' || p === '/tinjau') return false
   const route = ROUTES.find((r) => r.path === p)
   if (route) return route.index === true
   return p.startsWith('/obat/') || p.startsWith('/hitung/')

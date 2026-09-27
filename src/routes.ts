@@ -103,6 +103,14 @@ export const ROUTES: RouteDef[] = [
     // Personal data: in the navigation, never in the sitemap.
     index: false,
   },
+  {
+    path: '/tinjau',
+    id: 'review',
+    title: 'Tinjau draf obat',
+    description: 'Daftar draf dosis yang menunggu verifikasi klinisi sebelum tampil di aplikasi.',
+    // A working page for the reviewing clinician: never in nav or sitemap.
+    index: false,
+  },
   { path: '*', id: 'notfound', title: 'Halaman tidak ditemukan', description: '' },
 ]
 

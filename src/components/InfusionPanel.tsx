@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { CheckIcon } from '@radix-ui/react-icons'
-import { InfusionPreset } from '../data/infusionDrugs'
+import { InfusionPreset, isWeightFreeUnit } from '../data/infusionDrugs'
 import { LIVE_INFUSIONS } from '../data/catalog'
 import { calculateInfusion, InfusionResult } from '../lib/calculateInfusion'
 import { WeightPrompt } from './WeightPrompt'
@@ -44,7 +44,7 @@ function InfusionResultCard({
         <span className={`result-card__drug${hideName ? ' result-card__drug--quiet' : ''}`}>
           {hideName ? 'Hasil' : drug.name}
         </span>
-        <span className="result-card__weight">{weight} kg</span>
+        {weight && <span className="result-card__weight">{weight} kg</span>}
       </div>
 
       {/* Drops per minute are a primary answer, not a footnote: many wards
@@ -133,17 +133,19 @@ export function InfusionCalculator({ drug, onDrugPage = false }: { drug: Infusio
   const [diluentVol, setDiluentVol] = useState(String(drug.diluentVolumeDefault))
 
   // Live, like every other calculator — no "Hitung" step.
+  // Whole-patient units (mcg/mnt, mg/jam) need no weight.
+  const weightFree = isWeightFreeUnit(drug.doseUnit)
   const outcome = useMemo(() => {
-    if (weightKg == null) return null
+    if (weightKg == null && !weightFree) return null
     return calculateInfusion({
-      weight: weightKg,
+      weight: weightKg ?? NaN,
       dose: parseFloat(dose),
       doseUnit: drug.doseUnit,
       stockConcentration: parseFloat(stockConc),
       stockUnit: drug.stockUnit,
       diluentVolume: parseFloat(diluentVol),
     })
-  }, [drug, weightKg, dose, stockConc, diluentVol])
+  }, [drug, weightFree, weightKg, dose, stockConc, diluentVol])
   const result: InfusionResult | null = outcome && outcome.valid ? outcome : null
   const error = outcome && !outcome.valid ? outcome.error : null
   const announcement = useSettled(
@@ -158,7 +160,7 @@ export function InfusionCalculator({ drug, onDrugPage = false }: { drug: Infusio
     <>
       {/* The answer first: the dose is what gets titrated, so the fields sit
           directly under the rate they change. */}
-      {weightKg == null && <WeightPrompt what="kecepatan infus" />}
+      {weightKg == null && !weightFree && <WeightPrompt what="kecepatan infus" />}
 
       {/* role="alert" has no native equivalent: a validation failure must
           be announced without moving focus off the field being fixed. */}
@@ -166,8 +168,13 @@ export function InfusionCalculator({ drug, onDrugPage = false }: { drug: Infusio
 
       <p className="sr-only" role="status">{announcement}</p>
 
-      {result && weightKg != null && (
-        <InfusionResultCard result={result} drug={drug} weight={String(weightKg)} hideName={onDrugPage} />
+      {result && (weightKg != null || weightFree) && (
+        <InfusionResultCard
+          result={result}
+          drug={drug}
+          weight={weightKg != null && !weightFree ? String(weightKg) : ''}
+          hideName={onDrugPage}
+        />
       )}
       <h3 className="adjust__title">Atur dosis &amp; pengenceran</h3>
       <div className="drug-note">{drug.note}</div>

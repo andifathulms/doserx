@@ -6,7 +6,7 @@ import { COMMON_DRUG_IDS, GROUP_ORDER } from '../data/categories'
 import { searchCatalog } from '../lib/search'
 import { Link } from '../lib/router'
 import { usePatient } from '../lib/patient'
-import { useCatalog } from '../lib/review'
+import { setReviewMode, useCatalog, useReviewMode } from '../lib/review'
 import { quickDose, dosingSummary } from '../lib/quickDose'
 import { CustomDrugPreset, loadFavorites, loadRecents } from '../lib/storage'
 import { GroupFilter, GroupSelection, NO_GROUP } from '../components/GroupFilter'
@@ -27,6 +27,7 @@ const PINNED_MAX = 6
 
 export function CatalogPage({ customDrugs = [] }: { customDrugs?: CustomDrugPreset[] }) {
   const catalog = useCatalog()
+  const review = useReviewMode()
   const { weightKg, population } = usePatient()
   const [query, setQuery] = useState('')
   const [sel, setSel] = useState<GroupSelection>(NO_GROUP)
@@ -87,6 +88,18 @@ export function CatalogPage({ customDrugs = [] }: { customDrugs?: CustomDrugPres
       </div>
 
       <SafetyBanner compact />
+
+      {review && (
+        <div className="review-banner" role="status">
+          <span>
+            <strong>Mode tinjau aktif</strong> — draf tampil dan ditandai DRAF.{' '}
+            <Link to="/tinjau">Daftar tinjau</Link>
+          </span>
+          <button type="button" className="btn btn--ghost btn--sm" onClick={() => setReviewMode(false)}>
+            Matikan
+          </button>
+        </div>
+      )}
 
       <div className="drug-search-row">
         <input

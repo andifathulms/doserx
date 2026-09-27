@@ -120,40 +120,50 @@ export function buildCatalog(presets: DrugPreset[], infusions: InfusionPreset[])
     })
   }
 
+  // Drip-only drugs (dopamin, …) exist before any regimen tries to join
+  // them, so a bolus route can attach to a drug that started as a drip.
+  for (const inf of infusions) {
+    if (inf.parent || !inf.standalone) continue
+    const s = inf.standalone
+    const existing = drugs.get(inf.id)
+    if (existing) {
+      existing.regimens.push(infusionRegimen(inf))
+      continue
+    }
+    drugs.set(inf.id, {
+      id: inf.id,
+      name: s.name,
+      group: s.group,
+      category: s.category,
+      aliases: [...(s.aliases ?? [])],
+      indications: [...(s.indications ?? [])],
+      emergency: false,
+      highAlert: false,
+      status: 'verified',
+      hasDraft: false,
+      regimens: [infusionRegimen(inf)],
+    })
+  }
+
   for (const p of presets) {
     if (!p.parent) continue
     const drug = drugs.get(p.parent)
     if (!drug) continue // catalog.test.ts fails on a dangling parent
     drug.regimens.push(doseRegimen(p))
+    if (!drug.primary) drug.primary = p
     for (const a of p.aliases ?? []) if (!drug.aliases.includes(a)) drug.aliases.push(a)
     for (const i of p.indications ?? []) if (!drug.indications.includes(i)) drug.indications.push(i)
   }
 
   for (const inf of infusions) {
-    const reg = infusionRegimen(inf)
-    if (inf.parent) {
-      drugs.get(inf.parent)?.regimens.push(reg)
-    } else if (inf.standalone) {
-      const s = inf.standalone
-      const existing = drugs.get(inf.id)
-      if (existing) {
-        existing.regimens.push(reg)
-        continue
-      }
-      drugs.set(inf.id, {
-        id: inf.id,
-        name: s.name,
-        group: s.group,
-        category: s.category,
-        aliases: [...(s.aliases ?? [])],
-        indications: [...(s.indications ?? [])],
-        emergency: false,
-        highAlert: false,
-        status: 'verified',
-        hasDraft: false,
-        regimens: [reg],
-      })
-    }
+    if (inf.parent) drugs.get(inf.parent)?.regimens.push(infusionRegimen(inf))
+  }
+
+  for (const d of drugs.values()) {
+    // Doses before drips: the bolus or oral route is the common first choice,
+    // and a drug's first regimen is what opens by default. Stable otherwise,
+    // so data order decides among doses.
+    d.regimens.sort((a, b) => (a.kind === b.kind ? 0 : a.kind === 'dose' ? -1 : 1))
   }
 
   for (const d of drugs.values()) {

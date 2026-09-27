@@ -61,6 +61,8 @@ interface ResultCardProps {
   /** On a drug page the <h1> already names the drug; the card just says
    *  which weight it is for. */
   hideName?: boolean
+  /** Also show the per-dose figure in mcg (see DrugPreset.showMcg). */
+  showMcg?: boolean
   onSaved: () => void
 }
 
@@ -81,6 +83,7 @@ export function ResultCard({
   maxDailyCap,
   fixedDose = false,
   hideName = false,
+  showMcg = false,
   onSaved,
 }: ResultCardProps) {
   const [label, setLabel] = useState('')
@@ -120,6 +123,7 @@ export function ResultCard({
         : undefined
 
   const facts: string[] = []
+  if (showMcg) facts.push(`= ${Math.round(result.perDose * 1000 * 10) / 10} mcg/kali`)
   if (hasRange) facts.push(`Rentang ${resultMin!.perDose}–${resultMax!.perDose} mg/kali`)
   facts.push(
     hasRange

@@ -100,6 +100,9 @@ function CatalogDrugView({ drug, onHistoryUpdated }: { drug: CatalogDrug; onHist
   }, [drug.id])
 
   const regimen = drug.regimens.find((r) => r.id === regimenId) ?? drug.regimens[0]
+  // Name the population on every chip once a drug has regimens for more than
+  // one — an unlabelled chip beside a "dewasa" one reads as "for everyone".
+  const mixedPopulations = new Set(drug.regimens.map((r) => r.population)).size > 1
   const related = catalog.filter((d) => d.group === drug.group && d.id !== drug.id).slice(0, 6)
   const p = drug.primary
 
@@ -162,9 +165,19 @@ function CatalogDrugView({ drug, onHistoryUpdated }: { drug: CatalogDrug; onHist
               />
               <span className="route-chip__btn">
                 <span className="route-chip__route">{regimenTitle(r)}</span>
-                {(r.label || r.status === 'draft' || r.population !== 'anak') && (
+                {(r.label || r.status === 'draft' || r.population !== 'anak' || mixedPopulations) && (
                   <span className="route-chip__label">
-                    {[r.label, r.population === 'dewasa' ? 'dewasa' : r.population === 'semua' ? 'semua usia' : null, r.status === 'draft' ? 'draf' : null]
+                    {[
+                      r.label,
+                      r.population === 'dewasa'
+                        ? 'dewasa'
+                        : r.population === 'semua'
+                          ? 'semua usia'
+                          : mixedPopulations
+                            ? 'anak'
+                            : null,
+                      r.status === 'draft' ? 'draf' : null,
+                    ]
                       .filter(Boolean)
                       .join(' · ')}
                   </span>
@@ -225,7 +238,7 @@ function CatalogDrugView({ drug, onHistoryUpdated }: { drug: CatalogDrug; onHist
  */
 function RegimenNotices({ regimen, population }: { regimen: Regimen; population: 'anak' | 'dewasa' }) {
   const draft = regimen.status === 'draft'
-  const source = regimen.kind === 'dose' ? regimen.preset.source : undefined
+  const source = regimen.kind === 'dose' ? regimen.preset.source : regimen.infusion.source
   const reviewNote = regimen.kind === 'infusion' ? regimen.infusion.reviewNote : undefined
   const popMismatch =
     regimen.population !== 'semua' && regimen.population !== population

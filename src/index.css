@@ -4422,6 +4422,86 @@ h3.adjust__title { margin: var(--sp-5) 0 var(--sp-3); }
 }
 .btn--danger:hover { filter: brightness(1.08); }
 
+/* ── Review mode (/tinjau) ────────────────────────────────────────────────── */
+.review-switch {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3) var(--sp-4);
+  margin: 0 0 var(--sp-4);
+  padding: var(--sp-4);
+  background: var(--c-surface);
+  border: 1.5px solid var(--c-border);
+  border-radius: var(--r-lg);
+}
+.review-switch--on { background: var(--c-warn-bg); border-color: var(--c-warn-bdr); }
+
+.review-switch__title { font-weight: 800; color: var(--c-text); }
+.review-switch__body { max-width: 52ch; font-size: var(--fs-sm); color: var(--c-text-2); }
+.review-switch__btn { width: auto; }
+
+.review-how,
+.review-intro {
+  max-width: 65ch;
+  margin-bottom: var(--sp-4);
+  font-size: var(--fs-base);
+  color: var(--c-text-2);
+  text-wrap: pretty;
+}
+
+.review-list {
+  list-style: none;
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+}
+.review-list > li + li { border-top: 1px solid var(--c-border); }
+
+.review-item { display: grid; gap: var(--sp-1); padding: var(--sp-3) var(--sp-4); }
+
+.review-item__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1) var(--sp-2);
+}
+
+.review-item__name { font-weight: 800; color: var(--c-text); }
+a.review-item__name { color: var(--c-primary); }
+.review-item__name--plain { font-weight: 700; }
+
+.review-item__label,
+.review-item__pop { font-size: var(--fs-xs); color: var(--c-text-3); }
+
+.review-item__dose {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  color: var(--c-text);
+}
+
+.review-item__note { font-size: var(--fs-sm); line-height: var(--lh-snug); color: var(--c-text-2); }
+.review-item__source { font-size: var(--fs-xs); color: var(--c-text-3); }
+
+.review-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  margin: 0 0 var(--sp-4);
+  padding: var(--sp-2) var(--sp-3);
+  font-size: var(--fs-sm);
+  color: var(--c-text-2);
+  background: var(--c-warn-bg);
+  border: 1px solid var(--c-warn-bdr);
+  border-radius: var(--r);
+}
+.review-banner strong { color: var(--c-warn); }
+
 /* ── Responsive ───────────────────────────────────────────────────────────── */
 @media (max-width: 560px) {
   :root { --pad: 16px; }

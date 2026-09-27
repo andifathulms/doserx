@@ -138,6 +138,20 @@ export function AboutPage({ lang }: { lang: Lang }) {
           </p>
         </section>
       </Reveal>
+
+      {/* The way in for the reviewing clinician. Not a feature for everyone,
+          so it lives here rather than in the navigation. */}
+      <section className="landing-section" aria-labelledby="review-title">
+        <h2 className="landing-section__title" id="review-title">
+          {lang === 'en' ? 'Draft entries under review' : 'Draf yang sedang ditinjau'}
+        </h2>
+        <p className="review-intro">
+          {lang === 'en'
+            ? 'New drugs and routes are added as drafts with a cited source, and stay hidden until a clinician has checked them. '
+            : 'Obat dan rute baru ditambahkan sebagai draf dengan sumber acuan, dan tetap tersembunyi sampai diperiksa klinisi. '}
+          <Link to="/tinjau">{lang === 'en' ? 'Open the review list' : 'Buka daftar tinjau'}</Link>
+        </p>
+      </section>
     </div>
   )
 }

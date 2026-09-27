@@ -100,3 +100,33 @@ describe('parseRoutes', () => {
     expect(parseRoutes('Oral (topikal mukosa)')).toEqual(['Oral', 'Topikal'])
   })
 })
+
+describe('draft entries (review catalog)', () => {
+  it('every draft regimen yields a finite dose at common weights, or a stated fixed dose', async () => {
+    const { quickDose, dosingSummary } = await import('../lib/quickDose')
+    for (const d of REVIEW_CATALOG) {
+      for (const r of d.regimens) {
+        if (r.status !== 'draft') continue
+        expect(dosingSummary(r), r.id).not.toMatch(/NaN|undefined|Infinity/)
+        for (const w of [3, 14, 40, 70]) {
+          const q = quickDose(r, w)
+          expect(q, `${r.id} @ ${w}`).not.toBeNull()
+          expect(q!.value, `${r.id} @ ${w}`).not.toMatch(/NaN|Infinity/)
+          expect(Number(q!.value), `${r.id} @ ${w}`).toBeGreaterThan(0)
+        }
+      }
+    }
+  })
+
+  it('gives every draft drip a source', () => {
+    for (const i of INFUSION_PRESETS.filter((x) => x.status === 'draft')) {
+      expect(i.source ?? i.reviewNote, i.id).toBeTruthy()
+    }
+  })
+
+  it('files the intubation drugs under Anestesi & Intubasi', () => {
+    for (const id of ['fentanyl', 'propofol', 'ketamine', 'etomidate', 'thiopental', 'succinylcholine', 'rocuronium', 'vecuronium', 'atracurium']) {
+      expect(REVIEW_CATALOG.find((d) => d.id === id)?.group, id).toBe('Anestesi & Intubasi')
+    }
+  })
+})

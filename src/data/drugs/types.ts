@@ -143,6 +143,10 @@ export interface DrugPreset {
    *  and dosePerKg is ignored for the result (kept only for the band). */
   fixedDoseMg?: number
   prep?: Preparation
+  /** Also state the per-dose figure in mcg (fentanil): the engine works in
+   *  mg, but the bedside writes this drug in mcg, and 0.04 mg read as 0.4
+   *  is the kind of slip a second, familiar unit catches. Display only. */
+  showMcg?: boolean
   /** Draft entries are hidden from the live catalog until reviewed. */
   status?: EntryStatus
   /** Who verified this entry, and when — shown in the monograph. */

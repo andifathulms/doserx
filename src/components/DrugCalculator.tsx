@@ -196,6 +196,7 @@ export function DrugCalculator({
           maxDailyCap={fixed ? undefined : drug.maxDay}
           fixedDose={fixed}
           hideName
+          showMcg={drug.showMcg}
           onSaved={onHistoryUpdated}
         />
       )}
@@ -373,9 +374,11 @@ function initialDose(drug: DrugPreset, mode: DoseMode): string {
 // ── Detail Obat — collapsible monograph (calm alternative to a flat dump) ──────
 export function DrugMonograph({ drug, open = false }: { drug: DrugPreset; open?: boolean }) {
   const doseRange =
-    drug.dosePerKgMin != null && drug.dosePerKgMax != null
-      ? `${drug.dosePerKgMin}–${drug.dosePerKgMax} mg/kg/hari`
-      : `${drug.dosePerKg} mg/kg/hari`
+    drug.fixedDoseMg != null
+      ? `${drug.fixedDoseMg} mg/kali × ${drug.freq}/hari (dosis tetap)`
+      : drug.dosePerKgMin != null && drug.dosePerKgMax != null
+        ? `${drug.dosePerKgMin}–${drug.dosePerKgMax} mg/kg/hari`
+        : `${drug.dosePerKg} mg/kg/hari`
   const maxParts: string[] = []
   if (drug.maxSingle != null) maxParts.push(`${drug.maxSingle} mg/kali`)
   if (drug.maxDay != null) maxParts.push(`${drug.maxDay} mg/hari`)

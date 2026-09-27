@@ -57,7 +57,11 @@ export function quickDose(regimen: Regimen, weightKg: number): QuickDose | null 
   return {
     value: String(out.perDose),
     unit: 'mg',
-    sub: out.volume != null ? `${out.volume} mL` : `${p.freq}×/hari`,
+    sub: p.showMcg
+      ? `${Math.round(out.perDose * 1000 * 10) / 10} mcg`
+      : out.volume != null
+        ? `${out.volume} mL`
+        : `${p.freq}×/hari`,
     capped: out.cappedByMaxDay || out.cappedByMaxSingle,
   }
 }

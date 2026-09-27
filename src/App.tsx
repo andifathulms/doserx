@@ -14,6 +14,7 @@ import {
   DrugPage,
   CalculatorPage,
   HistoryPage,
+  ReviewPage,
   ROUTE_CHUNKS,
 } from './pages'
 import { ROUTES, MODE_IDS } from './routes'
@@ -130,6 +131,11 @@ function App() {
         {routeId === 'history' && (
           <Suspense fallback={<PanelSkeleton />}>
             <HistoryPage entries={history} onUpdated={refreshHistory} />
+          </Suspense>
+        )}
+        {routeId === 'review' && (
+          <Suspense fallback={<PanelSkeleton />}>
+            <ReviewPage />
           </Suspense>
         )}
         {routeId === 'notfound' && <NotFound />}

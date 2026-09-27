@@ -93,3 +93,23 @@ describe('total dose label', () => {
     expect(out.totalDoseUnit).toBe('mg/jam')
   })
 })
+
+describe('whole-patient drips (mcg/min, mg/hr)', () => {
+  it('nitroglycerin 10 mcg/min at 200 mcg/mL → 3 mL/jam, weight not used', () => {
+    const out = calculateInfusion({ weight: NaN, dose: 10, doseUnit: 'mcg/min', stockConcentration: 200, stockUnit: 'mcg/mL', diluentVolume: 250 })
+    expect(out.valid).toBe(true)
+    if (!out.valid) return
+    expect(out.ratePerHr).toBe(3)
+    expect(out.totalDoseUnit).toBe('mcg/mnt')
+    expect(out.steps[0].expression).toMatch(/tanpa berat badan/)
+  })
+
+  it('nicardipine 5 mg/hr at 0.1 mg/mL → 50 mL/jam', () => {
+    const out = calculateInfusion({ weight: 70, dose: 5, doseUnit: 'mg/hr', stockConcentration: 0.1, stockUnit: 'mg/mL', diluentVolume: 250 })
+    expect(out.valid).toBe(true)
+    if (!out.valid) return
+    expect(out.ratePerHr).toBe(50)
+    expect(out.totalDose).toBe(5)
+    expect(out.totalDoseUnit).toBe('mg/jam')
+  })
+})
