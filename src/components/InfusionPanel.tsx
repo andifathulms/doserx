@@ -25,7 +25,7 @@ function InfusionResultCard({
   function buildText(): string {
     const lines = [
       `Infus ${drug.name} — ${weight} kg`,
-      `Dosis: ${parseFloat(weight) > 0 ? result.dosePerHr : '?'} ${result.dosePerHrUnit}`,
+      `Dosis total: ${parseFloat(weight) > 0 ? result.totalDose : '?'} ${result.totalDoseUnit}`,
       `Kecepatan: ${result.ratePerHr} mL/jam`,
       `Tetesan: ${result.dropsMacro} tpm (makro) / ${result.dropsMicro} tpm (mikro)`,
       '— DoseRx',
@@ -53,12 +53,12 @@ function InfusionResultCard({
         label={`Hasil infus ${drug.name}`}
         primary={{ label: 'Kecepatan', value: result.ratePerHr, unit: 'mL/jam' }}
         secondary={{ label: 'Makro · 20 gtt/mL', value: result.dropsMacro, unit: 'tpm' }}
-        facts={[`Mikro ${result.dropsMicro} tpm`, `${result.dosePerHr} ${result.dosePerHrUnit}`]}
+        facts={[`Mikro ${result.dropsMicro} tpm`, `Total ${result.totalDose} ${result.totalDoseUnit}`]}
         steps={result.steps}
       />
 
       <div className="infusion-result__dose-summary">
-        Total dosis: <strong>{result.dosePerHr} {result.dosePerHrUnit}</strong>
+        Total dosis: <strong>{result.totalDose} {result.totalDoseUnit}</strong>
       </div>
 
       {/* This mode hides the app's most dangerous arithmetic — mg↔mcg (×1000)

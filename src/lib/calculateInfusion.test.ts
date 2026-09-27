@@ -61,3 +61,35 @@ describe('calculateInfusion — derivation', () => {
     expect(out.valid).toBe(false)
   })
 })
+
+describe('total dose label', () => {
+  it('keeps a per-minute total per minute (was mislabelled "per hour", 60× off)', () => {
+    const out = calculateInfusion({
+      weight: 20,
+      dose: 5,
+      doseUnit: 'mcg/kg/min',
+      stockConcentration: 1600,
+      stockUnit: 'mcg/mL',
+      diluentVolume: 250,
+    })
+    expect(out.valid).toBe(true)
+    if (!out.valid) return
+    expect(out.totalDose).toBe(100)
+    expect(out.totalDoseUnit).toBe('mcg/mnt')
+  })
+
+  it('keeps a per-hour total per hour', () => {
+    const out = calculateInfusion({
+      weight: 20,
+      dose: 0.7,
+      doseUnit: 'mg/kg/hr',
+      stockConcentration: 1,
+      stockUnit: 'mg/mL',
+      diluentVolume: 250,
+    })
+    expect(out.valid).toBe(true)
+    if (!out.valid) return
+    expect(out.totalDose).toBe(14)
+    expect(out.totalDoseUnit).toBe('mg/jam')
+  })
+})

@@ -20,8 +20,10 @@ export interface InfusionResult {
   ratePerHr: number       // mL/hr
   dropsMacro: number      // drops/min (macro: 20 drops/mL)
   dropsMicro: number      // drops/min (micro: 60 drops/min)
-  dosePerHr: number       // normalised to per-hour in same unit magnitude
-  dosePerHrUnit: string
+  /** Dose × weight, in the dose's own time base — mcg/kg/min × kg = mcg/min. */
+  totalDose: number
+  /** e.g. 'mcg/mnt', 'mg/jam' — the dose unit with /kg removed. */
+  totalDoseUnit: string
   /**
    * The working. This mode hides the app's most error-prone arithmetic — a
    * mg->mcg factor of 1000 and an hr->min factor of 60 — inside a single
@@ -114,10 +116,15 @@ export function calculateInfusion(input: InfusionInput): InfusionResult | Infusi
     result: `${dropsMicro} tpm`,
   })
 
-  const dosePerHr = round2(dose * weight)
-  const dosePerHrUnit = doseUnit.replace('/min', '/hr').replace('kg/', 'total ')
+  // Dose × weight stays in the dose's own time base. This used to relabel
+  // mcg/kg/min as "mcg/total hr" while keeping the per-minute number — a
+  // 60× mislabel on the total shown beside the drip rate and in the copied
+  // text. The total is now per minute for per-minute units, per hour for
+  // per-hour ones, and says so.
+  const totalDose = round2(dose * weight)
+  const totalDoseUnit = doseUnit.replace('/kg', '').replace('/min', '/mnt').replace('/hr', '/jam')
 
-  return { valid: true, ratePerHr, dropsMacro, dropsMicro, dosePerHr, dosePerHrUnit, steps }
+  return { valid: true, ratePerHr, dropsMacro, dropsMicro, totalDose, totalDoseUnit, steps }
 }
 
 function round2(v: number): number { return Math.round(v * 100) / 100 }
