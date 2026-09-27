@@ -1,14 +1,7 @@
 import { useState, useCallback, useEffect, Suspense } from 'react'
 import { MakerSignature } from './components/MakerSignature'
 import { PanelSkeleton } from './components/PanelSkeleton'
-import {
-  loadHistory,
-  loadCustomDrugs,
-  loadLastMode,
-  saveLastMode,
-  HistoryEntry,
-  CustomDrugPreset,
-} from './lib/storage'
+import { loadHistory, loadCustomDrugs, HistoryEntry, CustomDrugPreset } from './lib/storage'
 import { Link, Redirect, useLocation } from './lib/router'
 import { resolveRoute } from './lib/route-match'
 import { SkipLink, SiteHeader, BottomNav, RouteAnnouncer } from './components/SiteNav'
@@ -62,11 +55,6 @@ function App() {
     return () => window.clearTimeout(id)
   }, [])
 
-  // Remember the mode so /hitung returns her to where she left off.
-  useEffect(() => {
-    if (routeId === 'calculator' && mode && MODE_IDS.includes(mode)) saveLastMode(mode)
-  }, [routeId, mode])
-
   const refreshHistory = useCallback(() => {
     setHistory(loadHistory())
   }, [])
@@ -75,13 +63,12 @@ function App() {
     setCustomDrugs(loadCustomDrugs())
   }, [])
 
-  // Only /hitung redirects now — '/' is a real page. The doctor never pays for
-  // it: the installed PWA opens straight into /hitung/preset.
-  if (routeId === 'calculator-index') {
-    return <Redirect to={`/hitung/${loadLastMode(MODE_IDS, 'preset')}`} />
-  }
+  // Picking a drug is the Obat list now; /hitung and the old /hitung/preset
+  // (bookmarks, the previous PWA start_url) land there. The installed app
+  // opens straight into /obat, never the landing page.
+  if (routeId === 'calculator-index') return <Redirect to="/obat" />
   if (routeId === 'calculator' && (!mode || !MODE_IDS.includes(mode))) {
-    return <Redirect to="/hitung/preset" />
+    return <Redirect to="/obat" />
   }
 
   const showCalculator = routeId === 'calculator'
@@ -98,7 +85,6 @@ function App() {
       <SiteHeader
         path={path}
         historyCount={history.length}
-        historyActive={routeId === 'history'}
         showPatient={showPatient}
       />
       <RouteAnnouncer routeId={routeId} />
@@ -118,12 +104,17 @@ function App() {
         )}
         {routeId === 'catalog' && (
           <Suspense fallback={<PanelSkeleton />}>
-            <CatalogPage />
+            <CatalogPage customDrugs={customDrugs} />
           </Suspense>
         )}
         {routeId === 'drug' && (
           <Suspense fallback={<PanelSkeleton />}>
-            <DrugPage id={match!.params.id} onHistoryUpdated={refreshHistory} />
+            <DrugPage
+              id={match!.params.id}
+              customDrugs={customDrugs}
+              onHistoryUpdated={refreshHistory}
+              onCustomDrugsChanged={refreshCustomDrugs}
+            />
           </Suspense>
         )}
         {showCalculator && (
@@ -171,7 +162,7 @@ function NotFound() {
       <div className="empty-state">
         <p className="empty-state__msg">Halaman tidak ditemukan.</p>
         <p className="empty-state__hint">
-          <Link to="/hitung/preset">Kembali ke kalkulator</Link>
+          <Link to="/obat">Kembali ke daftar obat</Link>
         </p>
       </div>
     </div>

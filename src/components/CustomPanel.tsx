@@ -156,7 +156,7 @@ export function CustomPanel({ onHistoryUpdated, onPresetSaved }: CustomPanelProp
         <div className="save-preset-row">
           {presetSaved ? (
             <span className="save-preset-confirm">
-              <CheckIcon width="1em" height="1em" aria-hidden="true" /> Preset tersimpan di tab Preset
+              <CheckIcon width="1em" height="1em" aria-hidden="true" /> Tersimpan di Obat › Preset saya
             </span>
           ) : (
             <button className="btn btn--ghost btn--sm" onClick={() => setSavingPreset(true)}>

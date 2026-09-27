@@ -15,7 +15,7 @@ const SWATCH_GROUPS = GROUP_ORDER
  * / and /en — the front door for someone who has never seen this before.
  *
  * The doctor never has to pass through here: the installed PWA opens straight
- * into /hitung/preset, and the header keeps the calculator one tap away. That
+ * into /obat, and the header keeps the calculator one tap away. That
  * is what makes it safe to put a landing page in front of a bedside tool.
  *
  * Language is a route, not component state — so a shared link carries the
@@ -51,10 +51,10 @@ export function LandingPage({ lang }: { lang: Lang }) {
         <p className="landing-lede">{t.lede}</p>
 
         <div className="landing-cta">
-          <Link to="/hitung/preset" className="btn btn--primary">
+          <Link to="/obat" className="btn btn--primary">
             {t.ctaPrimary}
           </Link>
-          <Link to="/obat" className="btn btn--ghost">
+          <Link to={lang === 'en' ? '/en/about' : '/tentang'} className="btn btn--ghost">
             {t.ctaSecondary}
           </Link>
         </div>
@@ -146,7 +146,7 @@ export function LandingPage({ lang }: { lang: Lang }) {
         <section className="landing-close">
           <h2 className="landing-close__title">{t.closingTitle}</h2>
           <p className="landing-close__body">{t.closingBody}</p>
-          <Link to="/hitung/preset" className="btn btn--primary">
+          <Link to="/obat" className="btn btn--primary">
             {t.closingCta}
           </Link>
         </section>

@@ -9,7 +9,17 @@ import { useSettled } from '../lib/announce'
 import { AnswerPanel } from './AnswerPanel'
 import { isInvalidPositiveNumber } from '../lib/validateNumber'
 
-function InfusionResultCard({ result, drug, weight }: { result: InfusionResult; drug: InfusionPreset; weight: string }) {
+function InfusionResultCard({
+  result,
+  drug,
+  weight,
+  hideName = false,
+}: {
+  result: InfusionResult
+  drug: InfusionPreset
+  weight: string
+  hideName?: boolean
+}) {
   const [copied, setCopied] = useState(false)
 
   function buildText(): string {
@@ -31,7 +41,9 @@ function InfusionResultCard({ result, drug, weight }: { result: InfusionResult; 
   return (
     <div className="result-card infusion-result">
       <div className="result-card__header">
-        <span className="result-card__drug">{drug.name}</span>
+        <span className={`result-card__drug${hideName ? ' result-card__drug--quiet' : ''}`}>
+          {hideName ? 'Hasil' : drug.name}
+        </span>
         <span className="result-card__weight">{weight} kg</span>
       </div>
 
@@ -87,50 +99,16 @@ function InfusionResultCard({ result, drug, weight }: { result: InfusionResult; 
 
 export function InfusionPanel() {
   const [selected, setSelected] = useState<InfusionPreset | null>(null)
-  const { weightKg } = usePatient()
-  const [dose, setDose] = useState('')
-  const [stockConc, setStockConc] = useState('')
-  const [diluentVol, setDiluentVol] = useState('')
-
-  function handleSelect(drug: InfusionPreset) {
-    setSelected(drug)
-    setDose(String(drug.doseDefault))
-    setStockConc(String(drug.stockConcentration))
-    setDiluentVol(String(drug.diluentVolumeDefault))
-  }
-
-  // Live, like every other calculator — no "Hitung" step.
-  const outcome = useMemo(() => {
-    if (!selected || weightKg == null) return null
-    return calculateInfusion({
-      weight: weightKg,
-      dose: parseFloat(dose),
-      doseUnit: selected.doseUnit,
-      stockConcentration: parseFloat(stockConc),
-      stockUnit: selected.stockUnit,
-      diluentVolume: parseFloat(diluentVol),
-    })
-  }, [selected, weightKg, dose, stockConc, diluentVol])
-  const result: InfusionResult | null = outcome && outcome.valid ? outcome : null
-  const error = outcome && !outcome.valid ? outcome.error : null
-  const announcement = useSettled(
-    result && selected
-      ? `${selected.name}: ${result.ratePerHr} mililiter per jam, ` +
-          `${result.dropsMacro} tetes per menit makro, ` +
-          `${result.dropsMicro} tetes per menit mikro.`
-      : '',
-  )
 
   return (
     <div className="panel">
-      {/* Mode description now lives on the tab control (see App.tsx TABS). */}
-      {/* Drug selector */}
       <div className="infusion-drug-grid">
         {LIVE_INFUSIONS.map((drug) => (
           <button
             key={drug.id}
             className={`infusion-drug-btn${selected?.id === drug.id ? ' infusion-drug-btn--selected' : ''}`}
-            onClick={() => handleSelect(drug)}
+            onClick={() => setSelected(drug)}
+            aria-pressed={selected?.id === drug.id}
           >
             <span className="infusion-drug-btn__name">{drug.name}</span>
             <span className="infusion-drug-btn__unit">{drug.doseUnit}</span>
@@ -138,79 +116,118 @@ export function InfusionPanel() {
         ))}
       </div>
 
-      {selected && (
-        <>
-          <div className="drug-note">{selected.note}</div>
-
-          <div className="form">
-            <div className="field">
-              <label className="label" htmlFor="infusion-dose">
-                Dosis ({selected.doseUnit})
-                <span className="label--range"> [{selected.doseMin}–{selected.doseMax}]</span>
-              </label>
-              <input
-                id="infusion-dose"
-                className={`input${isInvalidPositiveNumber(dose) ? ' input--invalid' : ''}`}
-                type="number"
-                min="0"
-                step="0.01"
-                value={dose}
-                aria-invalid={isInvalidPositiveNumber(dose)}
-                onChange={(e) => { setDose(e.target.value) }}
-              />
-            </div>
-
-            <div className="field">
-              <label className="label" htmlFor="infusion-conc">
-                Konsentrasi stok ({selected.stockUnit})
-              </label>
-              <input
-                id="infusion-conc"
-                className={`input${isInvalidPositiveNumber(stockConc) ? ' input--invalid' : ''}`}
-                type="number"
-                min="0"
-                step="0.1"
-                value={stockConc}
-                aria-invalid={isInvalidPositiveNumber(stockConc)}
-                onChange={(e) => { setStockConc(e.target.value) }}
-                aria-describedby="infusion-conc-hint"
-              />
-              {/* The preset number describes one specific bag. Saying which
-                  one is the difference between a default and an assumption. */}
-              <p className="field__hint" id="infusion-conc-hint">
-                Nilai awal mengasumsikan <strong>{selected.dilution}</strong>. Kalau
-                pengenceran Anda berbeda, ubah angka ini — seluruh hasil ikut berubah.
-              </p>
-            </div>
-
-            <div className="field">
-              <label className="label" htmlFor="infusion-vol">Volume pelarut (mL)</label>
-              <input
-                id="infusion-vol"
-                className={`input${isInvalidPositiveNumber(diluentVol) ? ' input--invalid' : ''}`}
-                type="number"
-                min="0"
-                step="1"
-                value={diluentVol}
-                aria-invalid={isInvalidPositiveNumber(diluentVol)}
-                onChange={(e) => { setDiluentVol(e.target.value) }}
-              />
-            </div>
-          </div>
-
-          {weightKg == null && <WeightPrompt what="kecepatan infus" />}
-
-          {/* role="alert" has no native equivalent: a validation failure must
-              be announced without moving focus off the field being fixed. */}
-          {error && <p className="error" role="alert">{error}</p>}
-
-          <p className="sr-only" role="status">{announcement}</p>
-
-          {result && weightKg != null && (
-            <InfusionResultCard result={result} drug={selected} weight={String(weightKg)} />
-          )}
-        </>
-      )}
+      {selected && <InfusionCalculator key={selected.id} drug={selected} />}
     </div>
+  )
+}
+
+/**
+ * The drip calculator for one infusion preset — used by the drip list above
+ * and by a drug page's Infus route. Keyed by drug id at every call site, so
+ * switching drugs remounts it with that drug's defaults.
+ */
+export function InfusionCalculator({ drug, onDrugPage = false }: { drug: InfusionPreset; onDrugPage?: boolean }) {
+  const { weightKg } = usePatient()
+  const [dose, setDose] = useState(String(drug.doseDefault))
+  const [stockConc, setStockConc] = useState(String(drug.stockConcentration))
+  const [diluentVol, setDiluentVol] = useState(String(drug.diluentVolumeDefault))
+
+  // Live, like every other calculator — no "Hitung" step.
+  const outcome = useMemo(() => {
+    if (weightKg == null) return null
+    return calculateInfusion({
+      weight: weightKg,
+      dose: parseFloat(dose),
+      doseUnit: drug.doseUnit,
+      stockConcentration: parseFloat(stockConc),
+      stockUnit: drug.stockUnit,
+      diluentVolume: parseFloat(diluentVol),
+    })
+  }, [drug, weightKg, dose, stockConc, diluentVol])
+  const result: InfusionResult | null = outcome && outcome.valid ? outcome : null
+  const error = outcome && !outcome.valid ? outcome.error : null
+  const announcement = useSettled(
+    result
+      ? `${drug.name}: ${result.ratePerHr} mililiter per jam, ` +
+          `${result.dropsMacro} tetes per menit makro, ` +
+          `${result.dropsMicro} tetes per menit mikro.`
+      : '',
+  )
+
+  return (
+    <>
+      {/* The answer first: the dose is what gets titrated, so the fields sit
+          directly under the rate they change. */}
+      {weightKg == null && <WeightPrompt what="kecepatan infus" />}
+
+      {/* role="alert" has no native equivalent: a validation failure must
+          be announced without moving focus off the field being fixed. */}
+      {error && <p className="error" role="alert">{error}</p>}
+
+      <p className="sr-only" role="status">{announcement}</p>
+
+      {result && weightKg != null && (
+        <InfusionResultCard result={result} drug={drug} weight={String(weightKg)} hideName={onDrugPage} />
+      )}
+      <h3 className="adjust__title">Atur dosis &amp; pengenceran</h3>
+      <div className="drug-note">{drug.note}</div>
+
+      <div className="form">
+        <div className="field">
+          <label className="label" htmlFor="infusion-dose">
+            Dosis ({drug.doseUnit})
+            <span className="label--range"> [{drug.doseMin}–{drug.doseMax}]</span>
+          </label>
+          <input
+            id="infusion-dose"
+            className={`input${isInvalidPositiveNumber(dose) ? ' input--invalid' : ''}`}
+            type="number"
+            min="0"
+            step="0.01"
+            value={dose}
+            aria-invalid={isInvalidPositiveNumber(dose)}
+            onChange={(e) => { setDose(e.target.value) }}
+          />
+        </div>
+
+        <div className="field">
+          <label className="label" htmlFor="infusion-conc">
+            Konsentrasi stok ({drug.stockUnit})
+          </label>
+          <input
+            id="infusion-conc"
+            className={`input${isInvalidPositiveNumber(stockConc) ? ' input--invalid' : ''}`}
+            type="number"
+            min="0"
+            step="0.1"
+            value={stockConc}
+            aria-invalid={isInvalidPositiveNumber(stockConc)}
+            onChange={(e) => { setStockConc(e.target.value) }}
+            aria-describedby="infusion-conc-hint"
+          />
+          {/* The preset number describes one specific bag. Saying which
+              one is the difference between a default and an assumption. */}
+          <p className="field__hint" id="infusion-conc-hint">
+            Nilai awal mengasumsikan <strong>{drug.dilution}</strong>. Kalau
+            pengenceran Anda berbeda, ubah angka ini — seluruh hasil ikut berubah.
+          </p>
+        </div>
+
+        <div className="field">
+          <label className="label" htmlFor="infusion-vol">Volume pelarut (mL)</label>
+          <input
+            id="infusion-vol"
+            className={`input${isInvalidPositiveNumber(diluentVol) ? ' input--invalid' : ''}`}
+            type="number"
+            min="0"
+            step="1"
+            value={diluentVol}
+            aria-invalid={isInvalidPositiveNumber(diluentVol)}
+            onChange={(e) => { setDiluentVol(e.target.value) }}
+          />
+        </div>
+      </div>
+
+    </>
   )
 }

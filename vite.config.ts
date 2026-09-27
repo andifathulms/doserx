@@ -153,8 +153,8 @@ export default defineConfig({
       includeAssets: ['icons/icon.svg', 'icons/icon-32.png', 'icons/apple-touch-icon.png'],
       manifest: {
         // The installed app is the doctor's tool: it opens straight into the
-        // calculator and never shows the marketing landing page.
-        start_url: '/doserx/hitung/preset',
+        // drug list and never shows the marketing landing page.
+        start_url: '/doserx/obat',
         name: SITE.title,
         short_name: SITE.name,
         description: SITE.description,

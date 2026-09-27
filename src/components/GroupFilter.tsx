@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { DrugCategory, DrugGroup, DrugPreset } from '../data/drugs'
-import { GROUP_ORDER, groupOf, subcategoriesOf } from '../data/categories'
+import { GROUP_ORDER, Groupable, groupOf, subcategoriesOf } from '../data/categories'
 
 export interface GroupSelection {
   group: DrugGroup | null
@@ -26,7 +26,7 @@ export function groupDrugs(drugs: DrugPreset[]): [DrugGroup, DrugPreset[]][] {
 }
 
 interface GroupFilterProps {
-  drugs: DrugPreset[]
+  drugs: Groupable[]
   value: GroupSelection
   onChange: (sel: GroupSelection) => void
 }

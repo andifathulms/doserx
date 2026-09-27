@@ -55,16 +55,14 @@ export const ROUTES: RouteDef[] = [
     id: 'calculator',
     title: 'Kalkulator dosis',
     description: SITE.description,
-    navLabel: 'Hitung',
-    nav: true,
     index: true,
   },
   {
     path: '/obat',
     id: 'catalog',
-    title: 'Katalog obat',
+    title: 'Obat',
     description:
-      'Katalog 92 obat dengan dosis berbasis berat badan, sediaan yang tersedia, efek samping dan sumber acuannya (IDAI, BNFc, Fornas, WHO, Kemenkes).',
+      'Cari obat, lihat dosisnya langsung untuk berat pasien, lalu buka untuk mg dan mL per rute — dengan sediaan, efek samping dan sumber acuannya (IDAI, BNFc, Fornas, WHO, Kemenkes).',
     navLabel: 'Obat',
     nav: true,
     index: true,
@@ -84,7 +82,6 @@ export const ROUTES: RouteDef[] = [
       'Dari mana nilai dosis DoseRx berasal (IDAI, BNFc, Fornas, WHO, Kemenkes), bagaimana ' +
       'perhitungannya, dan di mana aplikasi ini membulatkan, memperkirakan atau belum punya rujukan.',
     navLabel: 'Tentang',
-    nav: true,
     index: true,
   },
   {
@@ -103,51 +100,67 @@ export const ROUTES: RouteDef[] = [
     description:
       'Riwayat perhitungan dosis yang tersimpan di perangkat ini. Tidak ada data yang dikirim ke server.',
     navLabel: 'Riwayat',
-    // Personal data, and nothing to index — deliberately kept out of both.
-    nav: false,
+    // Personal data: in the navigation, never in the sitemap.
     index: false,
   },
   { path: '*', id: 'notfound', title: 'Halaman tidak ditemukan', description: '' },
 ]
 
-/** Nav items, in the order they should appear. */
-export const NAV_ITEMS = ROUTES.filter((r) => r.nav).map((r) => ({
-  // The calculator's nav link points at a concrete mode, not the :mode pattern.
-  href: r.id === 'calculator' ? '/hitung' : r.path,
-  match: r.id === 'calculator' ? '/hitung' : r.path,
-  label: r.navLabel!,
-  id: r.id,
-}))
+/**
+ * Primary navigation — the bottom bar on phones, the header on desktop. Five
+ * working destinations organised by clinical task, not by calculation type:
+ * the landing and methodology pages are reachable from the header, not from
+ * the thumb zone.
+ *
+ * `match` lists every path prefix that counts as "inside" an item — Kustom
+ * and the drip list are part of Obat, not destinations of their own.
+ */
+export type NavIcon = 'obat' | 'darurat' | 'puyer' | 'cairan' | 'riwayat'
+
+export interface NavItem {
+  id: string
+  href: string
+  match: string[]
+  label: string
+  icon: NavIcon
+}
+
+export const NAV_ITEMS: NavItem[] = [
+  { id: 'catalog', href: '/obat', match: ['/obat', '/hitung/custom', '/hitung/infus'], label: 'Obat', icon: 'obat' },
+  { id: 'puyer', href: '/hitung/puyer', match: ['/hitung/puyer'], label: 'Puyer', icon: 'puyer' },
+  { id: 'cairan', href: '/hitung/cairan', match: ['/hitung/cairan'], label: 'Cairan', icon: 'cairan' },
+  { id: 'history', href: '/riwayat', match: ['/riwayat'], label: 'Riwayat', icon: 'riwayat' },
+]
 
 /**
- * The four calculator modes. Lives here rather than in App because the
- * prerender needs it too: /hitung/:mode is a pattern, so the build has to
- * expand it, and a second hand-written list would drift from the tabs.
+ * The calculator pages under /hitung. Preset is gone as a mode: picking a
+ * drug is the Obat list, and every drug page carries its own calculator.
+ * Lives here rather than in App because the prerender expands /hitung/:mode
+ * from it too.
  */
 export const CALCULATOR_MODES = [
   {
-    id: 'preset',
-    label: 'Preset',
-    hint: 'Hitung dosis satu obat dari katalog siap pakai — dosis/kg sudah terisi.',
-  },
-  {
     id: 'custom',
-    label: 'Kustom',
+    label: 'Obat lain',
+    title: 'Obat lain (kustom)',
     hint: 'Obat di luar katalog — masukkan sendiri dosis/kg, frekuensi, dan konsentrasi.',
   },
   {
     id: 'puyer',
     label: 'Puyer',
+    title: 'Racik puyer',
     hint: 'Racik 2 obat atau lebih sekaligus menjadi satu resep puyer per bungkus.',
   },
   {
     id: 'infus',
-    label: 'Infus',
-    hint: 'Obat drip — hitung kecepatan infus (mL/jam) dan tetes per menit.',
+    label: 'Obat drip',
+    title: 'Obat drip',
+    hint: 'Kecepatan infus (mL/jam) dan tetes per menit untuk obat drip.',
   },
   {
     id: 'cairan',
     label: 'Cairan',
+    title: 'Cairan & elektrolit',
     hint: 'Cairan rumatan anak (mL/jam, tetes per menit) dan koreksi dekstrosa g/kg.',
   },
 ] as const

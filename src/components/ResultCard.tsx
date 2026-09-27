@@ -55,6 +55,12 @@ interface ResultCardProps {
    *  DosePositionBand — never passed by CustomPanel, since a hand-entered
    *  drug has no published ceiling to plot. */
   maxDailyCap?: number
+  /** An adult fixed-dose regimen (calculateFixed): the working describes a
+   *  fixed dose, not a mg/kg derivation. */
+  fixedDose?: boolean
+  /** On a drug page the <h1> already names the drug; the card just says
+   *  which weight it is for. */
+  hideName?: boolean
   onSaved: () => void
 }
 
@@ -73,6 +79,8 @@ export function ResultCard({
   availableForms,
   source,
   maxDailyCap,
+  fixedDose = false,
+  hideName = false,
   onSaved,
 }: ResultCardProps) {
   const [label, setLabel] = useState('')
@@ -154,7 +162,9 @@ export function ResultCard({
   return (
     <div className="result-card">
       <div className="result-card__header">
-        <h2 className="result-card__drug">{drugName}</h2>
+        <h2 className={`result-card__drug${hideName ? ' result-card__drug--quiet' : ''}`}>
+          {hideName ? 'Hasil' : drugName}
+        </h2>
         <span className="result-card__weight">{weight} kg</span>
       </div>
 
@@ -317,8 +327,17 @@ export function ResultCard({
         <summary className="derivation__summary">Cara hitung</summary>
         <div className="derivation__body">
           <p className="derivation__basis">
-            Dihitung dari <strong>{dosePerKg} mg/kg/hari</strong> — dosis total sehari,
-            lalu dibagi frekuensi.
+            {fixedDose ? (
+              <>
+                <strong>Dosis tetap</strong> — tidak dihitung dari berat badan. Berat hanya
+                dipakai untuk riwayat.
+              </>
+            ) : (
+              <>
+                Dihitung dari <strong>{dosePerKg} mg/kg/hari</strong> — dosis total sehari,
+                lalu dibagi frekuensi.
+              </>
+            )}
           </p>
           <ol className="derivation__steps">
             {result.steps.map((step, i) => (

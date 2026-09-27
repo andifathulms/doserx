@@ -89,7 +89,11 @@ const CATEGORY_GROUP: Record<DrugCategory, DrugGroup> = {
   'Lain-lain': 'Lain-lain & Nutrisi',
 }
 
-export function groupOf(drug: Pick<DrugPreset, 'category' | 'group'>): DrugGroup {
+/** Anything with a category and an optional group override — a preset or a
+ *  catalog drug. */
+export type Groupable = Pick<DrugPreset, 'category' | 'group'>
+
+export function groupOf(drug: Groupable): DrugGroup {
   return drug.group ?? CATEGORY_GROUP[drug.category]
 }
 
@@ -100,7 +104,7 @@ export function isEmergency(drug: Pick<DrugPreset, 'category'>): boolean {
 
 /** The categories inside one group, in CATEGORY_ORDER — the sub-filter row
  *  shown when a group spans several (Anti-infeksi, Respirasi & Alergi). */
-export function subcategoriesOf(group: DrugGroup, drugs: DrugPreset[]): DrugCategory[] {
+export function subcategoriesOf(group: DrugGroup, drugs: Groupable[]): DrugCategory[] {
   const present = new Set(drugs.filter((d) => groupOf(d) === group).map((d) => d.category))
   return CATEGORY_ORDER.filter((c) => present.has(c) && c !== 'Gawat Darurat')
 }
