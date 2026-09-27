@@ -13,10 +13,13 @@
  * where runtime derivation would cost the user bytes.
  */
 export const CATALOG_STATS = {
-  drugs: 92,
+  /** Catalog drugs (a drug may have several route regimens). */
+  drugs: 127,
   /** Clinical groups that currently hold at least one drug. */
-  groups: 8,
-  sources: ['IDAI', 'BNFc', 'Fornas', 'WHO', 'Kemenkes'],
+  groups: 9,
+  /** The principal references. Every regimen's source cites at least one of
+   *  these or an entry in OTHER_REFERENCES (landing-facts.test.ts). */
+  sources: ['IDAI', 'BNFc', 'BNF', 'AHA PALS/ACLS', 'Kemenkes', 'WHO', 'Fornas', 'ISPAD'],
 } as const
 
 /** Paracetamol, the demo case — only the fields calculate() and the demo need. */
@@ -32,3 +35,20 @@ export const DEMO_DRUG = {
   concentration: 24,
   source: 'IDAI',
 } as const
+
+/** Guidelines and labels cited for specific regimens, beyond the principal
+ *  references above — the About page lists every source in full. */
+export const OTHER_REFERENCES = [
+  'label produk',
+  'AES',
+  'ESETT',
+  'EMA',
+  'Walls Manual',
+  'Brain Trauma Foundation',
+  'Cochrane',
+  'Lexicomp',
+  'WAO',
+  'RCUK',
+  'CRASH-2',
+  'ADA',
+] as const

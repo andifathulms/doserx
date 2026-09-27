@@ -15,9 +15,9 @@ import {
 } from '../lib/calculateElectrolyte'
 
 /**
- * Sodium and potassium correction — drafts awaiting clinical review, shown
- * only in review mode (FluidPanel gates them). Every rule they encode is a
- * named, cited constant in lib/calculateElectrolyte.ts.
+ * Sodium and potassium correction. Every rule they encode is a named, cited
+ * constant in lib/calculateElectrolyte.ts (reviewed and approved
+ * 27 Sep 2026).
  *
  * Both replace a fragile path: sodium had none (NaCl 3% was on the requested
  * list), and potassium's only path was a drip preset whose units were ~100×
@@ -25,14 +25,6 @@ import {
  * bag concentration and the rate checked against their limits on screen.
  */
 
-function DraftNote() {
-  return (
-    <p className="notice notice--draft">
-      <strong>DRAF — belum diverifikasi klinisi.</strong> Tampil karena mode tinjau aktif. Aturan dan
-      batasnya tercantum di bawah hasil.
-    </p>
-  )
-}
 
 export function SodiumCorrection() {
   const { weightKg } = usePatient()
@@ -55,7 +47,6 @@ export function SodiumCorrection() {
 
   return (
     <>
-      <DraftNote />
       <Tabs
         tabs={[
           { id: 'bolus', label: 'Bolus (simptomatik)', hint: 'Hiponatremia dengan kejang/penurunan kesadaran: NaCl 3% bolus.' },
@@ -160,7 +151,6 @@ export function PotassiumCorrection() {
 
   return (
     <>
-      <DraftNote />
       <p className="notice notice--alert">
         <strong>KCl pekat adalah obat high-alert.</strong> Jangan pernah bolus atau IV push. Selalu
         encerkan, beri lewat pompa, pantau EKG.

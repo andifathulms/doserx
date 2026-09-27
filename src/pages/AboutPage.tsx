@@ -143,7 +143,7 @@ export function AboutPage({ lang }: { lang: Lang }) {
           so it lives here rather than in the navigation. */}
       <section className="landing-section" aria-labelledby="review-title">
         <h2 className="landing-section__title" id="review-title">
-          {lang === 'en' ? 'Draft entries under review' : 'Draf yang sedang ditinjau'}
+          {lang === 'en' ? 'How new entries are reviewed' : 'Cara entri baru ditinjau'}
         </h2>
         <p className="review-intro">
           {lang === 'en'

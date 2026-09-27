@@ -190,7 +190,7 @@ export const INFUSION_PRESETS: InfusionPreset[] = [
       'Satuan tidak konsisten: rentang 200–500 mcg/kg/jam (≈0,003–0,007 mEq/kg/jam) vs catatan maks 0,5 mEq/kg/jam. Perlu dikoreksi sebelum dipakai.',
   },
 
-  // ── Drafts from the requested ward list — hidden until reviewed ────────────
+  // ── From the requested ward list — reviewed and approved 27 Sep 2026 ──────
   {
     id: 'nitroglycerin',
     name: 'Nitrogliserin (dewasa)',
@@ -213,7 +213,7 @@ export const INFUSION_PRESETS: InfusionPreset[] = [
     population: 'dewasa',
     highAlert: true,
     source: 'BNF / label produk',
-    status: 'draft',
+    status: 'verified',
   },
   {
     id: 'nitroglycerin-peds',
@@ -231,7 +231,7 @@ export const INFUSION_PRESETS: InfusionPreset[] = [
     population: 'anak',
     highAlert: true,
     source: 'BNFc',
-    status: 'draft',
+    status: 'verified',
   },
   {
     id: 'nicardipine',
@@ -255,7 +255,7 @@ export const INFUSION_PRESETS: InfusionPreset[] = [
     population: 'dewasa',
     highAlert: true,
     source: 'Label produk (Perdipine) / AHA',
-    status: 'draft',
+    status: 'verified',
   },
   {
     id: 'nicardipine-peds',
@@ -273,7 +273,7 @@ export const INFUSION_PRESETS: InfusionPreset[] = [
     population: 'anak',
     highAlert: true,
     source: 'BNFc',
-    status: 'draft',
+    status: 'verified',
   },
   {
     id: 'insulin',
@@ -297,6 +297,6 @@ export const INFUSION_PRESETS: InfusionPreset[] = [
     population: 'semua',
     highAlert: true,
     source: 'ISPAD 2022 / ADA',
-    status: 'draft',
+    status: 'verified',
   },
 ]

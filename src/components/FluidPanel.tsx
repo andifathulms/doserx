@@ -16,9 +16,8 @@ type SubMode = 'rumatan' | 'dekstrosa' | 'natrium' | 'kalium'
 const SUB_MODES: { id: SubMode; label: string; hint: string; draft?: boolean }[] = [
   { id: 'rumatan', label: 'Rumatan', hint: 'Kecepatan cairan rumatan (aturan 4-2-1) dan tetes per menit.' },
   { id: 'dekstrosa', label: 'Dekstrosa', hint: 'Dosis koreksi dekstrosa g/kg, dikonversi ke volume larutan.' },
-  // Drafts: shown in review mode only (see ElectrolytePanels).
-  { id: 'natrium', label: 'Natrium', hint: 'Koreksi hiponatremia dengan NaCl 3% (draf).', draft: true },
-  { id: 'kalium', label: 'Kalium', hint: 'Koreksi hipokalemia dengan KCl, dalam mEq (draf).', draft: true },
+  { id: 'natrium', label: 'Natrium', hint: 'Koreksi hiponatremia dengan NaCl 3%.' },
+  { id: 'kalium', label: 'Kalium', hint: 'Koreksi hipokalemia dengan KCl, dalam mEq.' },
 ]
 
 // The rate (4-2-1) does not depend on the fluid; the choice is carried into
@@ -240,8 +239,8 @@ export function FluidPanel() {
         label="Jenis hitung"
       />
 
-      {subMode === 'natrium' && review && <SodiumCorrection />}
-      {subMode === 'kalium' && review && <PotassiumCorrection />}
+      {subMode === 'natrium' && <SodiumCorrection />}
+      {subMode === 'kalium' && <PotassiumCorrection />}
 
       {weightKg == null && (subMode === 'rumatan' || subMode === 'dekstrosa') && (
         <WeightPrompt what="hasilnya" />

@@ -33,15 +33,17 @@ describe('CatalogPage', () => {
 })
 
 describe('DrugPage', () => {
-  it('renders all 92 drug pages without throwing', () => {
-    for (const drug of DRUG_PRESETS) {
+  it('renders every drug page without throwing', () => {
+    for (const drug of DRUG_PRESETS.filter((d) => !d.parent)) {
       const html = renderToString(<DrugPage id={drug.id} onHistoryUpdated={() => {}} />)
       expect(html).toContain(drug.name)
       // The calculator travels with the page — landing from a search result
       // and getting a dose must not require a detour. Results are live, so
       // there is no button to look for: the dose field and the prompt that
       // points at the patient bar are the calculator's footprint.
-      expect(html).toContain(`id="drug-${drug.id}-dose"`)
+      // The field id carries the regimen that opens first (a drug with a
+      // child and an adult route opens the child one for "Anak").
+      expect(html).toMatch(/id="drug-[\w-]+-dose"/)
       expect(html).toContain('weight-prompt')
     }
   })
@@ -79,7 +81,7 @@ describe('LandingPage', () => {
 
   it('derives catalog figures instead of hardcoding them', () => {
     const html = renderToString(<LandingPage lang="id" />)
-    expect(html).toContain(String(DRUG_PRESETS.length))
+    expect(html).toContain(String(LIVE_CATALOG.length))
     // Sources are listed from the data, so a new reference shows up by itself.
     expect(html).toContain('IDAI')
   })
@@ -101,7 +103,7 @@ describe('AboutPage', () => {
   it('derives the source breakdown from the catalog', () => {
     const html = renderToString(<AboutPage lang="id" />)
     for (const [source, count] of SOURCE_COUNTS) {
-      expect(html).toContain(source)
+      expect(html).toContain(source.replace(/&/g, '&amp;'))
       expect(html).toContain(`<td>${count}</td>`)
     }
     // Counts must add up to the catalog, or the table is lying by omission.
@@ -114,9 +116,9 @@ describe('AboutPage', () => {
     const en = renderToString(<AboutPage lang="en" />)
     expect(id).toContain('Batasan')
     expect(en).toContain('Known limitations')
-    // The infusion catalog has no citations yet; the page must admit it.
+    // Some drips still have no citation; the page must admit it.
     expect(id).toMatch(/belum mencantumkan sumber/)
-    expect(en).toMatch(/does not yet cite sources/)
+    expect(en).toMatch(/do not yet cite a source/)
   })
 
   it('lists the PRD non-goals as explicit non-goals', () => {

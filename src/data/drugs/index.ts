@@ -10,6 +10,7 @@ import { CARDIOVASCULAR, RESPIRATORY } from './cardiorespiratory'
 import { GASTROINTESTINAL, ANTIHISTAMINES } from './gastro-allergy'
 import { CORTICOSTEROIDS, VITAMINS, FLUIDS } from './steroids-nutrition'
 import { EMERGENCY, MISC } from './emergency'
+import { REQUESTED_PRESETS } from './requested'
 
 // Order roughly follows CATEGORY_ORDER (emergency first). Within a category the
 // array order is preserved in the grid.
@@ -31,6 +32,9 @@ export const DRUG_PRESETS: DrugPreset[] = [
   ...FLUIDS,
   ...ANTIMALARIALS,
   ...MISC,
+  // The requested ward/emergency list: new drugs, and new routes of the
+  // drugs above (joined to them through `parent` in data/catalog.ts).
+  ...REQUESTED_PRESETS,
 ]
 
 // Drugs offered in the Puyer (compounded powder) multi-select. Anything flagged

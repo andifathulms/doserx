@@ -16,9 +16,7 @@ describe('clinical groups', () => {
 
   it('leaves no group empty', () => {
     const used = new Set(DRUG_PRESETS.map(groupOf))
-    // Anestesi & Intubasi is filled by the intubation drugs; until those
-    // exist it is the one group allowed to be empty.
-    for (const g of GROUP_ORDER.filter((x) => x !== 'Anestesi & Intubasi')) {
+    for (const g of GROUP_ORDER) {
       expect(used.has(g), g).toBe(true)
     }
   })
